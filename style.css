@@ -91,3 +91,4 @@ button.copy { padding: 2px 6px; line-height: 0; color: var(--muted); background:
 button.copy:hover { color: var(--accent); border-color: var(--accent); }
 button.copy.fait { color: var(--sc); border-color: var(--sc); line-height: 1.2; font-size: 12px; }
 .tag.ok-tag { background: var(--sc); color: #fff; }
+pre.brut { white-space: pre-wrap; font-size: 11px; color: var(--muted); background: var(--card2); border: 1px solid var(--line); border-radius: 6px; padding: 6px; max-height: 180px; overflow: auto; margin: 6px 0; }

@@ -85,16 +85,37 @@ export const MODES = {
 // Lit, dans l'image courante, le seul écran correspondant au mode choisi.
 // Retourne { type, lecture } ou null si rien d'exploitable.
 export async function scanner(zones, mode, onProgres) {
-  const { frame } = image();
-  const rec = await reconnaisseur(onProgres);
+  const { canvas, frame } = image();
+  const rec0 = await reconnaisseur(onProgres);
+  const textes = [];
+  const rec = async (img, o) => { const l = await rec0(img, o); if (!o.chiffres) textes.push(l.map(x => x.texte).join('\n')); return l; };
   const { ecran, zone } = MODES[mode];
+  const px = enPixels(zones[zone], frame);
   onProgres?.({ status: MODES[mode].libelle.toLowerCase() });
-  const lecture = await lireEcran(ecran, frame, enPixels(zones[zone], frame), rec);
-  window.__derniereLecture = { mode, lecture }; // pour le diagnostic
+  const lecture = await lireEcran(ecran, frame, px, rec);
+  dernier = { canvas, zone: px, texte: textes.join('\n---\n'), mode };
   const utile = ecran === 'courbe' ? lecture.vendus != null
     : ecran === 'detail' ? !!(lecture.titre && lecture.annonces.length)
     : lecture.length > 0;
   return utile ? { type: ecran, lecture } : null;
+}
+
+// Diagnostic du dernier scan : image capturée, zone lue, texte reconnu
+let dernier = null;
+export function diagnostic() {
+  if (!dernier) return null;
+  const { canvas, zone } = dernier;
+  const c = document.createElement('canvas');
+  const k = Math.min(1, 600 / zone.w);
+  c.width = Math.round(zone.w * k); c.height = Math.round(zone.h * k);
+  c.getContext('2d').drawImage(canvas, zone.x, zone.y, zone.w, zone.h, 0, 0, c.width, c.height);
+  return {
+    apercu: c.toDataURL('image/jpeg', 0.8),
+    image: () => canvas.toDataURL('image/png'),
+    texte: dernier.texte,
+    taille: `${canvas.width} × ${canvas.height}`,
+    zone: `x ${Math.round(zone.x)}, y ${Math.round(zone.y)}, ${Math.round(zone.w)} × ${Math.round(zone.h)}`,
+  };
 }
 
 // Précharge tesseract (au démarrage de la capture), pour un premier scan plus rapide.

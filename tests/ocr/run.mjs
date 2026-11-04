@@ -10,6 +10,7 @@ import { identifier } from '../../src/ocr/identification.js';
 const ici = p => new URL(p, import.meta.url);
 const catalogue = JSON.parse(readFileSync(ici('../../data/catalogue.json')));
 
+// Les captures de test sont des recadrages de captures Retina pleine résolution : agrandissement ×2
 const lire = f => { const p = PNG.sync.read(readFileSync(ici(`captures/${f}`))); return { width: p.width, height: p.height, data: p.data }; };
 const encoder = img => { const p = new PNG({ width: img.width, height: img.height }); p.data = Buffer.from(img.data); return PNG.sync.write(p); };
 
@@ -37,7 +38,7 @@ const plein = img => ({ x: 0, y: 0, w: img.width, h: img.height });
 // 1. Lots d'une ressource
 {
   const img = lire('detail-lots-ressource.png');
-  const r = identifier('detail', await lireEcran('detail', img, plein(img), reconnaitre), catalogue);
+  const r = identifier('detail', await lireEcran('detail', img, plein(img), reconnaitre, { echelle: 2 }), catalogue);
   verifier('lots : objet', r.objet?.nom, 'Étoffe sanglante');
   verifier('lots : prix moyen', r.prixMoyen, 1128);
   verifier('lots : x1/x10/x100', r.annonces.map(a => [a.lot, a.prix]), [[1, 2874], [10, 22949], [100, 700012]]);
@@ -46,7 +47,7 @@ const plein = img => ({ x: 0, y: 0, w: img.width, h: img.height });
 // 2. Annonces d'un équipement
 {
   const img = lire('detail-annonces-item.png');
-  const r = identifier('detail', await lireEcran('detail', img, plein(img), reconnaitre), catalogue);
+  const r = identifier('detail', await lireEcran('detail', img, plein(img), reconnaitre, { echelle: 2 }), catalogue);
   verifier('annonces : objet', r.objet?.nom, 'Jugement de Thanatena');
   verifier('annonces : prix moyen', r.prixMoyen, 123707331);
   verifier('annonces : prix', r.annonces.map(a => a.prix), [
@@ -58,7 +59,7 @@ const plein = img => ({ x: 0, y: 0, w: img.width, h: img.height });
 // 3. Courbe 30 jours
 {
   const img = lire('courbe-item.png');
-  const r = identifier('courbe', await lireEcran('courbe', img, plein(img), reconnaitre), catalogue);
+  const r = identifier('courbe', await lireEcran('courbe', img, plein(img), reconnaitre, { echelle: 2 }), catalogue);
   verifier('courbe : objet', r.objet?.nom, 'Jugement de Thanatena');
   verifier('courbe : vendus / moyen / onglet 30 j actif', [r.vendus, r.moyen, r.trenteJours], [81, 123707331, true]);
 }
@@ -66,7 +67,7 @@ const plein = img => ({ x: 0, y: 0, w: img.width, h: img.height });
 // 3 bis. Courbe avec un débris d'icône devant « Niveau » et un volume à 1 chiffre
 {
   const img = lire('courbe-item-7.png');
-  const r = identifier('courbe', await lireEcran('courbe', img, plein(img), reconnaitre), catalogue);
+  const r = identifier('courbe', await lireEcran('courbe', img, plein(img), reconnaitre, { echelle: 2 }), catalogue);
   verifier('courbe (débris) : objet', r.objet?.nom, 'Alliance Brûlâme');
   verifier('courbe (débris) : vendus / onglet 30 j', [r.vendus, r.trenteJours], [7, true]);
 }
@@ -74,7 +75,7 @@ const plein = img => ({ x: 0, y: 0, w: img.width, h: img.height });
 // 3 ter. Panneau détail avec une seule annonce, en partie masqué par la courbe
 {
   const img = lire('detail-annonce-unique.png');
-  const r = identifier('detail', await lireEcran('detail', img, plein(img), reconnaitre), catalogue);
+  const r = identifier('detail', await lireEcran('detail', img, plein(img), reconnaitre, { echelle: 2 }), catalogue);
   verifier('annonce unique : objet', r.objet?.nom, 'Alliance Brûlâme');
   verifier('annonce unique : prix', r.annonces.map(a => a.prix), [10125000]);
 }
@@ -82,7 +83,7 @@ const plein = img => ({ x: 0, y: 0, w: img.width, h: img.height });
 // 4. Liste HDV ressources
 {
   const img = lire('liste-ressources.png');
-  const r = identifier('liste', await lireEcran('liste', img, plein(img), reconnaitre), catalogue);
+  const r = identifier('liste', await lireEcran('liste', img, plein(img), reconnaitre, { echelle: 2 }), catalogue);
   verifier('liste ressources : prix moyens', r.map(x => x.prixMoyen), [70082, 51464, 20348, 169761, 41630, 42502, 29851, 49829]);
   console.log('     reconnus :', r.map(x => x.nom ?? `?(${x.inconnu})`).join(', '));
 }
@@ -90,7 +91,7 @@ const plein = img => ({ x: 0, y: 0, w: img.width, h: img.height });
 // 5. Liste HDV équipements
 {
   const img = lire('liste-items.png');
-  const r = identifier('liste', await lireEcran('liste', img, plein(img), reconnaitre), catalogue);
+  const r = identifier('liste', await lireEcran('liste', img, plein(img), reconnaitre, { echelle: 2 }), catalogue);
   verifier('liste items : prix moyens', r.map(x => x.prixMoyen), [123707331, 85195409, 48533266, 32891887, 32352056, 25222088, 23162551, 20952153]);
   verifier('liste items : noms', r.map(x => x.nom ?? null), [
     'Jugement de Thanatena', 'Clairvoyance de Mériana', 'Hachebarde de Guerre', 'Trompe-la-Mort',

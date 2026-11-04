@@ -270,7 +270,7 @@ function titreLecture(L) {
 
 function renderLecture() {
   const L = S.derniere;
-  if (!L) { $('#lecture').innerHTML = ''; return; }
+  if (!L) { $('#lecture').innerHTML = S.diagSeul ? `<div class="lect">${diagHtml(true)}</div>` : ''; brancherDiag(); return; }
   const etat = L.enregistre ? '<span class="tag ok-tag">enregistré</span>' : '<span class="tag faire">non enregistré</span>';
   const boutons = L.edition
     ? `<button id="lect-valider" class="primary small">Valider</button><button id="lect-fermer" class="secondary small">Fermer</button>`
@@ -279,12 +279,29 @@ function renderLecture() {
   $('#lecture').innerHTML = `<div class="lect"><div class="row"><h3>${titreLecture(L)}</h3><div class="spacer"></div>${etat}</div>
     ${L.alerte ? `<p class="small bad">${esc(L.alerte)}</p>` : ''}
     ${L.edition ? formulaire(L) : resume(L)}
-    <div class="row">${boutons}</div></div>`;
+    <div class="row">${boutons}</div>${diagHtml(!L.enregistre)}</div>`;
   const on = (id, fn) => { const el = $(id); if (el) el.onclick = fn; };
+  brancherDiag();
   on('#lect-modifier', () => { L.edition = true; renderLecture(); });
   on('#lect-fermer', () => { L.edition = false; renderLecture(); });
   on('#lect-valider', validerEdition);
   on('#lect-annuler', () => { S.base = importer(L.avant); sauverBase(); S.derniere = null; statut('Lecture annulée : la base est revenue à son état précédent.'); renderTout(); });
+}
+
+// Diagnostic : ce que l'outil a réellement regardé et lu (ouvert d'office si la lecture a échoué)
+function diagHtml(ouvert) {
+  const d = Cap.diagnostic();
+  if (!d) return '';
+  return `<details class="more"${ouvert ? ' open' : ''}><summary>diagnostic : ce qui a été lu</summary>
+    <p class="muted small">Image capturée ${d.taille} · zone lue ${d.zone}</p>
+    <img src="${d.apercu}" alt="zone lue" style="width:100%;border-radius:6px;border:1px solid var(--line)">
+    <pre class="brut">${esc(d.texte || '(aucun texte)')}</pre>
+    <div class="row"><button id="diag-dl" class="secondary small">Télécharger la capture</button>
+      <span class="muted small">à m'envoyer si la lecture est fausse</span></div></details>`;
+}
+function brancherDiag() {
+  const b = $('#diag-dl'); if (!b) return;
+  b.onclick = () => { const d = Cap.diagnostic(); if (!d) return; const a = root.createElement('a'); a.href = d.image(); a.download = `capture-${Date.now()}.png`; root.body.appendChild(a); a.click(); a.remove(); };
 }
 
 // Enregistre une lecture (identifiée) dans la base ; retourne les messages
@@ -397,11 +414,13 @@ async function basculerCapture() {
 async function scanner() {
   const b = $('#scan'); b.classList.add('busy'); b.disabled = true;
   const mode = S.etat.mode;
+  S.diagSeul = false;
   try {
     const brut = await Cap.scanner(S.etat.zones, mode, m => m.status && statut(`Lecture : ${m.status}…`));
     if (!brut) {
       S.derniere = null;
       statut(`Rien lu dans la zone « ${Cap.MODES[mode].libelle} ». Vérifie que la fenêtre est ouverte et visible, ou redéfinis les zones.`);
+      S.diagSeul = true;
     } else {
       const L = { type: brut.type, identifie: identifier(brut.type, brut.lecture, S.catalogue), avant: exporter(S.base), date: Date.now(), edition: false };
       const o = L.identifie.objet;

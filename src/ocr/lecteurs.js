@@ -186,30 +186,45 @@ export async function lireCourbe(pre, reconnaitre, orig = null, echelle = 2) {
   const lignes = rangees(await reconnaitre(pre, {}));
   const texte = lignes.map(l => l.texte).join('\n');
   const { titre, niveau } = titreEtNiveau(lignes);
-  const vendus = texte.match(/(\d[\d \u00a0]*)\s*articles?\s*vendus?/i);
+  // seul le nombre collé à « articles vendus » (1 ou 2 groupes), pas les chiffres du prix moyen juste avant
+  const vendus = texte.match(/(\d{1,3}(?:[ \u00a0]\d{3})?)\s*articles?\s*vendus?/i);
   const moyen = texte.match(/moyen\s*:?\s*(\d[\d \u00a0]*)/i);
 
-  // onglets : premier mot de chaque libellé ("24", "7" ou "7jours", "30")
-  const mots = lignes.flatMap(l => l.mots);
-  const onglet = re => mots.find(m => re.test(m.texte));
-  const tabs = { '24h': onglet(/^24(heures)?$/i), '7j': onglet(/^7(jours?)?$/i), '30j': onglet(/^30(jours?)?$/i) };
-  const jaune = Object.fromEntries(Object.entries(tabs).map(([k, m]) => [k, m ? partJaune(orig, m.bbox, echelle) : 0]));
-  const actif = Object.entries(jaune).sort((a, b) => b[1] - a[1])[0];
-  const trenteJours = orig ? actif[0] === '30j' && actif[1] > 0.03 : /30\s*jours/i.test(texte);
+  // Onglets : sur la ligne qui contient « heures », les 3 premiers libellés avant « Prix ».
+  // Un libellé se termine sur un mot qui contient des lettres (« 24 heures », « 7jours », « 30 jours »),
+  // quelle que soit l'orthographe lue. L'onglet actif est le libellé le plus jaune.
+  const rangeeOnglets = lignes.find(l => /heure/i.test(l.texte));
+  const libelles = [];
+  if (rangeeOnglets) {
+    let cour = [];
+    for (const m of rangeeOnglets.mots) {
+      if (/prix|m.dian/i.test(m.texte) || libelles.length === 3) break;
+      if (!/[0-9A-Za-zÀ-ÿ]/.test(m.texte)) continue;
+      cour.push(m);
+      if (/[A-Za-zÀ-ÿ]{3,}/.test(m.texte)) { libelles.push(cour); cour = []; }
+    }
+  }
+  const jaune = libelles.map(ms => Math.max(...ms.map(m => partJaune(orig, m.bbox, echelle))));
+  const iActif = jaune.length ? jaune.indexOf(Math.max(...jaune)) : -1;
+  const trenteJours = orig && libelles.length === 3 ? iActif === 2 && jaune[2] > 0.03 : /30\s*jours/i.test(texte);
 
   return {
     titre, niveau,
     vendus: vendus ? nombre(vendus[1]).valeur : null,
     moyen: moyen ? nombre(moyen[1]).valeur : null,
-    trenteJours,
+    trenteJours, onglets: jaune.map(x => Math.round(x * 100) / 100),
   };
 }
 
 const LECTEURS = { liste: lireListe, detail: lireDetail, courbe: lireCourbe };
 
+// Agrandissement : ×2 sur une capture Retina pleine résolution (~2 880 px de large), ×4 sur une capture réduite.
+export const echelleAuto = largeurImage => (largeurImage >= 2400 ? 2 : largeurImage >= 1600 ? 3 : 4);
+
 export async function lireEcran(type, img, zone, reconnaitre, opts = {}) {
+  opts = { echelle: echelleAuto(img.width), ...opts };
   if (type === 'courbe') {
-    const echelle = opts.echelle ?? 2;
+    const echelle = opts.echelle;
     const pre = pretraiter(img, zone, { ...opts, masquerJaune: false });
     return lireCourbe(pre, reconnaitre, recadrer(img, zone), echelle);
   }
