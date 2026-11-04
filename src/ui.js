@@ -57,12 +57,14 @@ function params() {
 }
 
 // ---------- formats ----------
-const fmt = n => n == null ? '–' : Math.round(n).toLocaleString('fr-FR');
+// Séparateur de milliers : espace insécable normale (l'espace fine de fr-FR est trop étroite)
+const milliers = n => Math.round(n).toLocaleString('fr-FR').replace(/\u202f/g, '\u00a0');
+const fmt = n => n == null ? '–' : milliers(n);
 const fmtK = n => {
   if (n == null) return '–';
   const a = Math.abs(n);
-  if (a >= 1e6) return (n / 1e6).toLocaleString('fr-FR', { maximumFractionDigits: a >= 1e8 ? 0 : 1 }) + ' M';
-  if (a >= 1e4) return Math.round(n / 1e3).toLocaleString('fr-FR') + ' k';
+  if (a >= 1e6) return (n / 1e6).toLocaleString('fr-FR', { maximumFractionDigits: a >= 1e8 ? 0 : 1 }).replace(/\u202f/g, '\u00a0') + ' M';
+  if (a >= 1e4) return milliers(n / 1e3) + ' k';
   return fmt(n);
 };
 const pct = r => r == null ? '–' : (r * 100).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' %';
@@ -75,12 +77,12 @@ const age = d => {
 };
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 // Saisie de montants : séparateurs de milliers affichés pendant la frappe (le curseur reste en place)
-const fmtSaisie = n => { const v = typeof n === 'string' ? nombreSaisi(n) : n; return v == null || !Number.isFinite(v) ? '' : Math.round(v).toLocaleString('fr-FR'); };
+const fmtSaisie = n => { const v = typeof n === 'string' ? nombreSaisi(n) : n; return v == null || !Number.isFinite(v) ? '' : milliers(v); };
 function formaterPendantFrappe(el) {
   const pos = el.selectionStart ?? el.value.length;
   const avant = el.value.slice(0, pos).replace(/\D/g, '').length;
   const chiffres = el.value.replace(/\D/g, '');
-  el.value = chiffres ? Number(chiffres).toLocaleString('fr-FR') : '';
+  el.value = chiffres ? milliers(Number(chiffres)) : '';
   let k = 0, i = 0;
   while (i < el.value.length && k < avant) { if (/\d/.test(el.value[i])) k++; i++; }
   el.setSelectionRange(i, i);
@@ -147,18 +149,31 @@ function resume(L) {
   const r = L.identifie;
   if (L.type === 'liste') {
     const hors = r.filter(x => x.inconnu).length, retires = r.filter(x => x.retire).length;
-    return `<table class="rt"><tbody>${r.map((x, i) => x.inconnu || x.retire ? '' : `<tr><td class="cn">${esc(x.nom)}</td><td class="r">${fmt(x.prixMoyen)}</td>
+    return `<table class="rt"><tbody>${r.map((x, i) => x.inconnu || x.retire ? '' : `<tr><td class="cn">${esc(x.nom)}</td><td class="r">${x.prixMoyen == null ? '–' : nombreHtml(x.prixMoyen)}</td>
         <td class="r"><button class="retirer" data-i="${i}" title="Retirer cette ligne (mauvais objet reconnu)">✕</button></td></tr>`).join('')}</tbody></table>
       ${hors ? `<p class="muted small">${hors} lignes hors catalogue ignorées.</p>` : ''}
       ${retires ? `<p class="muted small">${retires} ligne${retires > 1 ? 's' : ''} retirée${retires > 1 ? 's' : ''}. Pour enregistrer le bon objet : « Saisir ».</p>` : ''}`;
   }
   if (!r.objet) return `<p class="small">Titre lu : « ${esc(r.titre ?? '?')} ».</p>`;
-  if (L.type === 'courbe') return `<p class="small">${fmt(r.vendus)} vendus sur 30 jours</p>`;
+  if (L.type === 'courbe') return cases([['Vendus 30 j', r.vendus], ['', null], ['', null]], 3, true);
   if (r.objet.genre === 'ressource') {
-    const lot = t => fmt(r.annonces.find(a => a.lot === t)?.prix);
-    return `<p class="small">x1 <b>${lot(1)}</b> · x10 <b>${lot(10)}</b> · x100 <b>${lot(100)}</b>${r.annonces.some(a => a.lot === 1000) ? ` · x1000 <b>${lot(1000)}</b>` : ''}</p>`;
+    // positions fixes x1 · x10 · x100 · x1000 ; un lot sans offre laisse sa case vide
+    const lot = t => r.annonces.find(a => a.lot === t)?.prix ?? null;
+    return cases([1, 10, 100, 1000].map(t => [`x${t}`, lot(t)]), 4);
   }
-  return `<p class="small">${[...r.annonces].filter(a => a.prix).sort((a, b) => a.prix - b.prix).slice(0, NB_PRIX).map(a => `<b${a.sur ? '' : ' class="bad" title="à vérifier"'}>${fmt(a.prix)}</b>`).join(' · ')}</p>`;
+  const tries = [...r.annonces].filter(a => a.prix).sort((a, b) => a.prix - b.prix).slice(0, NB_PRIX);
+  return cases(Array.from({ length: NB_PRIX }, (_, i) => [`${i + 1}.`, tries[i]?.prix ?? null, tries[i] && !tries[i].sur]), NB_PRIX);
+}
+
+// Valeur en grand, groupes de 3 chiffres bien séparés
+const nombreHtml = n => `<span class="nb">${milliers(n).split('\u00a0').map(g => `<span>${g}</span>`).join('')}</span>`;
+// Grille de cases : cartouche (libellé) au-dessus, valeur alignée à droite. Case vide si pas de valeur.
+function cases(liste, colonnes, sansVides = false) {
+  // taille de la valeur selon sa longueur, pour qu'un grand prix tienne dans une case étroite
+  const taille = v => { const n = String(Math.round(v)).length; return n >= 8 ? ' t3' : n >= 6 ? ' t2' : ''; };
+  return `<div class="cases c${colonnes}">${liste.map(([lib, v, douteux]) => v == null
+    ? (sansVides ? '<div></div>' : '<div class="case vide"></div>')
+    : `<div class="case${douteux ? ' douteux' : ''}"${douteux ? ' title="à vérifier"' : ''}><span class="lib">${lib}</span><span class="val${taille(v)}">${nombreHtml(v)}</span></div>`).join('')}</div>`;
 }
 
 function formulaire(L) {
