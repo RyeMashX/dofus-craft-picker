@@ -33,6 +33,7 @@ const S = {
   etat: { vue: 'scan', liste: 'volumes', minutes: 10, budget: 30, tri: { cle: 'score', sens: -1 }, filtre: '', tag: '', zones: ZONES_DEFAUT, ...lireLS(KE, {}) },
   lectures: [],
   plusLignes: 50,
+  copies: new Set(), // noms déjà copiés pendant la session (repère visuel)
 };
 S.etat.reglages = { ...REGLAGES_DEFAUT, ...(S.etat.reglages ?? {}) };
 if (S.base.version !== 2) S.base = creerBase();
@@ -113,8 +114,27 @@ function renderPlan(listes, p) {
   $('#plan').innerHTML = `<p class="small">${plan.taches.length} scans, environ ${min} min :
       ${plan.parType.volume} courbes, ${plan.parType.prixItem} annonces, ${plan.parType.ressource} ressources.
       ${plan.restantes ? `<span class="muted">${plan.restantes} autres en attente.</span>` : ''}</p>
-    <table class="rt"><tbody>${plan.taches.slice(0, 12).map(t => `<tr><td>${tagHtml(t.tag)}</td><td class="muted">${ACTION[t.type]}</td><td class="cn">${esc(t.nom)}</td></tr>`).join('')}</tbody></table>
+    <table class="rt"><tbody>${plan.taches.slice(0, 12).map(t => `<tr><td>${tagHtml(t.tag)}</td><td class="muted">${ACTION[t.type]}</td><td class="cn">${esc(t.nom)}</td>
+      <td class="r"><button class="copy${S.copies.has(t.nom) ? ' fait' : ''}" data-nom="${esc(t.nom)}" title="Copier le nom, à coller dans la recherche de l'HDV">${S.copies.has(t.nom) ? '✓' : COPIER}</button></td></tr>`).join('')}</tbody></table>
     ${plan.taches.length > 12 ? `<p class="muted small">… et ${plan.taches.length - 12} autres dans ce plan (détail dans les listes ci-dessous).</p>` : ''}`;
+  $$('#plan button.copy').forEach(b => b.onclick = () => copier(b.dataset.nom, b));
+}
+
+const COPIER = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
+
+// Copie dans le presse-papier. Dans la fenêtre flottante, c'est elle qui a le focus :
+// on passe par son propre navigator, avec repli sur l'ancienne méthode si l'API est refusée.
+async function copier(texte, bouton) {
+  const w = root.defaultView ?? window;
+  try { await w.navigator.clipboard.writeText(texte); }
+  catch {
+    const ta = root.createElement('textarea');
+    ta.value = texte; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    root.body.appendChild(ta); ta.select(); root.execCommand('copy'); ta.remove();
+  }
+  S.copies.add(texte);
+  bouton.innerHTML = '✓'; bouton.classList.add('fait');
+  statut(`« ${texte} » copié : colle-le dans la recherche de l'HDV.`);
 }
 
 const COLONNES = {

@@ -85,3 +85,8 @@ details.more summary { cursor: pointer; color: var(--muted); font-size: 12px; ma
 .pip-placeholder { max-width: 460px; margin: 20px auto; text-align: center; }
 body.pip header.top h1 { display: none; }
 @media (max-width: 480px) { .kpis { grid-template-columns: 1fr 1fr; } }
+
+/* Bouton copier (plan de scan) */
+button.copy { padding: 2px 6px; line-height: 0; color: var(--muted); background: transparent; }
+button.copy:hover { color: var(--accent); border-color: var(--accent); }
+button.copy.fait { color: var(--sc); border-color: var(--sc); line-height: 1.2; font-size: 12px; }
