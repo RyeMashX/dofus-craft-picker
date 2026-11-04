@@ -10,7 +10,23 @@ Aucune lecture réseau du client, aucun clic automatisé : uniquement des captur
 Étape 1 : moteur de calcul, testé (`npm test`, Node 20+).
 Étape 2 : catalogue DofusDB (`data/catalogue.json`, régénéré par `node scripts/catalogue.mjs`) : 642 équipements craftables 190-200, 538 ressources ; 554 craftables avec les métiers actuels (Forgeron 190).
 Étape 3 : base de prix horodatée, base d'évaluation, listes de scan priorisées et plan de scan. Focus actuel : items niveau 200 (364 craftables).
+Étape 4 : lecture OCR des quatre écrans HDV (liste, annonces d'un équipement, lots d'une ressource, courbe 30 jours), validée sur de vraies captures (`npm run test:ocr`).
 Pas encore d'interface.
+
+## Lecture OCR
+
+- Chaque écran est lu sur une **zone recadrée** (la fenêtre HDV) : sur l'écran entier, le décor du jeu rend la lecture inexploitable.
+- Prétraitement : masquage des icônes kama (jaunes, sinon lues comme un « 4 » collé au prix), niveaux de gris inversés, agrandissement ×2, seuillage.
+- **Deux passes** : une lecture complète repère les rangées et les colonnes (« Lot », « ACHETER », niveau), puis une lecture de la seule colonne des prix en chiffres uniquement.
+- Les noms lus sont rapprochés du catalogue avec une tolérance aux fautes (« Coller de Gargandyas » → Collier de Gargandyas). Le niveau lu départage les homonymes.
+- Les ressources hors catalogue (non utilisées par les recettes du focus) sont ignorées.
+
+| Écran | Ce qui est enregistré |
+|---|---|
+| Liste HDV (équipements ou ressources) | prix moyen de chaque ligne |
+| Détail d'un équipement | prix des annonces (5 plus bas) |
+| Détail d'une ressource | prix des lots x1 / x10 / x100 |
+| Cours du marché, onglet 30 jours | nombre d'articles vendus |
 
 ## Plan de scan
 
@@ -110,5 +126,7 @@ src/entonnoir.js   estimation (pour prioriser) et base d'évaluation (pour déci
 src/priorites.js   listes de scan, tags de priorité, plan de scan
 scripts/catalogue.mjs  génération du catalogue depuis DofusDB
 data/catalogue.json    catalogue généré
+src/ocr/           prétraitement, lecteurs d'écrans, rapprochement des noms
 tests/             tests du moteur (node --test)
+tests/ocr/         test OCR sur de vraies captures (npm run test:ocr)
 ```
