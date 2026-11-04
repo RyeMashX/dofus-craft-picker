@@ -83,7 +83,7 @@ export const MODES = {
 };
 
 // Lit, dans l'image courante, le seul écran correspondant au mode choisi.
-// Retourne { type, lecture } ou null si rien d'exploitable.
+// Retourne { type, lecture, utile } (utile = faux si rien d'exploitable n'a été lu).
 export async function scanner(zones, mode, onProgres) {
   const { canvas, frame } = image();
   const rec0 = await reconnaisseur(onProgres);
@@ -97,7 +97,7 @@ export async function scanner(zones, mode, onProgres) {
   const utile = ecran === 'courbe' ? lecture.vendus != null
     : ecran === 'detail' ? !!(lecture.titre && lecture.annonces.length)
     : lecture.length > 0;
-  return utile ? { type: ecran, lecture } : null;
+  return { type: ecran, lecture, utile };
 }
 
 // Diagnostic du dernier scan : image capturée, zone lue, texte reconnu

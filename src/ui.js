@@ -6,6 +6,7 @@ import { itemsFocus, baseEvaluation } from './entonnoir.js';
 import { listesScan, planScan } from './priorites.js';
 import { allouer } from './allocation.js';
 import { identifier, appliquer } from './ocr/identification.js';
+import { trouver, normaliser } from './ocr/correspondance.js';
 import * as Cap from './capture.js';
 
 let root = document; // la page, ou la fenêtre flottante
@@ -125,6 +126,7 @@ function choisirMode(mode) {
   if (!mode || S.etat.mode === mode) return;
   S.etat.mode = mode; sauverEtat();
   const sel = $('#mode'); if (sel) sel.value = mode;
+  renderSaisie();
 }
 
 const COPIER = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
@@ -269,6 +271,7 @@ function titreLecture(L) {
 }
 
 function renderLecture() {
+  renderSaisie();
   const L = S.derniere;
   if (!L) { $('#lecture').innerHTML = S.diagSeul ? `<div class="lect">${diagHtml(true)}</div>` : ''; brancherDiag(); return; }
   const etat = L.enregistre ? '<span class="tag ok-tag">enregistré</span>' : '<span class="tag faire">non enregistré</span>';
@@ -286,6 +289,99 @@ function renderLecture() {
   on('#lect-fermer', () => { L.edition = false; renderLecture(); });
   on('#lect-valider', validerEdition);
   on('#lect-annuler', () => { S.base = importer(L.avant); sauverBase(); S.derniere = null; statut('Lecture annulée : la base est revenue à son état précédent.'); renderTout(); });
+}
+
+// ---------- saisie manuelle (quand la lecture échoue, ou bouton « Saisir ») ----------
+const CHAMPS_SAISIE = {
+  courbe: [['vendus', 'Vendus sur 30 j', '']],
+  annonces: [['prix', 'Prix les plus bas', 'séparés par des virgules']],
+  lots: [['x1', 'x1', ''], ['x10', 'x10', ''], ['x100', 'x100', '']],
+  liste: [['prixMoyen', 'Prix moyen', '']],
+};
+
+function candidatsSaisie(mode) {
+  const items = S.catalogue.items.map(i => ({ id: i.id, nom: i.nom, niveau: i.niveau, genre: 'item', info: `${i.niveau} · ${i.type}` }));
+  const res = Object.values(S.catalogue.ressources).map(r => ({ id: r.id, nom: r.nom, niveau: r.niveau, genre: 'ressource', info: `${r.niveau} · ressource` }));
+  return mode === 'lots' ? res : mode === 'liste' ? [...items, ...res] : items;
+}
+
+// Retrouve l'objet à partir du nom tapé : nom exact (au plus haut niveau en cas d'homonymes), sinon le plus proche
+function objetSaisi(nom, mode) {
+  const cands = candidatsSaisie(mode), n = normaliser(nom);
+  const exacts = cands.filter(c => normaliser(c.nom) === n).sort((a, b) => b.niveau - a.niveau);
+  return exacts[0] ?? trouver(nom, cands, { confianceMin: 0.8 })?.candidat ?? null;
+}
+
+// Préremplissage à partir d'une lecture ratée : nom deviné et valeurs déjà lues
+function preremplir(type, lecture) {
+  const v = {};
+  let titre = '';
+  if (type === 'courbe') { titre = lecture.titre ?? ''; if (lecture.vendus != null) v.vendus = lecture.vendus; }
+  if (type === 'detail') {
+    titre = lecture.titre ?? '';
+    const prix = (lecture.annonces ?? []).filter(a => a.prix);
+    if (S.etat.mode === 'lots') { for (const a of prix) if (a.lot) v['x' + a.lot] = a.prix; }
+    else if (prix.length) v.prix = prix.map(a => a.prix).join(', ');
+  }
+  const devine = titre ? trouver(titre, candidatsSaisie(S.etat.mode), { confianceMin: 0.5 })?.candidat : null;
+  return { nom: devine?.nom ?? '', valeurs: v };
+}
+
+function ouvrirSaisie(pre = {}) { S.saisie = { nom: pre.nom ?? '', valeurs: pre.valeurs ?? {}, erreur: null }; }
+
+function renderSaisie() {
+  const zone = $('#saisie');
+  if (!zone) return;
+  if (!S.saisie || !S.catalogue) { zone.innerHTML = ''; return; }
+  const mode = S.etat.mode, sz = S.saisie;
+  const vus = new Set();
+  const options = candidatsSaisie(mode).filter(c => !vus.has(c.nom) && vus.add(c.nom))
+    .sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(c => `<option value="${esc(c.nom)}">${esc(c.info)}</option>`).join('');
+  zone.innerHTML = `<div class="lect saisie"><div class="row"><h3>Saisie manuelle · ${esc(Cap.MODES[mode].libelle)}</h3><div class="spacer"></div>
+      <button id="saisie-fermer" class="link small">fermer</button></div>
+    <input id="saisie-nom" list="dl-saisie" placeholder="${mode === 'lots' ? 'Nom de la ressource' : mode === 'liste' ? "Nom de l'item ou de la ressource" : "Nom de l'item"}" value="${esc(sz.nom)}" autocomplete="off">
+    <datalist id="dl-saisie">${options}</datalist>
+    <div class="row small">${CHAMPS_SAISIE[mode].map(([k, l, ph]) => `<label class="sel">${l} <input class="${k === 'prix' ? 'grow' : 'num big'}" data-saisie="${k}" inputmode="numeric" placeholder="${ph}" value="${esc(sz.valeurs[k] ?? '')}"></label>`).join('')}</div>
+    ${sz.erreur ? `<p class="small bad">${esc(sz.erreur)}</p>` : ''}
+    <div class="row"><button id="saisie-ok" class="primary small">Enregistrer</button></div></div>`;
+  $('#saisie-fermer').onclick = () => { S.saisie = null; renderSaisie(); };
+  $('#saisie-ok').onclick = enregistrerSaisie;
+  $('#saisie-nom').onchange = e => { sz.nom = e.target.value; };
+  $$('#saisie [data-saisie]').forEach(el => el.oninput = () => { sz.valeurs[el.dataset.saisie] = el.value; });
+  root.querySelectorAll('#saisie input').forEach(el => el.onkeydown = e => { if (e.key === 'Enter') enregistrerSaisie(); });
+  if (!sz.nom) $('#saisie-nom').focus();
+}
+
+function enregistrerSaisie() {
+  const sz = S.saisie, mode = S.etat.mode;
+  sz.nom = $('#saisie-nom').value;
+  $$('#saisie [data-saisie]').forEach(el => { sz.valeurs[el.dataset.saisie] = el.value; });
+  const o = objetSaisi(sz.nom, mode);
+  const erreur = m => { sz.erreur = m; renderSaisie(); };
+  if (!o) return erreur(`« ${sz.nom} » introuvable dans le catalogue : choisis un nom dans la liste.`);
+  const v = sz.valeurs, n = k => nombreSaisi(v[k] ?? '');
+  let L;
+  if (mode === 'courbe') {
+    if (n('vendus') == null) return erreur('Indique le nombre de ventes sur 30 jours.');
+    L = { type: 'courbe', identifie: { objet: o, vendus: n('vendus'), trenteJours: true } };
+  } else if (mode === 'annonces') {
+    const prix = String(v.prix ?? '').split(/[,;]/).map(nombreSaisi).filter(Boolean);
+    if (!prix.length) return erreur('Indique au moins un prix.');
+    L = { type: 'detail', identifie: { objet: o, annonces: prix.map(p => ({ lot: 1, prix: p, sur: true })) } };
+  } else if (mode === 'lots') {
+    const annonces = [1, 10, 100].map(t => ({ lot: t, prix: n('x' + t), sur: true })).filter(a => a.prix);
+    if (!annonces.length) return erreur('Indique au moins un prix de lot.');
+    L = { type: 'detail', identifie: { objet: o, annonces } };
+  } else {
+    if (n('prixMoyen') == null) return erreur('Indique le prix moyen.');
+    L = { type: 'liste', identifie: [{ ...o, prixMoyen: n('prixMoyen') }] };
+  }
+  Object.assign(L, { avant: exporter(S.base), date: Date.now(), edition: false, manuel: true });
+  L.messages = enregistrer(L);
+  L.enregistre = L.messages.length > 0;
+  S.derniere = L; S.saisie = null; S.diagSeul = false;
+  statut(L.enregistre ? `Saisi : ${L.messages.join(' · ')}` : 'Rien à enregistrer.');
+  renderTout();
 }
 
 // Diagnostic : ce que l'outil a réellement regardé et lu (ouvert d'office si la lecture a échoué)
@@ -415,12 +511,14 @@ async function scanner() {
   const b = $('#scan'); b.classList.add('busy'); b.disabled = true;
   const mode = S.etat.mode;
   S.diagSeul = false;
+  S.saisie = null;
   try {
     const brut = await Cap.scanner(S.etat.zones, mode, m => m.status && statut(`Lecture : ${m.status}…`));
-    if (!brut) {
+    if (!brut.utile) {
       S.derniere = null;
-      statut(`Rien lu dans la zone « ${Cap.MODES[mode].libelle} ». Vérifie que la fenêtre est ouverte et visible, ou redéfinis les zones.`);
+      statut(`Lecture impossible (${Cap.MODES[mode].libelle}). Saisis le nom et la valeur ci-dessous, ou vérifie la zone dans le diagnostic.`);
       S.diagSeul = true;
+      ouvrirSaisie(preremplir(brut.type, brut.lecture));
     } else {
       const L = { type: brut.type, identifie: identifier(brut.type, brut.lecture, S.catalogue), avant: exporter(S.base), date: Date.now(), edition: false };
       const o = L.identifie.objet;
@@ -433,6 +531,7 @@ async function scanner() {
         L.enregistre = L.messages.length > 0;
       }
       S.derniere = L;
+      if (!L.enregistre && !o && L.type !== 'liste') ouvrirSaisie(preremplir(L.type, brut.lecture));
       statut(L.enregistre ? 'Enregistré. Corrige avec « Modifier » si besoin, sinon passe au suivant.' : 'Lecture non enregistrée.');
     }
   } catch (e) { statut('Erreur de lecture : ' + e.message); }
@@ -494,7 +593,8 @@ function brancher() {
   $('#scan').onclick = scanner;
   $('#mode').innerHTML = Object.entries(Cap.MODES).map(([k, m]) => `<option value="${k}">${m.libelle}</option>`).join('');
   $('#mode').value = S.etat.mode;
-  $('#mode').onchange = e => { S.etat.mode = e.target.value; sauverEtat(); };
+  $('#mode').onchange = e => { S.etat.mode = e.target.value; sauverEtat(); renderSaisie(); };
+  $('#saisir').onclick = () => { ouvrirSaisie(); renderSaisie(); };
   $('#zones-btn').onclick = ouvrirZones;
   $('#minutes').onchange = e => { S.etat.minutes = Math.max(1, +e.target.value || 10); sauverEtat(); renderTout(); };
   $('#budget').onchange = e => { S.etat.budget = Math.max(0, Number(String(e.target.value).replace(',', '.')) || 0); sauverEtat(); renderTout(); };
