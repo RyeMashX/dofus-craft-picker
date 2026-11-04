@@ -93,3 +93,9 @@ button.copy.fait { color: var(--sc); border-color: var(--sc); line-height: 1.2; 
 .tag.ok-tag { background: var(--sc); color: #fff; }
 pre.brut { white-space: pre-wrap; font-size: 11px; color: var(--muted); background: var(--card2); border: 1px solid var(--line); border-radius: 6px; padding: 6px; max-height: 180px; overflow: auto; margin: 6px 0; }
 #saisie-nom { width: 100%; margin: 4px 0; }
+
+/* Auto-complétion maison (fonctionne aussi dans la fenêtre flottante) */
+.ac { position: relative; }
+.ac-liste { position: absolute; left: 0; right: 0; top: 100%; z-index: 20; background: var(--card2); border: 1px solid var(--accent); border-radius: 6px; margin-top: -2px; max-height: 260px; overflow: auto; }
+.ac-item { padding: 5px 8px; cursor: pointer; }
+.ac-item.on, .ac-item:hover { background: #2a2416; }

@@ -19,7 +19,7 @@ Aucune lecture réseau du client, aucun clic automatisé : uniquement des captur
 2. **Capturer le jeu** : choisis la fenêtre Dofus dans la boîte de partage.
 3. Choisis ce que tu scannes dans **Je scanne** (courbe 30 j, annonces d'un item, lots d'une ressource, liste HDV). Copier un nom depuis le plan règle ce choix tout seul.
 4. Ouvre l'écran en jeu puis **Scanner** : la lecture est enregistrée tout de suite et reste affichée. **Modifier** pour corriger, **annuler** pour revenir à l'état d'avant. Sinon, passe directement au suivant.
-5. Si les fenêtres du jeu ne sont pas à leur place habituelle, **Zones** permet d'encadrer une fois la liste, le panneau détail et la courbe.
+5. Si une fenêtre du jeu n'est pas à sa place habituelle, **Zones** fait encadrer la zone du mode choisi dans « Je scanne » (une seule).
 
 Pour le volume, la courbe doit être sur l'onglet **30 jours** (détecté à sa couleur). Un clic sur une ligne des listes permet aussi la saisie à la main.
 

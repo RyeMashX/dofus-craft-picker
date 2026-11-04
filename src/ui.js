@@ -116,9 +116,15 @@ function renderPlan(listes, p) {
       ${plan.parType.volume} courbes, ${plan.parType.prixItem} annonces, ${plan.parType.ressource} ressources.
       ${plan.restantes ? `<span class="muted">${plan.restantes} autres en attente.</span>` : ''}</p>
     <table class="rt"><tbody>${plan.taches.slice(0, 12).map(t => `<tr><td>${tagHtml(t.tag)}</td><td class="muted">${ACTION[t.type]}</td><td class="cn">${esc(t.nom)}</td>
-      <td class="r"><button class="copy${S.copies.has(t.nom) ? ' fait' : ''}" data-nom="${esc(t.nom)}" data-type="${t.type}" title="Copier le nom, à coller dans la recherche de l'HDV">${S.copies.has(t.nom) ? '✓' : COPIER}</button></td></tr>`).join('')}</tbody></table>
+      <td class="r">${boutonCopier(t.nom, t.type)}</td></tr>`).join('')}</tbody></table>
     ${plan.taches.length > 12 ? `<p class="muted small">… et ${plan.taches.length - 12} autres dans ce plan (détail dans les listes ci-dessous).</p>` : ''}`;
-  $$('#plan button.copy').forEach(b => b.onclick = () => { copier(b.dataset.nom, b); choisirMode(MODE_TACHE[b.dataset.type]); });
+  brancherCopier('#plan');
+}
+
+const boutonCopier = (nom, type) => `<button class="copy${S.copies.has(nom) ? ' fait' : ''}" data-nom="${esc(nom)}" data-type="${type}" title="Copier le nom, à coller dans la recherche de l'HDV">${S.copies.has(nom) ? '✓' : COPIER}</button>`;
+// Copier un nom règle aussi le mode de scan sur le type de tâche (courbe, annonces, lots)
+function brancherCopier(sel) {
+  $$(`${sel} button.copy`).forEach(b => b.onclick = e => { e.stopPropagation(); copier(b.dataset.nom, b); choisirMode(MODE_TACHE[b.dataset.type]); });
 }
 
 const MODE_TACHE = { volume: 'courbe', prixItem: 'annonces', ressource: 'lots' };
@@ -189,8 +195,8 @@ function renderListe(listes) {
   }
   const vides = { volumes: 'Aucun item dans le focus.', prixItems: 'Aucun item au-dessus du seuil de volume pour l\'instant : commence par les volumes.', ressources: 'Les ressources apparaissent une fois des items au-dessus du seuil de volume.' };
   if (!rows.length) { $('#liste').innerHTML = `<p class="muted small">${listes[nom].length ? 'Aucune ligne ne correspond au filtre.' : vides[nom]}</p>`; return; }
-  $('#liste').innerHTML = `<table class="rt"><thead><tr>${cols.map(c => `<th class="sort ${c.cl ?? ''} ${c.cle === cle ? 'on' : ''}" data-cle="${c.cle}">${c.t}${c.cle === cle ? (sens > 0 ? ' ▴' : ' ▾') : ''}</th>`).join('')}</tr></thead>
-    <tbody>${rows.slice(0, S.plusLignes).map(x => `<tr class="click" data-id="${x.id}">${cols.map(c => `<td class="${c.cl ?? ''}">${c.v(x)}</td>`).join('')}</tr>`).join('')}</tbody></table>
+  $('#liste').innerHTML = `<table class="rt"><thead><tr>${cols.map(c => `<th class="sort ${c.cl ?? ''} ${c.cle === cle ? 'on' : ''}" data-cle="${c.cle}">${c.t}${c.cle === cle ? (sens > 0 ? ' ▴' : ' ▾') : ''}</th>`).join('')}<th></th></tr></thead>
+    <tbody>${rows.slice(0, S.plusLignes).map(x => `<tr class="click" data-id="${x.id}">${cols.map(c => `<td class="${c.cl ?? ''}">${c.v(x)}</td>`).join('')}<td class="r">${boutonCopier(x.nom, x.type)}</td></tr>`).join('')}</tbody></table>
     <p class="muted small">${rows.length} lignes${rows.length > S.plusLignes ? ` · <button class="link small" id="plus">afficher plus</button>` : ''}</p>`;
   $$('#liste th.sort').forEach(th => th.onclick = () => {
     const k = th.dataset.cle;
@@ -198,6 +204,7 @@ function renderListe(listes) {
     sauverEtat(); renderTout();
   });
   $$('#liste tr.click').forEach(tr => tr.onclick = () => saisieManuelle(nom, Number(tr.dataset.id)));
+  brancherCopier('#liste');
   const plus = $('#plus'); if (plus) plus.onclick = () => { S.plusLignes += 100; renderTout(); };
 }
 
@@ -329,26 +336,60 @@ function preremplir(type, lecture) {
 
 function ouvrirSaisie(pre = {}) { S.saisie = { nom: pre.nom ?? '', valeurs: pre.valeurs ?? {}, erreur: null }; }
 
+// Auto-complétion maison : la liste native (datalist) ne s'affiche pas dans la fenêtre flottante.
+// Correspondance sur le début des mots, sans accents (« brul » → Alliance Brûlâme). Flèches + Entrée, ou clic.
+function suggestions(texte, mode, max = 8) {
+  const q = normaliser(texte);
+  if (q.length < 2) return [];
+  const mots = q.split(' ');
+  const vus = new Set(), res = [];
+  for (const c of candidatsSaisie(mode)) {
+    const n = normaliser(c.nom);
+    if (vus.has(n)) continue;
+    const ns = n.split(' ');
+    if (!mots.every(m => ns.some(w => w.startsWith(m)))) continue;
+    vus.add(n);
+    res.push({ ...c, rang: (n.startsWith(q) ? 0 : 1) * 1000 - c.niveau });
+  }
+  return res.sort((a, b) => a.rang - b.rang || a.nom.localeCompare(b.nom, 'fr')).slice(0, max);
+}
+
+function brancherAutocompletion(input, liste, mode, onChoix) {
+  let items = [], actif = -1;
+  const afficher = () => {
+    if (!items.length) { liste.classList.add('hidden'); return; }
+    liste.innerHTML = items.map((c, i) => `<div class="ac-item${i === actif ? ' on' : ''}" data-i="${i}">${esc(c.nom)} <span class="muted small">${esc(c.info)}</span></div>`).join('');
+    liste.classList.remove('hidden');
+    liste.querySelectorAll('.ac-item').forEach(el => el.onmousedown = e => { e.preventDefault(); choisir(+el.dataset.i); });
+  };
+  const choisir = i => { const c = items[i]; if (!c) return; input.value = c.nom; items = []; afficher(); onChoix(c.nom); };
+  input.oninput = () => { items = suggestions(input.value, mode); actif = items.length ? 0 : -1; afficher(); S.saisie.nom = input.value; };
+  input.onkeydown = e => {
+    if (e.key === 'ArrowDown' && items.length) { actif = (actif + 1) % items.length; afficher(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp' && items.length) { actif = (actif - 1 + items.length) % items.length; afficher(); e.preventDefault(); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (items.length) choisir(actif); else enregistrerSaisie(); }
+    else if (e.key === 'Escape') { items = []; afficher(); }
+  };
+  input.onblur = () => { items = []; afficher(); };
+}
+
 function renderSaisie() {
   const zone = $('#saisie');
   if (!zone) return;
   if (!S.saisie || !S.catalogue) { zone.innerHTML = ''; return; }
   const mode = S.etat.mode, sz = S.saisie;
-  const vus = new Set();
-  const options = candidatsSaisie(mode).filter(c => !vus.has(c.nom) && vus.add(c.nom))
-    .sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(c => `<option value="${esc(c.nom)}">${esc(c.info)}</option>`).join('');
   zone.innerHTML = `<div class="lect saisie"><div class="row"><h3>Saisie manuelle · ${esc(Cap.MODES[mode].libelle)}</h3><div class="spacer"></div>
       <button id="saisie-fermer" class="link small">fermer</button></div>
-    <input id="saisie-nom" list="dl-saisie" placeholder="${mode === 'lots' ? 'Nom de la ressource' : mode === 'liste' ? "Nom de l'item ou de la ressource" : "Nom de l'item"}" value="${esc(sz.nom)}" autocomplete="off">
-    <datalist id="dl-saisie">${options}</datalist>
+    <div class="ac"><input id="saisie-nom" placeholder="${mode === 'lots' ? 'Nom de la ressource' : mode === 'liste' ? "Nom de l'item ou de la ressource" : "Nom de l'item"}" value="${esc(sz.nom)}" autocomplete="off" spellcheck="false">
+      <div id="ac-liste" class="ac-liste hidden"></div></div>
     <div class="row small">${CHAMPS_SAISIE[mode].map(([k, l, ph]) => `<label class="sel">${l} <input class="${k === 'prix' ? 'grow' : 'num big'}" data-saisie="${k}" inputmode="numeric" placeholder="${ph}" value="${esc(sz.valeurs[k] ?? '')}"></label>`).join('')}</div>
     ${sz.erreur ? `<p class="small bad">${esc(sz.erreur)}</p>` : ''}
     <div class="row"><button id="saisie-ok" class="primary small">Enregistrer</button></div></div>`;
   $('#saisie-fermer').onclick = () => { S.saisie = null; renderSaisie(); };
   $('#saisie-ok').onclick = enregistrerSaisie;
-  $('#saisie-nom').onchange = e => { sz.nom = e.target.value; };
+  brancherAutocompletion($('#saisie-nom'), $('#ac-liste'), mode, nom => { sz.nom = nom; root.querySelector('#saisie [data-saisie]')?.focus(); });
   $$('#saisie [data-saisie]').forEach(el => el.oninput = () => { sz.valeurs[el.dataset.saisie] = el.value; });
-  root.querySelectorAll('#saisie input').forEach(el => el.onkeydown = e => { if (e.key === 'Enter') enregistrerSaisie(); });
+  $$('#saisie [data-saisie]').forEach(el => el.onkeydown = e => { if (e.key === 'Enter') enregistrerSaisie(); });
   if (!sz.nom) $('#saisie-nom').focus();
 }
 
@@ -540,29 +581,28 @@ async function scanner() {
 }
 
 // ---------- zones ----------
-const ETAPES = [
-  ['liste', 'Liste HDV', 'Encadre la liste des objets (colonnes Nom, Niveau, Prix moyen).'],
-  ['detail', 'Panneau détail', 'Encadre le panneau de gauche qui s\'ouvre quand tu cliques un objet (nom, prix moyen, lots / annonces). Prends toute sa hauteur, annonces comprises.'],
-  ['courbe', 'Cours du marché', 'Encadre la fenêtre « Cours du marché » (titre, onglets, courbe).'],
-];
+// Une seule zone à encadrer : celle du mode choisi dans « Je scanne » (annonces et lots partagent le panneau détail).
+const ZONES = {
+  liste: ['Liste HDV', 'Encadre la liste des objets (colonnes Nom, Niveau, Prix moyen).'],
+  detail: ['Panneau détail', 'Encadre le panneau de gauche qui s\'ouvre quand tu cliques un objet (nom, prix moyen, lots ou annonces). Prends toute sa hauteur, annonces comprises.'],
+  courbe: ['Cours du marché', 'Encadre la fenêtre « Cours du marché » (titre, onglets, nombre d\'articles vendus).'],
+};
 function ouvrirZones() {
   let frame;
   try { frame = Cap.image().canvas; } catch (e) { statut(e.message); return; }
-  const zones = { ...S.etat.zones };
-  let etape = 0, drag = null;
+  const cle = Cap.MODES[S.etat.mode].zone;
+  const [titre, aide] = ZONES[cle];
+  let zone = S.etat.zones[cle], drag = null;
   const modal = $('#zones-modal'), cv = $('#zones-canvas'), ctx = cv.getContext('2d');
   cv.width = frame.width; cv.height = frame.height;
   const dessiner = () => {
     ctx.drawImage(frame, 0, 0);
-    ETAPES.forEach(([cle], i) => {
-      const z = zones[cle]; ctx.lineWidth = Math.max(3, frame.width / 500);
-      ctx.strokeStyle = i === etape ? '#f0b84a' : '#3cbf63aa';
-      ctx.strokeRect(z.x * cv.width, z.y * cv.height, z.w * cv.width, z.h * cv.height);
-    });
-    if (drag) { ctx.strokeStyle = '#f0b84a'; ctx.strokeRect(drag.x0, drag.y0, drag.x1 - drag.x0, drag.y1 - drag.y0); }
-    const [, t, h] = ETAPES[etape];
-    $('#zones-title').textContent = `Zone ${etape + 1} / 3 : ${t}`;
-    $('#zones-help').textContent = h + ' Glisse pour dessiner. Le cadre actuel est en jaune.';
+    ctx.lineWidth = Math.max(3, frame.width / 500);
+    ctx.strokeStyle = '#f0b84a';
+    if (drag) ctx.strokeRect(drag.x0, drag.y0, drag.x1 - drag.x0, drag.y1 - drag.y0);
+    else ctx.strokeRect(zone.x * cv.width, zone.y * cv.height, zone.w * cv.width, zone.h * cv.height);
+    $('#zones-title').textContent = `Zone : ${titre}`;
+    $('#zones-help').textContent = `${aide} Glisse pour dessiner. La zone actuelle est en jaune.`;
   };
   const pos = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * cv.width / r.width, y: (e.clientY - r.top) * cv.height / r.height }; };
   cv.onmousedown = e => { const p = pos(e); drag = { x0: p.x, y0: p.y, x1: p.x, y1: p.y }; };
@@ -572,15 +612,14 @@ function ouvrirZones() {
     const x = Math.min(drag.x0, drag.x1), y = Math.min(drag.y0, drag.y1), w = Math.abs(drag.x1 - drag.x0), h = Math.abs(drag.y1 - drag.y0);
     drag = null;
     if (w > 20 && h > 20) {
-      zones[ETAPES[etape][0]] = { x: x / cv.width, y: y / cv.height, w: w / cv.width, h: h / cv.height };
-      etape++;
-      if (etape === ETAPES.length) { S.etat.zones = zones; sauverEtat(); fermer(); statut('Zones enregistrées.'); return; }
+      S.etat.zones = { ...S.etat.zones, [cle]: { x: x / cv.width, y: y / cv.height, w: w / cv.width, h: h / cv.height } };
+      sauverEtat(); fermer(); statut(`Zone « ${titre} » enregistrée.`); return;
     }
     dessiner();
   };
   const fermer = () => modal.classList.add('hidden');
   $('#zones-cancel').onclick = fermer;
-  $('#zones-default').onclick = () => { S.etat.zones = ZONES_DEFAUT; sauverEtat(); fermer(); statut('Zones par défaut rétablies.'); };
+  $('#zones-default').onclick = () => { S.etat.zones = { ...S.etat.zones, [cle]: ZONES_DEFAUT[cle] }; sauverEtat(); fermer(); statut(`Zone « ${titre} » remise par défaut.`); };
   modal.classList.remove('hidden');
   dessiner();
 }
