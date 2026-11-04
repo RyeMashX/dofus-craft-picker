@@ -99,3 +99,5 @@ pre.brut { white-space: pre-wrap; font-size: 11px; color: var(--muted); backgrou
 .ac-liste { position: absolute; left: 0; right: 0; top: 100%; z-index: 20; background: var(--card2); border: 1px solid var(--accent); border-radius: 6px; margin-top: -2px; max-height: 260px; overflow: auto; }
 .ac-item { padding: 5px 8px; cursor: pointer; }
 .ac-item.on, .ac-item:hover { background: #2a2416; }
+button.retirer { padding: 0 6px; line-height: 1.4; color: var(--muted); background: transparent; font-size: 12px; }
+button.retirer:hover { color: var(--ec); border-color: var(--ec); }

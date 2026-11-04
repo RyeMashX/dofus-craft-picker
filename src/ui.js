@@ -239,9 +239,11 @@ function saisieManuelle(liste, id) {
 function resume(L) {
   const r = L.identifie;
   if (L.type === 'liste') {
-    const ok = r.filter(x => !x.inconnu);
-    return `<table class="rt"><tbody>${ok.map(x => `<tr><td class="cn">${esc(x.nom)}</td><td class="r">${fmt(x.prixMoyen)}</td></tr>`).join('')}</tbody></table>
-      ${r.length > ok.length ? `<p class="muted small">${r.length - ok.length} lignes hors catalogue ignorées.</p>` : ''}`;
+    const hors = r.filter(x => x.inconnu).length, retires = r.filter(x => x.retire).length;
+    return `<table class="rt"><tbody>${r.map((x, i) => x.inconnu || x.retire ? '' : `<tr><td class="cn">${esc(x.nom)}</td><td class="r">${fmt(x.prixMoyen)}</td>
+        <td class="r"><button class="retirer" data-i="${i}" title="Retirer cette ligne (mauvais objet reconnu)">✕</button></td></tr>`).join('')}</tbody></table>
+      ${hors ? `<p class="muted small">${hors} lignes hors catalogue ignorées.</p>` : ''}
+      ${retires ? `<p class="muted small">${retires} ligne${retires > 1 ? 's' : ''} retirée${retires > 1 ? 's' : ''}. Pour enregistrer le bon objet : « Saisir ».</p>` : ''}`;
   }
   if (!r.objet) return `<p class="small">Titre lu : « ${esc(r.titre ?? '?')} ».</p>`;
   if (L.type === 'courbe') return `<p class="small">${fmt(r.vendus)} vendus sur 30 jours</p>`;
@@ -255,10 +257,10 @@ function resume(L) {
 function formulaire(L) {
   const r = L.identifie;
   if (L.type === 'liste') {
-    return `<table class="rt"><tbody>${r.map((x, i) => `
-      <tr class="${x.inconnu ? 'off' : ''}"><td><input type="checkbox" data-i="${i}" class="chk" ${x.inconnu ? 'disabled' : 'checked'}></td>
-      <td class="cn">${x.inconnu ? `<span class="muted">hors catalogue : ${esc(x.inconnu)}</span>` : esc(x.nom)}</td>
-      <td class="r"><input class="num" data-i="${i}" data-champ="prixMoyen" value="${x.prixMoyen ?? ''}" ${x.inconnu ? 'disabled' : ''}></td></tr>`).join('')}</tbody></table>`;
+    return `<table class="rt"><tbody>${r.map((x, i) => x.inconnu || x.retire ? '' : `
+      <tr><td class="cn">${esc(x.nom)}</td>
+      <td class="r"><input class="num" data-i="${i}" data-champ="prixMoyen" value="${x.prixMoyen ?? ''}"></td>
+      <td class="r"><button class="retirer" data-i="${i}" title="Retirer cette ligne (mauvais objet reconnu)">✕</button></td></tr>`).join('')}</tbody></table>`;
   }
   if (L.type === 'courbe') return `<div class="row small">Vendus sur 30 jours <input class="num" data-champ="vendus" value="${r.vendus ?? ''}"></div>`;
   if (r.objet.genre === 'ressource') {
@@ -272,7 +274,7 @@ function formulaire(L) {
 const TITRES = { courbe: 'Courbe 30 j', liste: 'Liste HDV' };
 function titreLecture(L) {
   const r = L.identifie;
-  if (L.type === 'liste') return `Liste HDV · ${r.filter(x => !x.inconnu).length} prix moyens`;
+  if (L.type === 'liste') return `Liste HDV · ${r.filter(x => !x.inconnu && !x.retire).length} prix moyens`;
   const genre = L.type === 'courbe' ? TITRES.courbe : r.objet?.genre === 'ressource' ? 'Lots' : 'Annonces';
   return `${genre} · ${r.objet ? esc(r.objet.nom) : 'objet non reconnu'}`;
 }
@@ -292,6 +294,7 @@ function renderLecture() {
     <div class="row">${boutons}</div>${diagHtml(!L.enregistre)}</div>`;
   const on = (id, fn) => { const el = $(id); if (el) el.onclick = fn; };
   brancherDiag();
+  $$('#lecture button.retirer').forEach(b => b.onclick = () => retirerLigne(+b.dataset.i));
   on('#lect-modifier', () => { L.edition = true; renderLecture(); });
   on('#lect-fermer', () => { L.edition = false; renderLecture(); });
   on('#lect-valider', validerEdition);
@@ -443,15 +446,28 @@ function brancherDiag() {
 
 // Enregistre une lecture (identifiée) dans la base ; retourne les messages
 function enregistrer(L) {
-  const res = appliquer(S.base, L.type, L.type === 'liste' ? L.identifie.filter(x => !x.inconnu && x.garder !== false) : L.identifie, L.date);
+  const res = appliquer(S.base, L.type, L.type === 'liste' ? L.identifie.filter(x => !x.inconnu && !x.retire) : L.identifie, L.date);
   sauverBase();
   return res.enregistres;
+}
+
+// Retire une ligne d'une lecture de liste : la base est recalculée sans elle (depuis l'état d'avant la lecture)
+function retirerLigne(i) {
+  const L = S.derniere, x = L.identifie[i];
+  if (!x) return;
+  if (L.edition) L.identifie.forEach((y, k) => { const el = $(`#lecture input[data-champ="prixMoyen"][data-i="${k}"]`); if (el) y.prixMoyen = nombreSaisi(el.value); });
+  x.retire = true;
+  S.base = importer(L.avant);
+  L.messages = enregistrer(L);
+  L.enregistre = L.messages.length > 0;
+  statut(`« ${x.nom} » retiré de cette lecture.`);
+  renderTout();
 }
 
 function validerEdition() {
   const L = S.derniere, r = L.identifie;
   const val = (champ, i) => nombreSaisi($(`#lecture input[data-champ="${champ}"]${i != null ? `[data-i="${i}"]` : ''}`)?.value ?? '');
-  if (L.type === 'liste') r.forEach((x, i) => { x.prixMoyen = val('prixMoyen', i); x.garder = !!$(`#lecture input.chk[data-i="${i}"]`)?.checked; });
+  if (L.type === 'liste') r.forEach((x, i) => { if (!x.inconnu && !x.retire) x.prixMoyen = val('prixMoyen', i); });
   else if (L.type === 'courbe') { r.vendus = val('vendus'); r.trenteJours = true; }
   else if (r.objet.genre === 'ressource') r.annonces = [[1, 'x1'], [10, 'x10'], [100, 'x100']].map(([lot, c]) => ({ lot, prix: val(c), sur: true })).filter(a => a.prix);
   else r.annonces = $$('#lecture input[data-champ="prix"]').map(el => ({ lot: 1, prix: nombreSaisi(el.value), sur: true })).filter(a => a.prix);
