@@ -1,0 +1,10 @@
+{
+  "name": "dofus-craft-picker",
+  "version": "0.1.0",
+  "description": "Choisir l'item Dofus à crafter puis forgemager le plus rentable",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  }
+}
