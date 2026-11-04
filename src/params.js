@@ -13,7 +13,7 @@ export const PARAMS = {
   joursParMois: 30,         // max de crafts d'un même item = volume / 30 (1 jour de vente)
 
   // Achat des ressources par lots (voir README, "Règle des lots")
-  profondeur: { 1: 3, 10: 2, 100: 1 }, // nb de lots supposés dispo au prix affiché
+  profondeur: { 1: 3, 10: 2, 100: 1, 1000: 1 }, // nb de lots supposés dispo au prix affiché
   surcout: 0.10,            // au-delà, chaque lot est compté +10 %
   revalorisationSurplus: 0.8, // surplus revendu à 80 % du prix x1 (ou du prix x10 par paquets de 10)
   gainMinSurplus: 0.20,     // on n'achète "trop" que si ça fait gagner au moins 20 %
@@ -27,7 +27,7 @@ export const PARAMS = {
   validite: {               // durée de validité d'un relevé, en jours
     volume: 14,             // volume de ventes : rafraîchi toutes les 2 semaines
     prixItem: 2,            // annonces en vente d'un équipement
-    ressources: 3,          // lots x1/x10/x100 d'une ressource
+    ressources: 3,          // lots x1/x10/x100/x1000 d'une ressource
     prixMoyen: 14,          // prix moyen lu dans la liste HDV (sert seulement à prioriser)
   },
 

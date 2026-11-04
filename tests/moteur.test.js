@@ -12,25 +12,25 @@ const etoffe = { 1: 2874, 10: 22949, 100: 700012 };
 
 test('lots : besoin de 2 → x1, le x10 ne fait gagner que 14 % (seuil 20 %)', () => {
   const r = planAchat(2, etoffe, p);
-  assert.deepEqual(r.lots, { 1: 2, 10: 0, 100: 0 });
+  assert.deepEqual(r.lots, { 1: 2, 10: 0, 100: 0, 1000: 0 });
   assert.equal(r.cout, 5748);
 });
 
 test('lots : besoin de 2, x10 à peine moins cher → on reste en x1', () => {
   const r = planAchat(2, { 1: 2600, 10: 21000 }, p);
-  assert.deepEqual(r.lots, { 1: 2, 10: 0, 100: 0 });
+  assert.deepEqual(r.lots, { 1: 2, 10: 0, 100: 0, 1000: 0 });
 });
 
 test('lots : besoin de 7 → un x10 (24 % moins cher) et on revend le surplus', () => {
   const r = planAchat(7, etoffe, p);
-  assert.deepEqual(r.lots, { 1: 0, 10: 1, 100: 0 });
+  assert.deepEqual(r.lots, { 1: 0, 10: 1, 100: 0, 1000: 0 });
   assert.equal(r.surplus, 3);
   assert.equal(Math.round(r.cout), 16202);
 });
 
 test('lots : besoin de 150 → 15 x10, 2 au prix affiché et 13 à +10 %', () => {
   const r = planAchat(150, etoffe, p);
-  assert.deepEqual(r.lots, { 1: 0, 10: 15, 100: 0 });
+  assert.deepEqual(r.lots, { 1: 0, 10: 15, 100: 0, 1000: 0 });
   assert.equal(Math.round(r.cout), 374069);
   assert.equal(r.coutOptimiste, 344235);
   assert.equal(r.alerte, false);
@@ -43,7 +43,7 @@ test('lots : la revente du surplus ne rapporte jamais plus que son prix d\'achat
 
 test('lots : pas de x1 affiché, besoin de 4 → un x10', () => {
   const r = planAchat(4, { 10: 1000 }, p);
-  assert.deepEqual(r.lots, { 1: 0, 10: 1, 100: 0 });
+  assert.deepEqual(r.lots, { 1: 0, 10: 1, 100: 0, 1000: 0 });
 });
 
 test('lots : aucun prix → null', () => {
@@ -101,4 +101,11 @@ test('allocation : effort ignoré → 12 × B (plus de marge brute)', () => {
   const r = allouer(items, offres, 30000000, { ...pp, coutEffortParCraft: 0 });
   assert.equal(r.crafts, 12);
   assert.ok(Math.abs(r.marge - 9000000) < 1);
+});
+
+test('lots : x1000 retenu pour un gros besoin quand il est le moins cher', () => {
+  const pepite = { 1: 120, 10: 1150, 100: 11000, 1000: 90000 };
+  const r = planAchat(2000, pepite, p);
+  assert.equal(r.lots[1000], 2);
+  assert.equal(r.surplus, 0);
 });

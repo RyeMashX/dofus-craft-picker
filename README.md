@@ -35,7 +35,7 @@ Pour le volume, la courbe doit être sur l'onglet **30 jours** (détecté à sa 
 |---|---|
 | Liste HDV (équipements ou ressources) | prix moyen de chaque ligne |
 | Détail d'un équipement | prix des annonces (les 3 plus bas) |
-| Détail d'une ressource | prix des lots x1 / x10 / x100 |
+| Détail d'une ressource | prix des lots x1 / x10 / x100 / x1000 |
 | Cours du marché, onglet 30 jours | nombre d'articles vendus |
 
 ## Fraîcheur des données
@@ -88,9 +88,9 @@ La FM n'est pas comptée en phase initiale (`inclureFm`). V2 : forfait par item,
 
 ### Règle des lots (achat des ressources)
 
-Pour une quantité `q` d'une ressource, l'outil teste toutes les combinaisons de lots x1/x10/x100 et garde la moins chère :
+Pour une quantité `q` d'une ressource, l'outil teste toutes les combinaisons de lots x1/x10/x100/x1000 et garde la moins chère :
 
-1. **Profondeur** : le prix affiché n'est garanti que pour les premiers lots (3 lots x1, 2 lots x10, 1 lot x100). Au-delà, chaque lot est compté **+10 %**, parce que la ligne se vide et que le prix remonte.
+1. **Profondeur** : le prix affiché n'est garanti que pour les premiers lots (3 lots x1, 2 lots x10, 1 lot x100, 1 lot x1000). Au-delà, chaque lot est compté **+10 %**, parce que la ligne se vide et que le prix remonte.
 2. **Surplus** : les unités en trop sont revendues à **80 %** du prix x1 à l'unité, ou à 80 % du prix x10 par paquets de 10 (le plus avantageux), taxe déduite. Une unité revendue ne compte jamais plus que ce qu'elle a coûté.
 3. **Seuil** : on n'achète plus que nécessaire que si ça fait gagner au moins **20 %** par rapport au meilleur plan sans surplus.
 4. **Alerte** : si le plan prudent coûte plus de **20 %** de plus que le plan optimiste (tout au prix affiché), la ressource est marquée **à revérifier** avant achat.

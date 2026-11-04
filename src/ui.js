@@ -156,7 +156,7 @@ function resume(L) {
   if (L.type === 'courbe') return `<p class="small">${fmt(r.vendus)} vendus sur 30 jours</p>`;
   if (r.objet.genre === 'ressource') {
     const lot = t => fmt(r.annonces.find(a => a.lot === t)?.prix);
-    return `<p class="small">x1 <b>${lot(1)}</b> · x10 <b>${lot(10)}</b> · x100 <b>${lot(100)}</b></p>`;
+    return `<p class="small">x1 <b>${lot(1)}</b> · x10 <b>${lot(10)}</b> · x100 <b>${lot(100)}</b>${r.annonces.some(a => a.lot === 1000) ? ` · x1000 <b>${lot(1000)}</b>` : ''}</p>`;
   }
   return `<p class="small">${[...r.annonces].filter(a => a.prix).sort((a, b) => a.prix - b.prix).slice(0, NB_PRIX).map(a => `<b${a.sur ? '' : ' class="bad" title="à vérifier"'}>${fmt(a.prix)}</b>`).join(' · ')}</p>`;
 }
@@ -172,7 +172,7 @@ function formulaire(L) {
   if (L.type === 'courbe') return `<div class="row small">Vendus sur 30 jours <input class="num milliers" inputmode="numeric" data-champ="vendus" value="${fmtSaisie(r.vendus)}"></div>`;
   if (r.objet.genre === 'ressource') {
     const lot = t => r.annonces.find(a => a.lot === t)?.prix ?? '';
-    return `<div class="prix3">${[1, 10, 100].map(t => `<label class="numl"><span>x${t}</span><input class="num big milliers" inputmode="numeric" data-champ="x${t}" value="${fmtSaisie(lot(t))}"></label>`).join('')}</div>`;
+    return `<div class="prix3">${[1, 10, 100, 1000].map(t => `<label class="numl"><span>x${t}</span><input class="num big milliers" inputmode="numeric" data-champ="x${t}" value="${fmtSaisie(lot(t))}"></label>`).join('')}</div>`;
   }
   const tries = [...r.annonces].filter(a => a.prix).sort((a, b) => a.prix - b.prix);
   return champsPrix(tries.map(a => a.prix), i => `data-i="${i}" data-champ="prix"${tries[i] && !tries[i].sur ? ' title="à vérifier" style="border-color:var(--ec)"' : ''}`);
@@ -213,7 +213,7 @@ function renderLecture() {
 const CHAMPS_SAISIE = {
   courbe: [['vendus', 'Vendus sur 30 j', '']],
   annonces: [], // trois champs numérotés (voir champsPrix)
-  lots: [['x1', 'x1', ''], ['x10', 'x10', ''], ['x100', 'x100', '']],
+  lots: [['x1', 'x1', ''], ['x10', 'x10', ''], ['x100', 'x100', ''], ['x1000', 'x1000', '']],
   liste: [['prixMoyen', 'Prix moyen', '']],
 };
 
@@ -323,7 +323,7 @@ function enregistrerSaisie() {
     if (!prix.length) return erreur('Indique au moins un prix.');
     L = { type: 'detail', identifie: { objet: o, annonces: prix.map(p => ({ lot: 1, prix: p, sur: true })) } };
   } else if (mode === 'lots') {
-    const annonces = [1, 10, 100].map(t => ({ lot: t, prix: n('x' + t), sur: true })).filter(a => a.prix);
+    const annonces = [1, 10, 100, 1000].map(t => ({ lot: t, prix: n('x' + t), sur: true })).filter(a => a.prix);
     if (!annonces.length) return erreur('Indique au moins un prix de lot.');
     L = { type: 'detail', identifie: { objet: o, annonces } };
   } else {
@@ -387,7 +387,7 @@ function validerEdition() {
   const val = (champ, i) => nombreSaisi($(`#lecture input[data-champ="${champ}"]${i != null ? `[data-i="${i}"]` : ''}`)?.value ?? '');
   if (L.type === 'liste') r.forEach((x, i) => { if (!x.inconnu && !x.retire) x.prixMoyen = val('prixMoyen', i); });
   else if (L.type === 'courbe') { r.vendus = val('vendus'); r.trenteJours = true; }
-  else if (r.objet.genre === 'ressource') r.annonces = [[1, 'x1'], [10, 'x10'], [100, 'x100']].map(([lot, c]) => ({ lot, prix: val(c), sur: true })).filter(a => a.prix);
+  else if (r.objet.genre === 'ressource') r.annonces = [[1, 'x1'], [10, 'x10'], [100, 'x100'], [1000, 'x1000']].map(([lot, c]) => ({ lot, prix: val(c), sur: true })).filter(a => a.prix);
   else r.annonces = $$('#lecture input[data-champ="prix"]').map(el => ({ lot: 1, prix: nombreSaisi(el.value), sur: true })).filter(a => a.prix);
   S.base = importer(L.avant); // on repart de la base d'avant la lecture
   L.messages = enregistrer(L);
@@ -418,7 +418,7 @@ function renderResultats(cat, p) {
     $('#allocation').innerHTML = '<p class="muted small">Aucun item utilisable pour l\'instant : il faut un volume et un prix de vente récents, et les lots de toutes les ressources relevés depuis moins d\'une semaine. Lance un plan de scan.</p>';
   } else {
     const a = allouer(ev.items, ev.offres, budget, p);
-    const lots = l => [[100, 'x100'], [10, 'x10'], [1, 'x1']].filter(([t]) => l.plan.lots[t]).map(([t, n]) => `${l.plan.lots[t]} × ${n}`).join(' + ');
+    const lots = l => [[1000, 'x1000'], [100, 'x100'], [10, 'x10'], [1, 'x1']].filter(([t]) => l.plan.lots[t]).map(([t, n]) => `${l.plan.lots[t]} × ${n}`).join(' + ');
     $('#allocation').innerHTML = a.choix.length ? `
       <div class="kpis">
         <div class="kpi"><div class="v ok">${fmtK(a.marge)}</div><div class="l">marge, ${pct(a.rendement)}</div></div>

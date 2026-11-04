@@ -2,7 +2,7 @@ import { planAchat } from './lots.js';
 
 // Coût de n crafts d'une recette.
 // recette = [{ id, nom, qte }]   (qte pour 1 craft)
-// offres  = { [idRessource]: { 1, 10, 100, date } }
+// offres  = { [idRessource]: { 1, 10, 100, 1000 } }
 // Les quantités sont cumulées sur les n crafts avant d'appliquer la règle des lots :
 // acheter pour 3 crafts n'est pas 3 fois le coût d'un craft.
 

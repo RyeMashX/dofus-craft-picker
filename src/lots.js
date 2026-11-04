@@ -1,6 +1,6 @@
 // Achat d'une quantité q d'une ressource à l'HDV, par lots de 1, 10 et 100.
 //
-// offre = { 1: prix du lot x1, 10: prix du lot x10, 100: prix du lot x100 }
+// offre = { 1: prix du lot x1, 10: prix du lot x10, 100: prix du lot x100, 1000: prix du lot x1000 }
 // (une taille absente ou null = pas de lot affiché)
 //
 // Règle (cf. README) :
@@ -13,7 +13,7 @@
 //   au meilleur plan sans surplus ;
 // - on calcule aussi le coût "optimiste" (profondeur infinie) : un gros écart = alerte.
 
-export const TAILLES = [1, 10, 100];
+export const TAILLES = [1, 10, 100, 1000];
 
 export function coutLots(taille, n, prixLot, profondeur, surcout) {
   const auPrix = Math.min(n, profondeur);
@@ -44,29 +44,28 @@ export function valeurSurplus(s, offre, plafond, p) {
 }
 
 function meilleursPlans(q, offre, p, profondeur, surcout) {
-  const max100 = dispo(offre, 100) ? Math.ceil(q / 100) : 0;
   let best = null, sansSurplus = null;
   const mieux = (a, b) => !b || a.cout < b.cout - 1e-9 || (Math.abs(a.cout - b.cout) < 1e-9 && a.nbLots < b.nbLots);
+  const cout = (t, n) => n ? coutLots(t, n, offre[t], profondeur[t] ?? 0, surcout) : 0;
+  const max = (t, reste) => dispo(offre, t) ? Math.ceil(reste / t) : 0;
 
-  for (let n100 = 0; n100 <= max100; n100++) {
-    const reste100 = Math.max(0, q - 100 * n100);
-    const max10 = dispo(offre, 10) ? Math.ceil(reste100 / 10) : 0;
-    for (let n10 = 0; n10 <= max10; n10++) {
-      const n1 = Math.max(0, reste100 - 10 * n10);
-      if (n1 > 0 && !dispo(offre, 1)) continue;
+  for (let n1000 = 0; n1000 <= max(1000, q); n1000++) {
+    const r1000 = Math.max(0, q - 1000 * n1000);
+    for (let n100 = 0; n100 <= max(100, r1000); n100++) {
+      const r100 = Math.max(0, r1000 - 100 * n100);
+      for (let n10 = 0; n10 <= max(10, r100); n10++) {
+        const n1 = Math.max(0, r100 - 10 * n10);
+        if (n1 > 0 && !dispo(offre, 1)) continue;
 
-      const brut =
-        (n100 ? coutLots(100, n100, offre[100], profondeur[100] ?? 0, surcout) : 0) +
-        (n10 ? coutLots(10, n10, offre[10], profondeur[10] ?? 0, surcout) : 0) +
-        (n1 ? coutLots(1, n1, offre[1], profondeur[1] ?? 0, surcout) : 0);
+        const brut = cout(1000, n1000) + cout(100, n100) + cout(10, n10) + cout(1, n1);
+        const achete = 1000 * n1000 + 100 * n100 + 10 * n10 + n1;
+        const surplus = achete - q;
+        const credit = valeurSurplus(surplus, offre, brut / achete, p);
+        const plan = { lots: { 1: n1, 10: n10, 100: n100, 1000: n1000 }, achete, surplus, coutBrut: brut, cout: brut - credit, nbLots: n1000 + n100 + n10 + n1 };
 
-      const achete = 100 * n100 + 10 * n10 + n1;
-      const surplus = achete - q;
-      const credit = valeurSurplus(surplus, offre, brut / achete, p);
-      const plan = { lots: { 1: n1, 10: n10, 100: n100 }, achete, surplus, coutBrut: brut, cout: brut - credit, nbLots: n100 + n10 + n1 };
-
-      if (mieux(plan, best)) best = plan;
-      if (surplus === 0 && mieux(plan, sansSurplus)) sansSurplus = plan;
+        if (mieux(plan, best)) best = plan;
+        if (surplus === 0 && mieux(plan, sansSurplus)) sansSurplus = plan;
+      }
     }
   }
   return { best, sansSurplus };
@@ -77,12 +76,24 @@ function choisir({ best, sansSurplus }, p) {
   return best.cout < sansSurplus.cout * (1 - p.gainMinSurplus) ? best : sansSurplus;
 }
 
+// Cache : un même besoin avec les mêmes prix et réglages n'est calculé qu'une fois
+// (l'onglet Données et le plan de scan refont souvent les mêmes calculs).
+const cache = new Map();
 export function planAchat(q, offre, p) {
-  if (q <= 0) return { q, lots: { 1: 0, 10: 0, 100: 0 }, achete: 0, surplus: 0, coutBrut: 0, cout: 0, nbLots: 0, coutOptimiste: 0, ecart: 0, alerte: false };
+  const cle = `${q}|${offre?.[1]}|${offre?.[10]}|${offre?.[100]}|${offre?.[1000]}|${JSON.stringify(p.profondeur)}|${p.surcout}|${p.revalorisationSurplus}|${p.gainMinSurplus}|${p.ecartAlerte}|${p.taxeVente}`;
+  if (cache.has(cle)) return cache.get(cle);
+  const r = calculerPlanAchat(q, offre, p);
+  if (cache.size > 20000) cache.clear();
+  cache.set(cle, r);
+  return r;
+}
+
+function calculerPlanAchat(q, offre, p) {
+  if (q <= 0) return { q, lots: { 1: 0, 10: 0, 100: 0, 1000: 0 }, achete: 0, surplus: 0, coutBrut: 0, cout: 0, nbLots: 0, coutOptimiste: 0, ecart: 0, alerte: false };
   if (prixUnitaireMin(offre) == null) return null; // aucun prix connu
 
   const prudent = choisir(meilleursPlans(q, offre, p, p.profondeur, p.surcout), p);
-  const inf = { 1: Infinity, 10: Infinity, 100: Infinity };
+  const inf = { 1: Infinity, 10: Infinity, 100: Infinity, 1000: Infinity };
   const optimiste = choisir(meilleursPlans(q, offre, p, inf, 0), p);
   const ecart = optimiste.cout > 0 ? prudent.cout / optimiste.cout - 1 : 0;
 

@@ -37,7 +37,7 @@ export function majPrixMoyenItem(base, itemId, prixMoyen, date = Date.now()) {
   return base;
 }
 
-// offre = { 1: prix x1, 10: prix x10, 100: prix x100 } (tailles absentes = pas de lot)
+// offre = { 1: prix x1, 10: prix x10, 100: prix x100, 1000: prix x1000 } (tailles absentes = pas de lot)
 export function majRessource(base, resId, offre, date = Date.now()) {
   ressource(base, resId).lots = { valeurs: { ...offre }, date };
   return base;

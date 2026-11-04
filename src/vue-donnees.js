@@ -43,7 +43,7 @@ function lignesRessources(S, p) {
     const lots = b.lots?.valeurs ?? {};
     return {
       id: Number(id), nom: res.nom, categorie: res.type ?? '?', niveau: res.niveau ?? 0, iconId: res.iconId,
-      x1: lots[1] ?? null, x10: lots[10] ?? null, x100: lots[100] ?? null, nRes: niveauRessource(b),
+      x1: lots[1] ?? null, x10: lots[10] ?? null, x100: lots[100] ?? null, x1000: lots[1000] ?? null, nRes: niveauRessource(b),
       prixMoyen: b.prixMoyen?.valeur ?? null, date: b.lots?.date ?? null,
       utilisations: u.items.length, vendables: u.vendables, usages: u.items,
     };
@@ -69,7 +69,7 @@ const COLS = {
   ],
   ressources: [
     { cle: 'nom', t: 'Nom' }, { cle: 'categorie', t: 'Catégorie' }, { cle: 'niveau', t: 'Niv.', r: 1 },
-    { cle: 'x1', t: 'x1', r: 1, edit: 'x1' }, { cle: 'x10', t: 'x10', r: 1, edit: 'x10' }, { cle: 'x100', t: 'x100', r: 1, edit: 'x100' },
+    { cle: 'x1', t: 'x1', r: 1, edit: 'x1' }, { cle: 'x10', t: 'x10', r: 1, edit: 'x10' }, { cle: 'x100', t: 'x100', r: 1, edit: 'x100' }, { cle: 'x1000', t: 'x1000', r: 1, edit: 'x1000' },
     { cle: 'prixMoyen', t: 'Prix moyen', r: 1, edit: 'prixMoyen' }, { cle: 'vendables', t: 'Utilisée par', r: 1 }, { cle: 'date', t: 'Relevé', r: 1 },
   ],
 };
@@ -134,7 +134,7 @@ export function renderDonnees(ctx) {
   });
   const rendRs = x => ({
     nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>`, categorie: esc(x.categorie), niveau: x.niveau,
-    x1: fmt(x.x1), x10: fmt(x.x10), x100: fmt(x.x100), prixMoyen: fmt(x.prixMoyen),
+    x1: fmt(x.x1), x10: fmt(x.x10), x100: fmt(x.x100), x1000: fmt(x.x1000), prixMoyen: fmt(x.prixMoyen),
     vendables: `${x.vendables} <span class="muted">/ ${x.utilisations}</span>`, date: `${ctx.age(x.date)} ${pastille(x.nRes)}`,
   });
   const rend = onglet === 'equipements' ? rendEq : rendRs;

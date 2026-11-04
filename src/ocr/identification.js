@@ -68,7 +68,7 @@ export function appliquer(base, type, identifie, date = Date.now()) {
       const ok = identifie.annonces.filter(a => a.prix != null && a.lot != null);
       const offre = {};
       for (const a of ok) offre[a.lot] = Math.min(offre[a.lot] ?? Infinity, a.prix);
-      if (Object.keys(offre).length) { majRessource(base, o.id, offre, date); enregistres.push(`${o.nom} : x1 ${f(offre[1])} / x10 ${f(offre[10])} / x100 ${f(offre[100])}`); }
+      if (Object.keys(offre).length) { majRessource(base, o.id, offre, date); enregistres.push(`${o.nom} : x1 ${f(offre[1])} / x10 ${f(offre[10])} / x100 ${f(offre[100])}${offre[1000] ? ` / x1000 ${f(offre[1000])}` : ''}`); }
     }
     if (identifie.annonces.some(a => !a.sur)) ignores.push(`${o.nom} : certains prix à vérifier`);
   }

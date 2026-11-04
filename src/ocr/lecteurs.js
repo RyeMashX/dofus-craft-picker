@@ -130,7 +130,7 @@ export async function lireListe(pre, reconnaitre) {
 // le lot (1, 10 ou 100) est séparé du prix par un grand blanc, bien plus large qu'une espace de milliers.
 export function separerLot(rangee) {
   const m = rangee.mots;
-  if (m.length >= 2 && /^(1|10|100)$/.test(m[0].texte)) {
+  if (m.length >= 2 && /^(1|10|100|1000)$/.test(m[0].texte)) {
     const blanc = m[1].bbox.x0 - m[0].bbox.x1;
     const hauteur = m[0].bbox.y1 - m[0].bbox.y0;
     if (blanc > 2.5 * hauteur) return { lot: Number(m[0].texte), texte: m.slice(1).map(x => x.texte).join(' ') };
@@ -152,7 +152,11 @@ export async function lireDetail(pre, reconnaitre) {
     // mots qui commencent par un chiffre (un prix peut être collé à un reste d'icône : « 2299902: »)
     const nums = l.mots.filter(w => /^\d/.test(w.texte) && w.bbox.x1 < xAch);
     const h = nums.length ? nums[0].bbox.y1 - nums[0].bbox.y0 : 0;
-    const estLot = nums.length >= 2 && /^(1|10|100)$/.test(nums[0].texte) && nums[1].bbox.x0 - nums[0].bbox.x1 > 2.5 * h;
+    // « 1 000 » peut être lu en deux mots rapprochés : on les recolle en un lot de 1000
+    if (nums.length >= 2 && nums[0].texte === '1' && nums[1].texte === '000' && nums[1].bbox.x0 - nums[0].bbox.x1 < 1.2 * h) {
+      nums.splice(0, 2, { texte: '1000', bbox: { ...nums[0].bbox, x1: nums[1].bbox.x1 } });
+    }
+    const estLot = nums.length >= 2 && /^(1|10|100|1000)$/.test(nums[0].texte) && nums[1].bbox.x0 - nums[0].bbox.x1 > 2.5 * h;
     // (le prix de secours ne garde que les chiffres de chaque mot)
     const prixMots = estLot ? nums.slice(1) : nums;
     return {
@@ -168,7 +172,7 @@ export async function lireDetail(pre, reconnaitre) {
     const xLot = med(rangs.map(r => r.xLot));
     // seconde chance : un 1 / 10 / 100 seul, aligné sur la colonne Lot des autres rangées (prix illisible en première passe)
     if (xLot != null) for (const r of rangs) {
-      if (r.lot == null && r.premier && /^(1|10|100)$/.test(r.premier.texte) && Math.abs(r.premier.bbox.x1 - xLot) < 50) r.lot = Number(r.premier.texte);
+      if (r.lot == null && r.premier && /^(1|10|100|1000)$/.test(r.premier.texte) && Math.abs(r.premier.bbox.x1 - xLot) < 50) r.lot = Number(r.premier.texte);
     }
     const xPrix = Math.min(...rangs.map(r => r.xPrix ?? Infinity));
     const x0 = xLot != null ? xLot + 8 : Number.isFinite(xPrix) ? Math.max(0, xPrix - 30) : 0;
