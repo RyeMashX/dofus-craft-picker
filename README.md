@@ -12,10 +12,10 @@ Aucune lecture réseau du client, aucun clic automatisé : uniquement des captur
 ## Processus cible
 
 1. **Catalogue** (auto) : équipements craftables 190-200 + recettes depuis DofusDB.
-2. **Relevé équipements** (hebdo) : capture de la courbe "Cours du marché" (30 jours) → prix moyen, prix médian, nb d'articles vendus. Sous 60 ventes/mois : écarté.
+2. **Relevé équipements** (hebdo) : capture de la courbe "Cours du marché" (30 jours) → nb d'articles vendus ; capture de la liste des annonces → prix les plus bas. Sous 60 ventes/mois : écarté.
 3. **Relevé ressources** (début de session) : capture de chaque ressource à l'HDV ressources → prix des lots x1, x10, x100, horodatés.
-4. **Pré-classement** (auto) : marge estimée au prix médian pour tous les candidats → shortlist.
-5. **Contrôle des finalistes** : capture des annonces en vente → prix le plus bas avec jet correct.
+4. **Pré-classement** (auto) : marge estimée au prix le plus bas pour tous les candidats → shortlist.
+5. **Contrôle des finalistes** (V2) : jets des annonces → prix le plus bas avec jet correct.
 6. **Allocation du budget** (auto) : quels items, combien de fois chacun.
 7. **Liste de courses** : lots à acheter par ressource, alertes sur celles à revérifier.
 8. **Journal** : coûts et prix réels, pour calibrer les paramètres.
@@ -26,29 +26,30 @@ Aucune lecture réseau du client, aucun clic automatisé : uniquement des captur
 
 ```
 revenu    = prix de vente visé × (1 − 2 %)
-capital   = coût des ressources + coût de FM
-marge     = revenu − capital
-rendement = marge / capital          (seuil : 25 %)
+marge     = revenu − coût du craft
+rendement = marge / coût du craft     (seuil : 25 %)
 ```
 
-Prix de vente visé = annonce la moins chère **avec jet correct** − 1 kama.
-Coût de FM : forfait par item en V1, estimation par le solveur de fm-dofus en V2.
+Prix de vente visé = annonce la moins chère − 1 kama (option : moyenne des 3 moins chères − 1).
+On ne se fie ni au prix moyen ni au médian : un item à 2 M peut se vendre 10 M avec un exo, ce qui fausse les moyennes.
+La FM n'est pas comptée en phase initiale (`inclureFm`). V2 : forfait par item, puis estimation par le solveur de fm-dofus.
 
 ### Règle des lots (achat des ressources)
 
-Pour une quantité `q` d'une ressource, l'outil teste toutes les combinaisons de lots x1/x10/x100 et garde la moins chère, avec trois hypothèses :
+Pour une quantité `q` d'une ressource, l'outil teste toutes les combinaisons de lots x1/x10/x100 et garde la moins chère :
 
-1. **Profondeur** : le prix affiché n'est garanti que pour les premiers lots (par défaut 3 lots x1, 3 lots x10, 2 lots x100). Au-delà, chaque lot est compté **+25 %**, parce que la ligne se vide et que le prix remonte.
-2. **Surplus** : si on achète plus que nécessaire (un x10 pour 7 unités), les unités en trop sont revendues et on récupère **50 %** de leur valeur (prix unitaire le plus bas, taxe déduite). Prudent, car la revente prend du temps.
-3. **Alerte** : on calcule aussi le coût "optimiste" (tout au prix affiché). Si le plan prudent coûte plus de **15 %** de plus, la ressource est marquée **à revérifier** avant achat.
+1. **Profondeur** : le prix affiché n'est garanti que pour les premiers lots (3 lots x1, 2 lots x10, 1 lot x100). Au-delà, chaque lot est compté **+10 %**, parce que la ligne se vide et que le prix remonte.
+2. **Surplus** : les unités en trop sont revendues à **80 %** du prix x1 à l'unité, ou à 80 % du prix x10 par paquets de 10 (le plus avantageux), taxe déduite. Une unité revendue ne compte jamais plus que ce qu'elle a coûté.
+3. **Seuil** : on n'achète plus que nécessaire que si ça fait gagner au moins **10 %** par rapport au meilleur plan sans surplus.
+4. **Alerte** : si le plan prudent coûte plus de **20 %** de plus que le plan optimiste (tout au prix affiché), la ressource est marquée **à revérifier** avant achat.
 
 Exemple réel, Étoffe sanglante (x1 2 874, x10 22 949, x100 700 012) :
 
 | Besoin | Plan retenu | Coût compté | Commentaire |
 |---|---|---|---|
-| 2 | 2 × x1 | 5 748 | x1 direct |
-| 7 | 1 × x10 | 19 575 | moins cher que 7 × x1 même en revendant mal les 3 en trop |
-| 150 | 15 × x10 | 413 082 | 3 lots au prix affiché, 12 à +25 % ; optimiste 344 235 → **à revérifier** |
+| 2 | 1 × x10 | 4 957 | 14 % moins cher que 2 × x1 (5 748) en revendant 8 unités |
+| 7 | 1 × x10 | 16 202 | contre 21 268 en x1 |
+| 150 | 15 × x10 | 374 069 | 2 lots au prix affiché, 13 à +10 % ; optimiste 344 235 (écart 9 %, pas d'alerte) |
 
 Ces paramètres sont des hypothèses de départ : le journal servira à les calibrer.
 
@@ -63,7 +64,8 @@ Ces paramètres sont des hypothèses de départ : le journal servira à les cali
 
 - Deux items qui partagent une ressource sont calculés comme s'ils l'achetaient séparément (la profondeur n'est pas partagée).
 - Vendre 2 exemplaires du même item suppose qu'ils partent au même prix.
-- Le coût de FM est un forfait saisi à la main.
+- Le coût de FM n'est pas compté en phase initiale.
+- Le prix de vente ne tient pas encore compte du jet (V2).
 
 ## Structure
 

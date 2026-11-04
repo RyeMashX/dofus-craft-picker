@@ -10,25 +10,35 @@ const p = PARAMS;
 // Relevé réel du 04/11 : Étoffe sanglante, x1 2 874 / x10 22 949 / x100 700 012
 const etoffe = { 1: 2874, 10: 22949, 100: 700012 };
 
-test('lots : besoin de 2 → on prend du x1', () => {
+test('lots : besoin de 2 → x10 car 14 % moins cher que 2 × x1, même en revendant 8 unités', () => {
   const r = planAchat(2, etoffe, p);
+  assert.deepEqual(r.lots, { 1: 0, 10: 1, 100: 0 });
+  assert.equal(Math.round(r.cout), 4957);
+});
+
+test('lots : besoin de 2, x10 seulement 10 % moins cher → on reste en x1', () => {
+  const r = planAchat(2, { 1: 2600, 10: 21000 }, p);
   assert.deepEqual(r.lots, { 1: 2, 10: 0, 100: 0 });
-  assert.equal(r.cout, 5748);
 });
 
 test('lots : besoin de 7 → un x10 et on revend le surplus', () => {
   const r = planAchat(7, etoffe, p);
   assert.deepEqual(r.lots, { 1: 0, 10: 1, 100: 0 });
   assert.equal(r.surplus, 3);
-  assert.ok(Math.abs(r.cout - 19575.497) < 0.01);
+  assert.equal(Math.round(r.cout), 16202);
 });
 
-test('lots : besoin de 150 → 15 x10, mais au-delà de 3 lots on compte +25 % et on alerte', () => {
+test('lots : besoin de 150 → 15 x10, 2 au prix affiché et 13 à +10 %', () => {
   const r = planAchat(150, etoffe, p);
   assert.deepEqual(r.lots, { 1: 0, 10: 15, 100: 0 });
-  assert.equal(r.cout, 413082);
+  assert.equal(Math.round(r.cout), 374069);
   assert.equal(r.coutOptimiste, 344235);
-  assert.equal(r.alerte, true);
+  assert.equal(r.alerte, false);
+});
+
+test('lots : la revente du surplus ne rapporte jamais plus que son prix d\'achat', () => {
+  const r = planAchat(1, { 1: 10000, 10: 20000 }, p);
+  assert.ok(r.cout > 0);
 });
 
 test('lots : pas de x1 affiché, besoin de 4 → un x10', () => {
@@ -47,14 +57,10 @@ test('craft : quantités cumulées sur n crafts et ressource manquante signalée
   assert.deepEqual(c.manquantes, ['Inconnue']);
 });
 
-test('vente : prix visé = moins chère avec jet correct − 1', () => {
-  const v = prixVenteEstime([
-    { prix: 112999999, correct: false },
-    { prix: 118999999, correct: true },
-    { prix: 124400000, correct: true },
-  ], p);
-  assert.equal(v.minTout, 112999999);
-  assert.equal(v.estime, 118999998);
+test('vente : prix le plus bas ou moyenne des 3 plus bas, − 1 kama', () => {
+  const prix = [118999999, 112999999, 119000000, 124400000];
+  assert.equal(prixVenteEstime(prix, p).estime, 112999998);
+  assert.equal(prixVenteEstime(prix, { ...p, modePrixVente: 'moy3' }).estime, 116999999 - 1);
 });
 
 test('max crafts = 1 jour de vente (60/mois → 2)', () => {
@@ -63,11 +69,13 @@ test('max crafts = 1 jour de vente (60/mois → 2)', () => {
   assert.equal(maxCrafts(90, p), 3);
 });
 
-test('marge : taxe de 2 % et coût de FM pris en compte', () => {
+test('marge : taxe de 2 %, FM ignorée en phase initiale, comptée si inclureFm', () => {
   const item = { nom: 'Test', volumeMois: 90, prixVente: 1000000, coutFm: 100000, recette: [{ id: 'r', nom: 'R', qte: 1 }] };
   const ev = evaluerItem(item, { r: { 1: 600000 } }, p, 1);
-  assert.equal(ev.marge, 980000 - 600000 - 100000);
+  assert.equal(ev.marge, 980000 - 600000);
   assert.ok(ev.eligible);
+  const avecFm = evaluerItem(item, { r: { 1: 600000 } }, { ...p, inclureFm: true }, 1);
+  assert.equal(avecFm.marge, 980000 - 600000 - 100000);
 });
 
 // Ton exemple : 30 M, soit 6 items à 25 %, soit 12 items à 30 %.
