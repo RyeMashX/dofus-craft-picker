@@ -7,7 +7,9 @@ Aucune lecture réseau du client, aucun clic automatisé : uniquement des captur
 
 ## État
 
-Étape 1 : moteur de calcul seul, testé (`npm test`, Node 20+). Pas encore d'interface.
+Étape 1 : moteur de calcul, testé (`npm test`, Node 20+).
+Étape 2 : catalogue DofusDB (`data/catalogue.json`, régénéré par `node scripts/catalogue.mjs`) : 642 équipements craftables 190-200, 538 ressources ; 554 craftables avec les métiers actuels (Forgeron 190).
+Pas encore d'interface.
 
 ## Processus cible
 
@@ -75,5 +77,8 @@ src/lots.js        règle des lots x1/x10/x100
 src/craft.js       coût de n crafts d'une recette
 src/marge.js       prix de vente visé, marge, éligibilité
 src/allocation.js  répartition du budget
+src/catalogue.js   filtre par métiers, ressources à relever
+scripts/catalogue.mjs  génération du catalogue depuis DofusDB
+data/catalogue.json    catalogue généré
 tests/             tests du moteur (node --test)
 ```
