@@ -121,13 +121,22 @@ function renderDeroule(ctx) {
     </div>`;
   };
 
+  // ce qui est fait descend : item en bas de sa catégorie, catégorie en bas de son HDV, HDV en bas du plan.
+  // La prochaine ligne à scanner est donc toujours la première.
+  const finEnBas = (liste, estFait) => [...liste.filter(x => !estFait(x)), ...liste.filter(estFait)];
+  for (const h of hdvs) {
+    for (const g of h.groupes) g.lignes = finEnBas(g.lignes, l => l.fait);
+    h.groupes = finEnBas(h.groupes, g => etatGroupes.get(cleGroupe(h, g)));
+  }
+  const hdvsTries = finEnBas(hdvs, h => etatHdv.get(h.hdv));
+
   const termine = !restant.length;
   $('#plan').innerHTML = `
     <div class="row small"><b>${faits} / ${total} scans</b><span class="muted">· ≈ ${Math.ceil(secRest / 60)} min restantes · prêts visés ${plan.pretsApres}</span>
       <div class="spacer"></div><button id="plan-neuf" class="link small">nouveau plan</button></div>
     <div class="bar"><i style="width:${pct}%"></i></div>
     ${termine ? `<div class="fin"><b>Plan terminé ✓</b><p class="small">Les données sont à jour pour le plan de craft.</p><button id="plan-craft" class="primary small">Voir le plan de craft</button></div>` : ''}
-    ${hdvs.map(h => `<div class="hdv${etatHdv.get(h.hdv) ? ' fini' : ''}">
+    ${hdvsTries.map(h => `<div class="hdv${etatHdv.get(h.hdv) ? ' fini' : ''}">
       <h3>${HDV[h.hdv]}${etatHdv.get(h.hdv) ? ' <span class="ok">✓</span>' : ''}</h3>
       <p class="muted small">Filtres : niveau, catégories cochées, tri par nom. Descends la liste et scanne chaque ligne.</p>
       ${h.groupes.map(g => groupeHtml(h, g)).join('')}</div>`).join('')}`;

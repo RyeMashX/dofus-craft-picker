@@ -35,6 +35,8 @@ export function identifier(type, lecture, catalogue) {
   return m ? { ...lecture, objet: { ...m.candidat, confiance: m.confiance } } : { ...lecture, objet: null };
 }
 
+const f = n => n == null ? '-' : Math.round(n).toLocaleString('fr-FR');
+
 // Enregistre dans la base. Retourne { enregistres: [...], ignores: [...] } pour affichage.
 export function appliquer(base, type, identifie, date = Date.now()) {
   const enregistres = [], ignores = [];
@@ -43,7 +45,7 @@ export function appliquer(base, type, identifie, date = Date.now()) {
     for (const r of identifie) {
       if (r.inconnu || r.prixMoyen == null) { ignores.push(r.inconnu ?? r.nom); continue; }
       (r.genre === 'item' ? majPrixMoyenItem : majPrixMoyenRessource)(base, r.id, r.prixMoyen, date);
-      enregistres.push(`${r.nom} : prix moyen ${r.prixMoyen}`);
+      enregistres.push(`${r.nom} : prix moyen ${f(r.prixMoyen)}`);
     }
     return { enregistres, ignores };
   }
@@ -61,12 +63,12 @@ export function appliquer(base, type, identifie, date = Date.now()) {
     if (o.genre === 'item') {
       // les équipements se vendent à l'unité : lot illisible = lot de 1
       const prix = identifie.annonces.filter(a => a.prix != null && (a.lot ?? 1) === 1).map(a => a.prix);
-      if (prix.length) { majPrixItem(base, o.id, prix, date); enregistres.push(`${o.nom} : ${prix.length} annonces, min ${Math.min(...prix)}`); }
+      if (prix.length) { majPrixItem(base, o.id, prix, date); enregistres.push(`${o.nom} : ${prix.length} annonces, min ${f(Math.min(...prix))}`); }
     } else {
       const ok = identifie.annonces.filter(a => a.prix != null && a.lot != null);
       const offre = {};
       for (const a of ok) offre[a.lot] = Math.min(offre[a.lot] ?? Infinity, a.prix);
-      if (Object.keys(offre).length) { majRessource(base, o.id, offre, date); enregistres.push(`${o.nom} : x1 ${offre[1] ?? '-'} / x10 ${offre[10] ?? '-'} / x100 ${offre[100] ?? '-'}`); }
+      if (Object.keys(offre).length) { majRessource(base, o.id, offre, date); enregistres.push(`${o.nom} : x1 ${f(offre[1])} / x10 ${f(offre[10])} / x100 ${f(offre[100])}`); }
     }
     if (identifie.annonces.some(a => !a.sur)) ignores.push(`${o.nom} : certains prix à vérifier`);
   }

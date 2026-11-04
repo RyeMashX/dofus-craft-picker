@@ -120,8 +120,8 @@ export function renderDonnees(ctx) {
   const cellule = (x, c, contenu) => {
     if (!c.edit) return contenu;
     if (ed && ed.id === x.id && ed.champ === c.edit && ed.onglet === onglet) {
-      const v = c.edit === 'prix' ? x.prix.join(', ') : (x[c.cle] ?? '');
-      return `<input class="num edit" data-champ="${c.edit}" data-id="${x.id}" value="${esc(v)}"${c.edit === 'prix' ? ' placeholder="prix, séparés par des virgules"' : ''}>`;
+      if (c.edit === 'prix') return `<span class="edit-prix">${ctx.champsPrix(x.prix, i => `data-champ="prix" data-i="${i}" data-id="${x.id}"`, 'edit')}</span>`;
+      return `<input class="num edit milliers" inputmode="numeric" data-champ="${c.edit}" data-id="${x.id}" value="${ctx.fmtSaisie(x[c.cle])}">`;
     }
     return `<span class="editable" data-champ="${c.edit}" data-id="${x.id}" title="Cliquer pour modifier">${contenu}</span>`;
   };
@@ -199,11 +199,19 @@ export function renderDonnees(ctx) {
     S.ligneOuverte = S.ligneOuverte === k ? null : k; ctx.renderTout();
   });
   ctx.$$('#donnees .editable').forEach(el => el.onclick = () => { S.editDonnee = { onglet, id: Number(el.dataset.id), champ: el.dataset.champ }; ctx.renderTout(); const i = $('#donnees input.edit'); i?.focus(); i?.select(); });
-  const inp = $('#donnees input.edit');
-  if (inp) {
-    const valider = () => { if (!S.editDonnee) return; enregistrerEdition(ctx, onglet, Number(inp.dataset.id), inp.dataset.champ, inp.value); S.editDonnee = null; ctx.renderTout(); };
-    inp.onkeydown = e => { if (e.key === 'Enter') valider(); if (e.key === 'Escape') { S.editDonnee = null; ctx.renderTout(); } };
-    inp.onblur = valider;
+  const champs = ctx.$$('#donnees input.edit');
+  if (champs.length) {
+    const inp = champs[0];
+    // plusieurs champs (prix 1. 2. 3.) : on valide quand le focus quitte le groupe, ou sur Entrée
+    const valider = () => {
+      if (!S.editDonnee) return;
+      const texte = inp.dataset.champ === 'prix' ? champs.map(c => c.value).filter(v => v.trim()).join(';') : inp.value;
+      enregistrerEdition(ctx, onglet, Number(inp.dataset.id), inp.dataset.champ, texte); S.editDonnee = null; ctx.renderTout();
+    };
+    champs.forEach(c => {
+      c.onkeydown = e => { if (e.key === 'Enter') valider(); if (e.key === 'Escape') { S.editDonnee = null; ctx.renderTout(); } };
+      c.onblur = e => { if (!champs.includes(e.relatedTarget)) valider(); };
+    });
   }
 }
 

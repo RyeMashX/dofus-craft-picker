@@ -74,6 +74,21 @@ const age = d => {
   return `il y a ${Math.round(j)} j`;
 };
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// Saisie de montants : séparateurs de milliers affichés pendant la frappe (le curseur reste en place)
+const fmtSaisie = n => { const v = typeof n === 'string' ? nombreSaisi(n) : n; return v == null || !Number.isFinite(v) ? '' : Math.round(v).toLocaleString('fr-FR'); };
+function formaterPendantFrappe(el) {
+  const pos = el.selectionStart ?? el.value.length;
+  const avant = el.value.slice(0, pos).replace(/\D/g, '').length;
+  const chiffres = el.value.replace(/\D/g, '');
+  el.value = chiffres ? Number(chiffres).toLocaleString('fr-FR') : '';
+  let k = 0, i = 0;
+  while (i < el.value.length && k < avant) { if (/\d/.test(el.value[i])) k++; i++; }
+  el.setSelectionRange(i, i);
+}
+function brancherMilliers() { $$('input.milliers').forEach(el => { el.oninput = e => { formaterPendantFrappe(el); el.dispatchEvent(new Event('valeur')); }; }); }
+// Trois champs numérotés pour les prix les plus bas (1. le moins cher)
+const champsPrix = (valeurs, attr, classe = '') => `<div class="prix3">${Array.from({ length: NB_PRIX }, (_, i) =>
+  `<label class="numl"><span>${i + 1}.</span><input class="num big milliers ${classe}" inputmode="numeric" ${attr(i)} value="${fmtSaisie(valeurs[i])}"></label>`).join('')}</div>`;
 const nombreSaisi = s => { const v = Number(String(s).replace(/[^\d]/g, '')); return String(s).trim() && Number.isFinite(v) ? v : null; };
 
 // ---------- rendu ----------
@@ -151,16 +166,16 @@ function formulaire(L) {
   if (L.type === 'liste') {
     return `<table class="rt"><tbody>${r.map((x, i) => x.inconnu || x.retire ? '' : `
       <tr><td class="cn">${esc(x.nom)}</td>
-      <td class="r"><input class="num" data-i="${i}" data-champ="prixMoyen" value="${x.prixMoyen ?? ''}"></td>
+      <td class="r"><input class="num big milliers" inputmode="numeric" data-i="${i}" data-champ="prixMoyen" value="${fmtSaisie(x.prixMoyen)}"></td>
       <td class="r"><button class="retirer" data-i="${i}" title="Retirer cette ligne (mauvais objet reconnu)">✕</button></td></tr>`).join('')}</tbody></table>`;
   }
-  if (L.type === 'courbe') return `<div class="row small">Vendus sur 30 jours <input class="num" data-champ="vendus" value="${r.vendus ?? ''}"></div>`;
+  if (L.type === 'courbe') return `<div class="row small">Vendus sur 30 jours <input class="num milliers" inputmode="numeric" data-champ="vendus" value="${fmtSaisie(r.vendus)}"></div>`;
   if (r.objet.genre === 'ressource') {
     const lot = t => r.annonces.find(a => a.lot === t)?.prix ?? '';
-    return `<div class="row small">x1 <input class="num" data-champ="x1" value="${lot(1)}"> x10 <input class="num" data-champ="x10" value="${lot(10)}"> x100 <input class="num" data-champ="x100" value="${lot(100)}"></div>`;
+    return `<div class="prix3">${[1, 10, 100].map(t => `<label class="numl"><span>x${t}</span><input class="num big milliers" inputmode="numeric" data-champ="x${t}" value="${fmtSaisie(lot(t))}"></label>`).join('')}</div>`;
   }
-  return `<div class="row small">${Array.from({ length: NB_PRIX }, (_, i) => [...r.annonces].filter(a => a.prix).sort((a, b) => a.prix - b.prix)[i]).map((a, i) =>
-    `<input class="num big" data-i="${i}" data-champ="prix" value="${a?.prix ?? ''}"${a && !a.sur ? ' title="à vérifier" style="border-color:var(--ec)"' : ''}>`).join('')}</div>`;
+  const tries = [...r.annonces].filter(a => a.prix).sort((a, b) => a.prix - b.prix);
+  return champsPrix(tries.map(a => a.prix), i => `data-i="${i}" data-champ="prix"${tries[i] && !tries[i].sur ? ' title="à vérifier" style="border-color:var(--ec)"' : ''}`);
 }
 
 const TITRES = { courbe: 'Courbe 30 j', liste: 'Liste HDV' };
@@ -186,6 +201,7 @@ function renderLecture() {
     <div class="row">${boutons}</div>${diagHtml(!L.enregistre)}</div>`;
   const on = (id, fn) => { const el = $(id); if (el) el.onclick = fn; };
   brancherDiag();
+  brancherMilliers();
   $$('#lecture button.retirer').forEach(b => b.onclick = () => retirerLigne(+b.dataset.i));
   on('#lect-modifier', () => { L.edition = true; renderLecture(); });
   on('#lect-fermer', () => { L.edition = false; renderLecture(); });
@@ -196,7 +212,7 @@ function renderLecture() {
 // ---------- saisie manuelle (quand la lecture échoue, ou bouton « Saisir ») ----------
 const CHAMPS_SAISIE = {
   courbe: [['vendus', 'Vendus sur 30 j', '']],
-  annonces: [['prix', 'Prix les plus bas', 'séparés par des virgules']],
+  annonces: [], // trois champs numérotés (voir champsPrix)
   lots: [['x1', 'x1', ''], ['x10', 'x10', ''], ['x100', 'x100', '']],
   liste: [['prixMoyen', 'Prix moyen', '']],
 };
@@ -223,7 +239,7 @@ function preremplir(type, lecture) {
     titre = lecture.titre ?? '';
     const prix = (lecture.annonces ?? []).filter(a => a.prix);
     if (S.etat.mode === 'lots') { for (const a of prix) if (a.lot) v['x' + a.lot] = a.prix; }
-    else if (prix.length) v.prix = prix.map(a => a.prix).join(', ');
+    else [...prix].sort((a, b) => a.prix - b.prix).slice(0, NB_PRIX).forEach((a, i) => { v['p' + i] = a.prix; });
   }
   const devine = titre ? trouver(titre, candidatsSaisie(S.etat.mode), { confianceMin: 0.5 })?.candidat : null;
   return { nom: devine?.nom ?? '', valeurs: v };
@@ -277,13 +293,15 @@ function renderSaisie() {
       <button id="saisie-fermer" class="link small">fermer</button></div>
     <div class="ac"><input id="saisie-nom" placeholder="${mode === 'lots' ? 'Nom de la ressource' : mode === 'liste' ? "Nom de l'item ou de la ressource" : "Nom de l'item"}" value="${esc(sz.nom)}" autocomplete="off" spellcheck="false">
       <div id="ac-liste" class="ac-liste hidden"></div></div>
-    <div class="row small">${CHAMPS_SAISIE[mode].map(([k, l, ph]) => `<label class="sel">${l} <input class="${k === 'prix' ? 'grow' : 'num big'}" data-saisie="${k}" inputmode="numeric" placeholder="${ph}" value="${esc(sz.valeurs[k] ?? '')}"></label>`).join('')}</div>
+    ${mode === 'annonces' ? `<p class="small muted">Prix les plus bas, du moins cher au plus cher :</p>${champsPrix([0, 1, 2].map(i => sz.valeurs['p' + i]), i => `data-saisie="p${i}"`)}`
+      : `<div class="prix3">${CHAMPS_SAISIE[mode].map(([k, l]) => `<label class="numl"><span>${l}</span><input class="num big milliers" data-saisie="${k}" inputmode="numeric" value="${fmtSaisie(nombreSaisi(sz.valeurs[k] ?? ''))}"></label>`).join('')}</div>`}
     ${sz.erreur ? `<p class="small bad">${esc(sz.erreur)}</p>` : ''}
     <div class="row"><button id="saisie-ok" class="primary small">Enregistrer</button></div></div>`;
   $('#saisie-fermer').onclick = () => { S.saisie = null; renderSaisie(); };
   $('#saisie-ok').onclick = enregistrerSaisie;
   brancherAutocompletion($('#saisie-nom'), $('#ac-liste'), mode, nom => { sz.nom = nom; root.querySelector('#saisie [data-saisie]')?.focus(); });
-  $$('#saisie [data-saisie]').forEach(el => el.oninput = () => { sz.valeurs[el.dataset.saisie] = el.value; });
+  $$('#saisie [data-saisie]').forEach(el => el.addEventListener('valeur', () => { sz.valeurs[el.dataset.saisie] = el.value; }));
+  brancherMilliers();
   $$('#saisie [data-saisie]').forEach(el => el.onkeydown = e => { if (e.key === 'Enter') enregistrerSaisie(); });
   if (!sz.nom) $('#saisie-nom').focus();
 }
@@ -301,7 +319,7 @@ function enregistrerSaisie() {
     if (n('vendus') == null) return erreur('Indique le nombre de ventes sur 30 jours.');
     L = { type: 'courbe', identifie: { objet: o, vendus: n('vendus'), trenteJours: true } };
   } else if (mode === 'annonces') {
-    const prix = String(v.prix ?? '').split(/[,;]/).map(nombreSaisi).filter(Boolean);
+    const prix = [0, 1, 2].map(i => n('p' + i)).filter(Boolean);
     if (!prix.length) return erreur('Indique au moins un prix.');
     L = { type: 'detail', identifie: { objet: o, annonces: prix.map(p => ({ lot: 1, prix: p, sur: true })) } };
   } else if (mode === 'lots') {
@@ -449,11 +467,15 @@ function renderBase(cat, p) {
 // Contexte passé aux vues (vue-plan.js, vue-donnees.js)
 const ctx = {
   S, $: s => $(s), $$: s => $$(s), params, sauverBase, sauverEtat, renderTout: () => renderTout(), toast,
-  esc, fmt, fmtK, pct, age, nombreSaisi, normaliser,
+  esc, fmt, fmtK, pct, age, nombreSaisi, normaliser, fmtSaisie, champsPrix,
   boutonCopier: (n, t) => boutonCopier(n, t), brancherCopier: s => brancherCopier(s), choisirMode: m => choisirMode(m),
 };
 
 function renderTout() {
+  renderTout_();
+  brancherMilliers();
+}
+function renderTout_() {
   renderVue();
   renderCapture();
   renderLecture();

@@ -156,3 +156,10 @@ body.view-donnees main, body.view-donnees header.top { max-width: 1180px; }
 .editable { cursor: pointer; border-bottom: 1px dashed var(--muted); } .editable:hover { border-color: var(--accent); color: var(--accent); }
 .rt.don input.edit { width: 110px; text-align: right; }
 .rt.don input.edit[data-champ="prix"] { width: 220px; text-align: left; }
+
+/* Champs de montant numérotés (1. le moins cher) */
+.prix3 { display: flex; flex-wrap: wrap; gap: 6px 10px; margin: 6px 0; }
+label.numl { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
+label.numl span { color: var(--muted); min-width: 14px; text-align: right; font-variant-numeric: tabular-nums; }
+label.numl input.big { width: 120px; }
+.edit-prix .prix3 { margin: 0; flex-wrap: nowrap; } .edit-prix label.numl input.big { width: 100px; }
