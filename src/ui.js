@@ -631,8 +631,33 @@ pipBtn.onclick = async () => {
   });
 };
 
+// ---------- nouvelle version en ligne ----------
+// GitHub Pages laisse le navigateur garder la page 10 min : on compare la version chargée
+// (suffixe ?v= posé au déploiement) à celle en ligne, et on propose de recharger.
+const versionChargee = new URL(import.meta.url).searchParams.get('v');
+async function verifierVersion() {
+  if (!versionChargee) return; // en local : pas de suffixe, pas de vérification
+  try {
+    const html = await (await fetch(`index.html?nocache=${Date.now()}`, { cache: 'no-store' })).text();
+    const enLigne = html.match(/ui\.js\?v=([a-f0-9]+)/)?.[1];
+    if (enLigne && enLigne !== versionChargee) {
+      // bandeau sur la page et, si elle est ouverte, dans la fenêtre flottante
+      for (const doc of [document, window.documentPictureInPicture?.window?.document].filter(Boolean)) {
+        if (doc.querySelector('#maj')) continue;
+        const b = doc.createElement('div');
+        b.id = 'maj'; b.className = 'maj';
+        b.innerHTML = 'Nouvelle version disponible <button class="primary small">Recharger</button>';
+        b.querySelector('button').onclick = () => { window.documentPictureInPicture?.window?.close(); location.reload(); };
+        doc.body.prepend(b);
+      }
+    }
+  } catch {}
+}
+verifierVersion();
+setInterval(verifierVersion, 5 * 60 * 1000);
+
 // ---------- démarrage ----------
-window.__craft = { S, renderTout }; // accès pour les tests automatisés
+window.__craft = { S, renderTout, verifierVersion }; // accès pour les tests automatisés
 brancher();
 renderTout();
 fetch('data/catalogue.json').then(r => r.json()).then(c => { S.catalogue = c; renderTout(); })
