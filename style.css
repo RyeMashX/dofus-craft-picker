@@ -184,3 +184,8 @@ label.numl input.big { width: 120px; }
 .edl-l input { flex: 1; min-width: 0; width: 100%; text-align: right; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; background: transparent; border: 1px solid transparent; padding: 4px 6px; }
 .edl-l input:focus { outline: none; border-color: var(--accent); background: #15171b; }
 .edl-l.douteux { border-color: var(--ec); } .edl-l.douteux .lib { background: var(--ec); color: #fff; }
+
+/* Bouton réglages (même style que fm-dofus) */
+.gear { padding: 3px 8px; font-size: 15px; line-height: 1; }
+#settings-btn.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.actions { display: flex; gap: 6px; align-items: center; margin-left: auto; }

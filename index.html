@@ -12,11 +12,13 @@
   <div id="view-switch" class="seg">
     <button data-view="scan">Scan</button>
     <button data-view="donnees">Données</button>
-    <button data-view="resultats">Résultats</button>
-    <button data-view="base">Base</button>
+    <button data-view="resultats">Craft</button>
   </div>
   <div class="spacer"></div>
+  <div class="actions">
   <button id="pip" class="secondary small hidden" title="Ouvrir dans une fenêtre qui reste au-dessus du jeu (Chrome, Edge)">Flottant</button>
+  <button id="settings-btn" class="secondary small gear" title="Réglages : seuils, métiers, sauvegarde de la base">⚙</button>
+  </div>
 </header>
 
 <main>
@@ -42,7 +44,7 @@
     <div id="donnees"></div>
   </section>
 
-  <!-- ===== Résultats ===== -->
+  <!-- ===== Craft ===== -->
   <section class="card view-resultats hidden">
     <div class="row">
       <h2>Budget</h2>
@@ -56,9 +58,9 @@
     <div id="evalues"></div>
   </section>
 
-  <!-- ===== Base ===== -->
+  <!-- ===== Réglages (⚙) ===== -->
   <section class="card view-base hidden">
-    <div class="row"><h2>Base de prix</h2></div>
+    <div class="row"><h2>Base de prix</h2><div class="spacer"></div><button id="settings-back" class="primary small">Retour</button></div>
     <div id="base-stats"></div>
     <div class="row">
       <button id="base-export" class="secondary small">Exporter</button>

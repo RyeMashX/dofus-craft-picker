@@ -1,4 +1,4 @@
-// Interface : vues Scan / Résultats / Base, fenêtre flottante, capture et OCR.
+// Interface : onglets Scan / Données / Craft, réglages (⚙), fenêtre flottante, capture et OCR.
 
 import { PARAMS } from './params.js';
 import { creerBase, majVolume, majPrixItem, majRessource, exporter, importer, JOUR, NB_PRIX } from './base.js';
@@ -98,6 +98,7 @@ function renderVue() {
   const v = S.etat.vue;
   root.body.className = 'view-' + v + (root !== document ? ' pip' : '');
   $$('#view-switch button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
+  $('#settings-btn').classList.toggle('on', v === 'base');
   for (const nom of ['scan', 'donnees', 'resultats', 'base']) $$(`.view-${nom}`).forEach(el => el.classList.toggle('hidden', nom !== v));
 }
 
@@ -605,6 +606,13 @@ function ouvrirZones() {
 // ---------- événements ----------
 function brancher() {
   $$('#view-switch button').forEach(b => b.onclick = () => { S.etat.vue = b.dataset.view; sauverEtat(); renderTout(); });
+  // ⚙ ouvre / ferme les réglages (vue « base »), Retour ramène à l'onglet précédent
+  $('#settings-btn').onclick = () => {
+    if (S.etat.vue === 'base') S.etat.vue = S.etat.vueAvantReglages ?? 'scan';
+    else { S.etat.vueAvantReglages = S.etat.vue; S.etat.vue = 'base'; }
+    sauverEtat(); renderTout();
+  };
+  $('#settings-back').onclick = () => { S.etat.vue = S.etat.vueAvantReglages ?? 'scan'; sauverEtat(); renderTout(); };
   $('#cap-start').onclick = basculerCapture;
   $('#scan').onclick = scanner;
   $('#mode').innerHTML = Object.entries(Cap.MODES).map(([k, m]) => `<option value="${k}">${m.libelle}</option>`).join('');

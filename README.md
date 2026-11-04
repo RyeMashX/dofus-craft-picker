@@ -11,7 +11,7 @@ Aucune lecture réseau du client, aucun clic automatisé : uniquement des captur
 Étape 2 : catalogue DofusDB (`data/catalogue.json`, régénéré par `node scripts/catalogue.mjs`) : 642 équipements craftables 190-200, 538 ressources ; 554 craftables avec les métiers actuels (Forgeron 190).
 Étape 3 : base de prix horodatée, base d'évaluation, listes de scan priorisées et plan de scan. Focus actuel : items niveau 200 (364 craftables).
 Étape 4 : lecture OCR des quatre écrans HDV (liste, annonces d'un équipement, lots d'une ressource, courbe 30 jours), validée sur de vraies captures (`npm run test:ocr`).
-Étape 5 : interface (vues Scan, Résultats, Base), fenêtre flottante, capture du jeu et scan en un clic.
+Étape 5 : interface (onglets Scan, Données, Craft ; réglages via ⚙), fenêtre flottante, capture du jeu et scan en un clic.
 
 ## Utilisation
 
@@ -47,7 +47,7 @@ Pour le volume, la courbe doit être sur l'onglet **30 jours** (détecté à sa 
 | Prix ressource | aucune | prix moyen seul, ou > 1 semaine | > 3 jours | < 3 jours |
 
 - **Prêt pour le craft** : volume vert ou jaune, prix vert, ressources sans orange ni noir et au plus 2 jaunes.
-- **Utilisable** : aucune donnée orange ou noire. Le plan de craft (Résultats) prend les items utilisables et signale ceux qui ne sont pas prêts (⚠).
+- **Utilisable** : aucune donnée orange ou noire. Le plan de craft (onglet Craft) prend les items utilisables et signale ceux qui ne sont pas prêts (⚠).
 
 ## Plan de scan
 
