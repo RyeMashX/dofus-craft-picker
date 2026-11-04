@@ -24,9 +24,11 @@ export function majVolume(base, itemId, volumeMois, date = Date.now()) {
   return base;
 }
 
-// prix = liste des prix lus dans les annonces (on garde les 5 plus bas)
+// prix = liste des prix lus dans les annonces. On garde les 3 plus bas : le prix visé est le plus bas
+// (ou la moyenne des 3 plus bas, au choix dans les réglages) ; les suivants ne servent à rien.
+export const NB_PRIX = 3;
 export function majPrixItem(base, itemId, prix, date = Date.now()) {
-  item(base, itemId).prix = { valeurs: [...prix].sort((a, b) => a - b).slice(0, 5), date };
+  item(base, itemId).prix = { valeurs: [...prix].sort((a, b) => a - b).slice(0, NB_PRIX), date };
   return base;
 }
 

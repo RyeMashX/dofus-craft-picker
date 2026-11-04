@@ -80,6 +80,14 @@ const plein = img => ({ x: 0, y: 0, w: img.width, h: img.height });
   verifier('annonce unique : prix', r.annonces.map(a => a.prix), [10125000]);
 }
 
+// 3 quater. Prix pleins de zéros : « 9 100 000 » ne doit pas faire croire à un lot de 100
+{
+  const img = lire('detail-annonces-zeros.png');
+  const r = identifier('detail', await lireEcran('detail', img, plein(img), reconnaitre, { echelle: 2 }), catalogue);
+  verifier('zéros : objet', r.objet?.nom, 'Anneau Lunaire');
+  verifier('zéros : prix', r.annonces.map(a => a.prix), [8300000, 8300000, 8300000, 9000000, 9000000, 9090909, 9100000, 9999999, 10999999, 13999420, 15100000, 15222222, 15499999]);
+}
+
 // 4. Liste HDV ressources
 {
   const img = lire('liste-ressources.png');

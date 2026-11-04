@@ -143,25 +143,41 @@ export async function lireDetail(pre, reconnaitre) {
   const { titre, niveau } = titreEtNiveau(lignes);
   const pm = lignes.map(l => l.texte.match(/prix\s*moyen\s*:?\s*(\d[\d  ]*)/i)).find(Boolean);
 
+  // Rangée d'annonce : [lot] [prix en groupes de 3 chiffres] ACHETER.
+  // Le lot n'est que le PREMIER nombre de la rangée, et seulement s'il est suivi d'un grand blanc :
+  // un groupe du prix (« 9 100 000 ») ne doit jamais être pris pour un lot de 100.
   const rangs = lignes.filter(l => /ACHETER/i.test(l.texte)).map(l => {
-    const lot = l.mots.find(w => /^(1|10|100)$/.test(w.texte));
     const acheter = l.mots.find(w => /ACHETER/i.test(w.texte));
-    return { ligne: l, lot: lot ? Number(lot.texte) : null, xLot: lot?.bbox.x1 ?? null, xAcheter: acheter?.bbox.x0 ?? null };
+    const xAch = acheter?.bbox.x0 ?? Infinity;
+    const nums = l.mots.filter(w => /^\d+$/.test(w.texte) && w.bbox.x1 < xAch);
+    const h = nums.length ? nums[0].bbox.y1 - nums[0].bbox.y0 : 0;
+    const estLot = nums.length >= 2 && /^(1|10|100)$/.test(nums[0].texte) && nums[1].bbox.x0 - nums[0].bbox.x1 > 2.5 * h;
+    const prixMots = estLot ? nums.slice(1) : nums;
+    return {
+      ligne: l, lot: estLot ? Number(nums[0].texte) : null, xLot: estLot ? nums[0].bbox.x1 : null,
+      xPrix: prixMots[0]?.bbox.x0 ?? null, xAcheter: acheter?.bbox.x0 ?? null,
+      texte1: prixMots.map(w => w.texte).join(' '), // prix lu en première passe (secours)
+    };
   });
 
   let annonces = [];
   if (rangs.length) {
-    const xLot = Math.max(...rangs.map(r => r.xLot ?? 0)) + 8;
+    const med = l => { const t = l.filter(v => v != null).sort((x, y) => x - y); return t.length ? t[Math.floor(t.length / 2)] : null; };
+    const xLot = med(rangs.map(r => r.xLot));
+    const xPrix = Math.min(...rangs.map(r => r.xPrix ?? Infinity));
+    const x0 = xLot != null ? xLot + 8 : Number.isFinite(xPrix) ? Math.max(0, xPrix - 30) : 0;
     const xAch = Math.min(...rangs.map(r => r.xAcheter ?? pre.width)) - 8;
     const haut = Math.max(0, rangs[0].ligne.bbox.y0 - 20);
-    const chiffres = await passeChiffres(pre, { x: xLot, y: haut, w: xAch - xLot, h: pre.height - haut }, reconnaitre);
+    const chiffres = await passeChiffres(pre, { x: x0, y: haut, w: xAch - x0, h: pre.height - haut }, reconnaitre);
     const pas = rangs.length > 1 ? (centre(rangs.at(-1).ligne.bbox) - centre(rangs[0].ligne.bbox)) / (rangs.length - 1) : 100;
     annonces = rangs.map(r => {
       const c = proche(chiffres, centre(r.ligne.bbox), pas / 3);
-      if (!c) return { lot: r.lot, prix: null, sur: false };
-      const { lot, texte } = separerLot(c);
-      const n = nombre(texte);
-      return { lot: r.lot ?? lot, prix: n?.valeur ?? null, sur: !!n?.valide };
+      const deux = c ? separerLot(c) : { lot: null, texte: '' };
+      let n = deux.texte ? nombre(deux.texte) : null;
+      // secours : prix de la première passe si la seconde est vide ou incohérente
+      const un = r.texte1 ? nombre(r.texte1) : null;
+      if ((!n || !n.valide) && un?.valide) n = un;
+      return { lot: r.lot ?? deux.lot, prix: n?.valeur ?? null, sur: !!n?.valide };
     });
   }
   return { titre, niveau, prixMoyen: pm ? nombre(pm[1]).valeur : null, annonces };

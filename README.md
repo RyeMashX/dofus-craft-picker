@@ -34,7 +34,7 @@ Pour le volume, la courbe doit être sur l'onglet **30 jours** (détecté à sa 
 | Écran | Ce qui est enregistré |
 |---|---|
 | Liste HDV (équipements ou ressources) | prix moyen de chaque ligne |
-| Détail d'un équipement | prix des annonces (5 plus bas) |
+| Détail d'un équipement | prix des annonces (les 3 plus bas) |
 | Détail d'une ressource | prix des lots x1 / x10 / x100 |
 | Cours du marché, onglet 30 jours | nombre d'articles vendus |
 

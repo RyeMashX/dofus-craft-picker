@@ -1,7 +1,7 @@
 // Interface : vues Scan / Résultats / Base, fenêtre flottante, capture et OCR.
 
 import { PARAMS } from './params.js';
-import { creerBase, majVolume, majPrixItem, majRessource, exporter, importer, JOUR } from './base.js';
+import { creerBase, majVolume, majPrixItem, majRessource, exporter, importer, JOUR, NB_PRIX } from './base.js';
 import { itemsFocus, baseEvaluation } from './entonnoir.js';
 import { renderPlanScan, tempsMesures } from './vue-plan.js';
 import { renderDonnees } from './vue-donnees.js';
@@ -143,7 +143,7 @@ function resume(L) {
     const lot = t => fmt(r.annonces.find(a => a.lot === t)?.prix);
     return `<p class="small">x1 <b>${lot(1)}</b> · x10 <b>${lot(10)}</b> · x100 <b>${lot(100)}</b></p>`;
   }
-  return `<p class="small">${r.annonces.slice(0, 8).map(a => `<b${a.sur ? '' : ' class="bad" title="à vérifier"'}>${fmt(a.prix)}</b>`).join(' · ')}</p>`;
+  return `<p class="small">${[...r.annonces].filter(a => a.prix).sort((a, b) => a.prix - b.prix).slice(0, NB_PRIX).map(a => `<b${a.sur ? '' : ' class="bad" title="à vérifier"'}>${fmt(a.prix)}</b>`).join(' · ')}</p>`;
 }
 
 function formulaire(L) {
@@ -159,7 +159,7 @@ function formulaire(L) {
     const lot = t => r.annonces.find(a => a.lot === t)?.prix ?? '';
     return `<div class="row small">x1 <input class="num" data-champ="x1" value="${lot(1)}"> x10 <input class="num" data-champ="x10" value="${lot(10)}"> x100 <input class="num" data-champ="x100" value="${lot(100)}"></div>`;
   }
-  return `<div class="row small">${Array.from({ length: Math.max(5, Math.min(8, r.annonces.length)) }, (_, i) => r.annonces[i]).map((a, i) =>
+  return `<div class="row small">${Array.from({ length: NB_PRIX }, (_, i) => [...r.annonces].filter(a => a.prix).sort((a, b) => a.prix - b.prix)[i]).map((a, i) =>
     `<input class="num big" data-i="${i}" data-champ="prix" value="${a?.prix ?? ''}"${a && !a.sur ? ' title="à vérifier" style="border-color:var(--ec)"' : ''}>`).join('')}</div>`;
 }
 
