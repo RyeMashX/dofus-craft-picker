@@ -19,6 +19,17 @@ export const PARAMS = {
   gainMinSurplus: 0.20,     // on n'achète "trop" que si ça fait gagner au moins 20 %
   ecartAlerte: 0.20,        // alerte "à revérifier" si plan prudent > optimiste de +20 %
 
+  // Périmètre et fraîcheur des relevés
+  focusNiveaux: [200, 200], // on commence par les items niveau 200
+  metiers: {                // niveaux de métier du joueur
+    Bijoutier: 200, Cordonnier: 200, Tailleur: 200, Sculpteur: 200, 'Façonneur': 200, Forgeron: 190,
+  },
+  validite: {               // durée de validité d'un relevé, en jours
+    volume: 14,             // volume de ventes : rafraîchi toutes les 2 semaines
+    prixItem: 2,            // annonces en vente d'un équipement
+    ressources: 3,          // lots x1/x10/x100 d'une ressource
+  },
+
   // FM et effort
   inclureFm: false,         // phase initiale : marge / coût du craft, sans la FM
   coutFmDefaut: 0,          // coût de FM forfaitaire par item si inclureFm

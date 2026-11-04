@@ -9,7 +9,18 @@ Aucune lecture réseau du client, aucun clic automatisé : uniquement des captur
 
 Étape 1 : moteur de calcul, testé (`npm test`, Node 20+).
 Étape 2 : catalogue DofusDB (`data/catalogue.json`, régénéré par `node scripts/catalogue.mjs`) : 642 équipements craftables 190-200, 538 ressources ; 554 craftables avec les métiers actuels (Forgeron 190).
+Étape 3 : base de prix horodatée et entonnoir (quoi relever ensuite, classement). Focus actuel : items niveau 200 (364 craftables).
 Pas encore d'interface.
+
+## Fraîcheur des relevés
+
+| Donnée | Validité |
+|---|---|
+| Volume de ventes d'un équipement | 14 jours |
+| Annonces en vente d'un équipement | 2 jours |
+| Lots x1/x10/x100 d'une ressource | 3 jours |
+
+L'entonnoir ne demande que ce qui manque ou est périmé, dans l'ordre : volumes, puis prix des items qui passent le volume, puis ressources des items restants (les plus partagées d'abord).
 
 ## Processus cible
 
@@ -78,6 +89,8 @@ src/craft.js       coût de n crafts d'une recette
 src/marge.js       prix de vente visé, marge, éligibilité
 src/allocation.js  répartition du budget
 src/catalogue.js   filtre par métiers, ressources à relever
+src/base.js        base de prix horodatée, export / import
+src/entonnoir.js   ce qu'il reste à relever, classement des items
 scripts/catalogue.mjs  génération du catalogue depuis DofusDB
 data/catalogue.json    catalogue généré
 tests/             tests du moteur (node --test)

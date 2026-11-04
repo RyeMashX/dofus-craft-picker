@@ -1,13 +1,9 @@
 // Exploitation du catalogue (data/catalogue.json, généré par scripts/catalogue.mjs).
 
-// Niveaux de métier du joueur. Un item n'est craftable que si niveau du métier ≥ niveau de l'item.
-export const METIERS = {
-  Bijoutier: 200, Cordonnier: 200, Tailleur: 200, Sculpteur: 200, 'Façonneur': 200,
-  Forgeron: 190,
-};
+import { PARAMS } from './params.js';
 
-// Items craftables avec les métiers du joueur.
-export function itemsCraftables(catalogue, metiers = METIERS) {
+// Items craftables avec les métiers du joueur (niveau du métier ≥ niveau de l'item).
+export function itemsCraftables(catalogue, metiers = PARAMS.metiers) {
   return catalogue.items.filter(i => (metiers[i.metier] ?? 0) >= i.niveau);
 }
 
