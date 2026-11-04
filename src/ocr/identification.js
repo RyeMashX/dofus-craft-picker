@@ -58,11 +58,12 @@ export function appliquer(base, type, identifie, date = Date.now()) {
   }
 
   if (type === 'detail') {
-    const ok = identifie.annonces.filter(a => a.prix != null && a.lot != null);
     if (o.genre === 'item') {
-      const prix = ok.filter(a => a.lot === 1).map(a => a.prix);
+      // les équipements se vendent à l'unité : lot illisible = lot de 1
+      const prix = identifie.annonces.filter(a => a.prix != null && (a.lot ?? 1) === 1).map(a => a.prix);
       if (prix.length) { majPrixItem(base, o.id, prix, date); enregistres.push(`${o.nom} : ${prix.length} annonces, min ${Math.min(...prix)}`); }
     } else {
+      const ok = identifie.annonces.filter(a => a.prix != null && a.lot != null);
       const offre = {};
       for (const a of ok) offre[a.lot] = Math.min(offre[a.lot] ?? Infinity, a.prix);
       if (Object.keys(offre).length) { majRessource(base, o.id, offre, date); enregistres.push(`${o.nom} : x1 ${offre[1] ?? '-'} / x10 ${offre[10] ?? '-'} / x100 ${offre[100] ?? '-'}`); }

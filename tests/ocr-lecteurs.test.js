@@ -28,3 +28,10 @@ test("correspondance : tolère les erreurs et les débris d'icône", () => {
   assert.equal(trouver('Alliage', cands), null);
   assert.equal(normaliser("Amour d’Helséphine"), "amour d'helsephine");
 });
+
+test('séparer le lot du prix : grand blanc après 1 / 10 / 100', async () => {
+  const { separerLot } = await import('../src/ocr/lecteurs.js');
+  const mot = (texte, x0, x1) => ({ texte, bbox: { x0, x1, y0: 0, y1: 30 } });
+  assert.deepEqual(separerLot({ texte: '1 10 125 000', mots: [mot('1', 256, 270), mot('10', 588, 630), mot('125', 648, 709), mot('000', 726, 800)] }), { lot: 1, texte: '10 125 000' });
+  assert.deepEqual(separerLot({ texte: '10 125 000', mots: [mot('10', 588, 630), mot('125', 648, 709), mot('000', 726, 800)] }).lot, null);
+});

@@ -63,6 +63,22 @@ const plein = img => ({ x: 0, y: 0, w: img.width, h: img.height });
   verifier('courbe : vendus / moyen / onglet 30 j actif', [r.vendus, r.moyen, r.trenteJours], [81, 123707331, true]);
 }
 
+// 3 bis. Courbe avec un débris d'icône devant « Niveau » et un volume à 1 chiffre
+{
+  const img = lire('courbe-item-7.png');
+  const r = identifier('courbe', await lireEcran('courbe', img, plein(img), reconnaitre), catalogue);
+  verifier('courbe (débris) : objet', r.objet?.nom, 'Alliance Brûlâme');
+  verifier('courbe (débris) : vendus / onglet 30 j', [r.vendus, r.trenteJours], [7, true]);
+}
+
+// 3 ter. Panneau détail avec une seule annonce, en partie masqué par la courbe
+{
+  const img = lire('detail-annonce-unique.png');
+  const r = identifier('detail', await lireEcran('detail', img, plein(img), reconnaitre), catalogue);
+  verifier('annonce unique : objet', r.objet?.nom, 'Alliance Brûlâme');
+  verifier('annonce unique : prix', r.annonces.map(a => a.prix), [10125000]);
+}
+
 // 4. Liste HDV ressources
 {
   const img = lire('liste-ressources.png');

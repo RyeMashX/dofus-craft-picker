@@ -65,6 +65,21 @@ export function rangees(lignes) {
   });
 }
 
+// Ligne "Niv. 200 • Anneau" (détail) ou "Niveau 200 • Faux" (courbe) : le titre est la rangée au-dessus.
+// La ligne peut commencer par un débris d'icône ("4 Niveau 200") : on cherche "Niv" n'importe où.
+const RE_NIVEAU = /\bniv(?:eau)?\.?\s*(\d{1,3})\b/i;
+export function titreEtNiveau(lignes) {
+  const i = lignes.findIndex(l => RE_NIVEAU.test(l.texte));
+  if (i < 0) return { titre: null, niveau: null };
+  const niveau = Number(lignes[i].texte.match(RE_NIVEAU)[1]);
+  // titre : première rangée au-dessus qui contient des lettres
+  for (let k = i - 1; k >= 0; k--) {
+    const t = lettres(lignes[k].texte);
+    if (t.replace(/[^A-Za-zÀ-ÿ]/g, '').length >= 3) return { titre: t, niveau };
+  }
+  return { titre: null, niveau };
+}
+
 const lettres = s => s.replace(/[^A-Za-zÀ-ÿ' -]/g, ' ').replace(/\s+/g, ' ').trim();
 
 async function passeChiffres(pre, zone, reconnaitre) {
@@ -111,11 +126,21 @@ export async function lireListe(pre, reconnaitre) {
 }
 
 // ---------- détail d'un objet ----------
+// Si la colonne "Lot" n'a pas été repérée, la passe chiffres peut lire "1 10 125 000" :
+// le lot (1, 10 ou 100) est séparé du prix par un grand blanc, bien plus large qu'une espace de milliers.
+export function separerLot(rangee) {
+  const m = rangee.mots;
+  if (m.length >= 2 && /^(1|10|100)$/.test(m[0].texte)) {
+    const blanc = m[1].bbox.x0 - m[0].bbox.x1;
+    const hauteur = m[0].bbox.y1 - m[0].bbox.y0;
+    if (blanc > 2.5 * hauteur) return { lot: Number(m[0].texte), texte: m.slice(1).map(x => x.texte).join(' ') };
+  }
+  return { lot: null, texte: rangee.texte };
+}
+
 export async function lireDetail(pre, reconnaitre) {
   const lignes = rangees(await reconnaitre(pre, {}));
-  const iNiv = lignes.findIndex(l => /^niv(eau)?\.?\s*\d/i.test(l.texte.trim()));
-  const titre = iNiv > 0 ? lettres(lignes[iNiv - 1].texte) : null;
-  const niveau = iNiv >= 0 ? Number(lignes[iNiv].texte.match(/\d+/)[0]) : null;
+  const { titre, niveau } = titreEtNiveau(lignes);
   const pm = lignes.map(l => l.texte.match(/prix\s*moyen\s*:?\s*(\d[\d  ]*)/i)).find(Boolean);
 
   const rangs = lignes.filter(l => /ACHETER/i.test(l.texte)).map(l => {
@@ -133,8 +158,10 @@ export async function lireDetail(pre, reconnaitre) {
     const pas = rangs.length > 1 ? (centre(rangs.at(-1).ligne.bbox) - centre(rangs[0].ligne.bbox)) / (rangs.length - 1) : 100;
     annonces = rangs.map(r => {
       const c = proche(chiffres, centre(r.ligne.bbox), pas / 3);
-      const n = c ? nombre(c.texte) : null;
-      return { lot: r.lot, prix: n?.valeur ?? null, sur: !!n?.valide };
+      if (!c) return { lot: r.lot, prix: null, sur: false };
+      const { lot, texte } = separerLot(c);
+      const n = nombre(texte);
+      return { lot: r.lot ?? lot, prix: n?.valeur ?? null, sur: !!n?.valide };
     });
   }
   return { titre, niveau, prixMoyen: pm ? nombre(pm[1]).valeur : null, annonces };
@@ -158,9 +185,7 @@ function partJaune(orig, b, echelle) {
 export async function lireCourbe(pre, reconnaitre, orig = null, echelle = 2) {
   const lignes = rangees(await reconnaitre(pre, {}));
   const texte = lignes.map(l => l.texte).join('\n');
-  const iNiv = lignes.findIndex(l => /^niv(eau)?\.?\s*\d/i.test(l.texte.trim()));
-  const titre = iNiv > 0 ? lettres(lignes[iNiv - 1].texte) : null;
-  const niveau = iNiv >= 0 ? Number(lignes[iNiv].texte.match(/\d+/)[0]) : null;
+  const { titre, niveau } = titreEtNiveau(lignes);
   const vendus = texte.match(/(\d[\d \u00a0]*)\s*articles?\s*vendus?/i);
   const moyen = texte.match(/moyen\s*:?\s*(\d[\d \u00a0]*)/i);
 
