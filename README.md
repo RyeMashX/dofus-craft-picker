@@ -9,8 +9,25 @@ Aucune lecture réseau du client, aucun clic automatisé : uniquement des captur
 
 Étape 1 : moteur de calcul, testé (`npm test`, Node 20+).
 Étape 2 : catalogue DofusDB (`data/catalogue.json`, régénéré par `node scripts/catalogue.mjs`) : 642 équipements craftables 190-200, 538 ressources ; 554 craftables avec les métiers actuels (Forgeron 190).
-Étape 3 : base de prix horodatée et entonnoir (quoi relever ensuite, classement). Focus actuel : items niveau 200 (364 craftables).
+Étape 3 : base de prix horodatée, base d'évaluation, listes de scan priorisées et plan de scan. Focus actuel : items niveau 200 (364 craftables).
 Pas encore d'interface.
+
+## Plan de scan
+
+1. **Passe initiale** : volumes de tous les items du focus, puis prix moyens (liste HDV équipements et ressources, plusieurs lignes par capture).
+2. **Priorisation** : le prix moyen ne sert qu'à estimer un rendement grossier pour décider quoi scanner. Il n'entre jamais dans la décision d'achat.
+3. **Base d'évaluation** : un item n'y entre que lorsqu'il est entièrement scanné et frais (volume, annonces, lots de toutes ses ressources).
+4. **Trois listes de scan**, chacune triable, avec un tag urgent / à faire / plus tard :
+
+| Liste | Contenu | Le score monte quand… |
+|---|---|---|
+| Volumes | tous les items du focus | le relevé vieillit (validité 14 j) et le dernier volume est proche du seuil de 60 |
+| Prix items | items ≥ 60 ventes/mois | le relevé vieillit (2 j) et le rendement estimé est élevé |
+| Ressources | ressources des items ≥ 60 ventes/mois | le relevé vieillit (3 j) et la ressource sert à des items prometteurs |
+
+`score = âge / validité × poids` (jamais relevé = 1,5). Urgent à partir de 1,2, à faire à partir de 0,8.
+
+5. **Plan pour un temps donné** : on prend les tâches urgentes puis à faire, par score, jusqu'à épuiser le temps disponible (15 s par capture d'item, 10 s par ressource, à calibrer).
 
 ## Fraîcheur des relevés
 
@@ -19,8 +36,7 @@ Pas encore d'interface.
 | Volume de ventes d'un équipement | 14 jours |
 | Annonces en vente d'un équipement | 2 jours |
 | Lots x1/x10/x100 d'une ressource | 3 jours |
-
-L'entonnoir ne demande que ce qui manque ou est périmé, dans l'ordre : volumes, puis prix des items qui passent le volume, puis ressources des items restants (les plus partagées d'abord).
+| Prix moyen (liste HDV) | 14 jours |
 
 ## Processus cible
 
@@ -90,7 +106,8 @@ src/marge.js       prix de vente visé, marge, éligibilité
 src/allocation.js  répartition du budget
 src/catalogue.js   filtre par métiers, ressources à relever
 src/base.js        base de prix horodatée, export / import
-src/entonnoir.js   ce qu'il reste à relever, classement des items
+src/entonnoir.js   estimation (pour prioriser) et base d'évaluation (pour décider)
+src/priorites.js   listes de scan, tags de priorité, plan de scan
 scripts/catalogue.mjs  génération du catalogue depuis DofusDB
 data/catalogue.json    catalogue généré
 tests/             tests du moteur (node --test)

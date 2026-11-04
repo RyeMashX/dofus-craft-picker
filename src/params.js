@@ -28,7 +28,13 @@ export const PARAMS = {
     volume: 14,             // volume de ventes : rafraîchi toutes les 2 semaines
     prixItem: 2,            // annonces en vente d'un équipement
     ressources: 3,          // lots x1/x10/x100 d'une ressource
+    prixMoyen: 14,          // prix moyen lu dans la liste HDV (sert seulement à prioriser)
   },
+
+  // Plan de scan
+  tempsScan: { volume: 15, prixItem: 15, ressource: 10 }, // secondes par capture (à calibrer)
+  seuilsPriorite: { urgent: 1.2, aFaire: 0.8 },           // score ≥ urgent → "urgent", ≥ aFaire → "à faire", sinon "plus tard"
+  demandeRef: 3,            // une ressource utile à ~3 items prometteurs a le poids maximal
 
   // FM et effort
   inclureFm: false,         // phase initiale : marge / coût du craft, sans la FM
