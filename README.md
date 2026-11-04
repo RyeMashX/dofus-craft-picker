@@ -40,15 +40,15 @@ Pour une quantité `q` d'une ressource, l'outil teste toutes les combinaisons de
 
 1. **Profondeur** : le prix affiché n'est garanti que pour les premiers lots (3 lots x1, 2 lots x10, 1 lot x100). Au-delà, chaque lot est compté **+10 %**, parce que la ligne se vide et que le prix remonte.
 2. **Surplus** : les unités en trop sont revendues à **80 %** du prix x1 à l'unité, ou à 80 % du prix x10 par paquets de 10 (le plus avantageux), taxe déduite. Une unité revendue ne compte jamais plus que ce qu'elle a coûté.
-3. **Seuil** : on n'achète plus que nécessaire que si ça fait gagner au moins **10 %** par rapport au meilleur plan sans surplus.
+3. **Seuil** : on n'achète plus que nécessaire que si ça fait gagner au moins **20 %** par rapport au meilleur plan sans surplus.
 4. **Alerte** : si le plan prudent coûte plus de **20 %** de plus que le plan optimiste (tout au prix affiché), la ressource est marquée **à revérifier** avant achat.
 
 Exemple réel, Étoffe sanglante (x1 2 874, x10 22 949, x100 700 012) :
 
 | Besoin | Plan retenu | Coût compté | Commentaire |
 |---|---|---|---|
-| 2 | 1 × x10 | 4 957 | 14 % moins cher que 2 × x1 (5 748) en revendant 8 unités |
-| 7 | 1 × x10 | 16 202 | contre 21 268 en x1 |
+| 2 | 2 × x1 | 5 748 | le x10 (4 957 en revendant 8 unités) ne fait gagner que 14 %, sous le seuil de 20 % |
+| 7 | 1 × x10 | 16 202 | 24 % moins cher que 21 268 en x1 |
 | 150 | 15 × x10 | 374 069 | 2 lots au prix affiché, 13 à +10 % ; optimiste 344 235 (écart 9 %, pas d'alerte) |
 
 Ces paramètres sont des hypothèses de départ : le journal servira à les calibrer.

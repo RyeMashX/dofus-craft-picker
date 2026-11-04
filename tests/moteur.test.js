@@ -10,18 +10,18 @@ const p = PARAMS;
 // Relevé réel du 04/11 : Étoffe sanglante, x1 2 874 / x10 22 949 / x100 700 012
 const etoffe = { 1: 2874, 10: 22949, 100: 700012 };
 
-test('lots : besoin de 2 → x10 car 14 % moins cher que 2 × x1, même en revendant 8 unités', () => {
+test('lots : besoin de 2 → x1, le x10 ne fait gagner que 14 % (seuil 20 %)', () => {
   const r = planAchat(2, etoffe, p);
-  assert.deepEqual(r.lots, { 1: 0, 10: 1, 100: 0 });
-  assert.equal(Math.round(r.cout), 4957);
+  assert.deepEqual(r.lots, { 1: 2, 10: 0, 100: 0 });
+  assert.equal(r.cout, 5748);
 });
 
-test('lots : besoin de 2, x10 seulement 10 % moins cher → on reste en x1', () => {
+test('lots : besoin de 2, x10 à peine moins cher → on reste en x1', () => {
   const r = planAchat(2, { 1: 2600, 10: 21000 }, p);
   assert.deepEqual(r.lots, { 1: 2, 10: 0, 100: 0 });
 });
 
-test('lots : besoin de 7 → un x10 et on revend le surplus', () => {
+test('lots : besoin de 7 → un x10 (24 % moins cher) et on revend le surplus', () => {
   const r = planAchat(7, etoffe, p);
   assert.deepEqual(r.lots, { 1: 0, 10: 1, 100: 0 });
   assert.equal(r.surplus, 3);
