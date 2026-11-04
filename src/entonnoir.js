@@ -7,7 +7,7 @@
 //   C'est la seule qui sert à décider quoi crafter.
 
 import { itemsCraftables, versMoteur } from './catalogue.js';
-import { fraicheur, offresFraiches } from './base.js';
+import { etatItem, niveauRessource } from './fraicheur.js';
 import { prixVenteEstime, evaluerItem } from './marge.js';
 import { planAchat } from './lots.js';
 
@@ -48,23 +48,36 @@ export function potentiel(rendement, p) {
   return Math.max(0, Math.min(1, rendement / (2 * p.margeMin)));
 }
 
-// Base d'évaluation : items entièrement scannés et frais.
+// Base d'évaluation (plan de craft) : items « utilisables », c'est-à-dire sans donnée orange ni noire
+// (jaune toléré partout). Ceux qui ne sont pas « prêts » portent un avertissement.
 export function baseEvaluation(catalogue, base, p, maintenant = Date.now()) {
-  const offres = offresFraiches(base, p.validite.ressources, maintenant);
+  const offres = {};
+  for (const [id, r] of Object.entries(base.ressources)) {
+    const n = niveauRessource(r, maintenant);
+    if (n === 'vert' || n === 'jaune') offres[id] = r.lots.valeurs;
+  }
   const evalues = [], items = [];
   for (const it of itemsFocus(catalogue, p)) {
-    const b = base.items[it.id] ?? {};
-    if (fraicheur(b.volume, p.validite.volume, maintenant) !== 'frais') continue;
-    if (fraicheur(b.prix, p.validite.prixItem, maintenant) !== 'frais') continue;
-    if (!it.recette.every(r => offres[r.id])) continue;
+    const etat = etatItem(it, base, maintenant);
+    if (!etat.utilisable) continue;
+    const b = base.items[it.id];
     const prixVente = prixVenteEstime(b.prix.valeurs, p).estime;
     const m = versMoteur(it, catalogue, { volumeMois: b.volume.valeur, prixVente });
+    m.avertissement = etat.pret ? null : avertissement(etat);
     items.push(m);
-    evalues.push(evaluerItem(m, offres, p, 1));
+    evalues.push({ ...evaluerItem(m, offres, p, 1), avertissement: m.avertissement });
   }
   return {
     items, offres,
     eligibles: evalues.filter(e => e.eligible).sort((a, b) => b.rendement - a.rendement),
     ecartes: evalues.filter(e => !e.eligible),
   };
+}
+
+function avertissement(e) {
+  const m = [];
+  if (e.volume === 'jaune') m.push('volume à risque');
+  if (e.prix === 'jaune') m.push('prix de vente à risque');
+  if (e.compte.jaune > 2) m.push(`${e.compte.jaune} ressources à risque`);
+  return m.join(', ') || 'données à risque';
 }

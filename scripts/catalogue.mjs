@@ -51,6 +51,16 @@ for (const r of recettes) {
   });
 }
 
+// Nom des catégories de ressources (celles des filtres de l'HDV ressources : Aile, Alliage, Bois…)
+const typeIds = [...new Set(Object.values(ressources).map(r => r.typeId))];
+const types = {};
+for (let i = 0; i < typeIds.length; i += 40) {
+  const q = typeIds.slice(i, i + 40).map(id => `id[$in][]=${id}`).join('&');
+  const r = await fetch(`${API}/item-types?$limit=50&${q}`);
+  for (const t of (await r.json()).data) types[t.id] = t.name.fr;
+}
+for (const r of Object.values(ressources)) r.type = types[r.typeId] ?? `Type ${r.typeId}`;
+
 items.sort((a, b) => b.niveau - a.niveau || a.nom.localeCompare(b.nom, 'fr'));
 const catalogue = {
   source: 'api.dofusdb.fr',

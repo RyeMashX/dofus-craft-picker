@@ -11,6 +11,7 @@
   <h1>Craft Dofus</h1>
   <div id="view-switch" class="seg">
     <button data-view="scan">Scan</button>
+    <button data-view="donnees">Données</button>
     <button data-view="resultats">Résultats</button>
     <button data-view="base">Base</button>
   </div>
@@ -35,34 +36,13 @@
   </section>
 
   <section class="card view-scan">
-    <div class="row"><h2>Passe initiale</h2><span class="muted small">items niveau <span id="focus-lvl"></span></span></div>
-    <div id="passe"></div>
-  </section>
-
-  <section class="card view-scan">
-    <div class="row">
-      <h2>Plan de scan</h2>
-      <div class="spacer"></div>
-      <label class="small muted sel">J'ai <input id="minutes" type="number" min="1" step="1" class="num small"> min</label>
-    </div>
+    <div class="row"><h2>Plan de scan</h2></div>
     <div id="plan"></div>
   </section>
 
-  <section class="card view-scan">
-    <div class="row">
-      <div id="list-switch" class="seg">
-        <button data-list="volumes">Volumes</button>
-        <button data-list="prixItems">Prix items</button>
-        <button data-list="ressources">Ressources</button>
-      </div>
-      <div class="spacer"></div>
-      <select id="tag-filter" class="small">
-        <option value="">tous</option><option value="urgent">urgent</option><option value="à faire">à faire</option><option value="plus tard">plus tard</option>
-      </select>
-    </div>
-    <input id="list-filter" type="search" placeholder="Filtrer par nom" autocomplete="off">
-    <div id="liste"></div>
-    <p class="muted small">Clic sur une ligne : saisie à la main.</p>
+  <!-- ===== Données ===== -->
+  <section class="card view-donnees hidden">
+    <div id="donnees"></div>
   </section>
 
   <!-- ===== Résultats ===== -->

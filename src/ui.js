@@ -3,7 +3,9 @@
 import { PARAMS } from './params.js';
 import { creerBase, majVolume, majPrixItem, majRessource, exporter, importer, JOUR } from './base.js';
 import { itemsFocus, baseEvaluation } from './entonnoir.js';
-import { listesScan, planScan } from './priorites.js';
+import { renderPlanScan, tempsMesures } from './vue-plan.js';
+import { renderDonnees } from './vue-donnees.js';
+import { etatItem } from './fraicheur.js';
 import { allouer } from './allocation.js';
 import { identifier, appliquer } from './ocr/identification.js';
 import { trouver, normaliser } from './ocr/correspondance.js';
@@ -25,7 +27,7 @@ const ZONES_DEFAUT = {
 };
 const REGLAGES_DEFAUT = {
   volumeMin: PARAMS.volumeMin, margeMin: PARAMS.margeMin * 100, modePrixVente: PARAMS.modePrixVente,
-  forgeron: PARAMS.metiers.Forgeron, effort: PARAMS.coutEffortParCraft / 1000,
+  forgeron: PARAMS.metiers.Forgeron, effort: PARAMS.coutEffortParCraft / 1000, partCraft: 70,
 };
 
 const S = {
@@ -49,6 +51,8 @@ function params() {
     volumeMin: +r.volumeMin, margeMin: +r.margeMin / 100, modePrixVente: r.modePrixVente,
     coutEffortParCraft: +r.effort * 1000,
     metiers: { ...PARAMS.metiers, Forgeron: +r.forgeron },
+    partCraft: (+r.partCraft || 70) / 100,
+    ...(({ tempsScan, mesures }) => ({ tempsScan, tempsMesures: mesures }))(tempsMesures(S.etat.journal, PARAMS.tempsScan)),
   };
 }
 
@@ -70,7 +74,6 @@ const age = d => {
   return `il y a ${Math.round(j)} j`;
 };
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const tagHtml = t => `<span class="tag ${t === 'urgent' ? 'urgent' : t === 'à faire' ? 'faire' : 'tard'}">${t}</span>`;
 const nombreSaisi = s => { const v = Number(String(s).replace(/[^\d]/g, '')); return String(s).trim() && Number.isFinite(v) ? v : null; };
 
 // ---------- rendu ----------
@@ -78,7 +81,7 @@ function renderVue() {
   const v = S.etat.vue;
   root.body.className = 'view-' + v + (root !== document ? ' pip' : '');
   $$('#view-switch button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
-  for (const nom of ['scan', 'resultats', 'base']) $$(`.view-${nom}`).forEach(el => el.classList.toggle('hidden', nom !== v));
+  for (const nom of ['scan', 'donnees', 'resultats', 'base']) $$(`.view-${nom}`).forEach(el => el.classList.toggle('hidden', nom !== v));
 }
 
 function renderCapture() {
@@ -89,36 +92,6 @@ function renderCapture() {
   b.disabled = !Cap.estSupporte();
   $('#scan').disabled = !on;
   $('#zones-btn').disabled = !on;
-}
-
-function renderPasse(cat, p) {
-  const focus = itemsFocus(cat, p);
-  const ids = new Set(focus.flatMap(i => i.recette.map(r => r.id)));
-  const vol = focus.filter(i => S.base.items[i.id]?.volume).length;
-  const pmI = focus.filter(i => S.base.items[i.id]?.prixMoyen).length;
-  const pmR = [...ids].filter(id => S.base.ressources[id]?.prixMoyen).length;
-  const barre = (l, n, t, aide) => `<div><div class="bar-l"><span>${l} <span class="muted">${aide}</span></span><span>${n} / ${t}</span></div><div class="bar"><i style="width:${t ? (100 * n / t).toFixed(1) : 0}%"></i></div></div>`;
-  $('#focus-lvl').textContent = p.focusNiveaux[0] === p.focusNiveaux[1] ? p.focusNiveaux[0] : p.focusNiveaux.join('-');
-  $('#passe').innerHTML = `<div class="bars">
-    ${barre('Volumes', vol, focus.length, 'courbe, onglet 30 jours')}
-    ${barre('Prix moyens items', pmI, focus.length, 'liste HDV équipements')}
-    ${barre('Prix moyens ressources', pmR, ids.size, 'liste HDV ressources')}
-  </div>`;
-}
-
-const ACTION = { volume: 'Courbe 30 j', prixItem: 'Annonces', ressource: 'Lots ressource' };
-
-function renderPlan(listes, p) {
-  const plan = planScan(listes, S.etat.minutes, p);
-  if (!plan.taches.length) { $('#plan').innerHTML = '<p class="muted small">Rien d\'urgent : la base est à jour.</p>'; return; }
-  const min = Math.ceil(plan.secondes / 60);
-  $('#plan').innerHTML = `<p class="small">${plan.taches.length} scans, environ ${min} min :
-      ${plan.parType.volume} courbes, ${plan.parType.prixItem} annonces, ${plan.parType.ressource} ressources.
-      ${plan.restantes ? `<span class="muted">${plan.restantes} autres en attente.</span>` : ''}</p>
-    <table class="rt"><tbody>${plan.taches.slice(0, 12).map(t => `<tr><td>${tagHtml(t.tag)}</td><td class="muted">${ACTION[t.type]}</td><td class="cn">${esc(t.nom)}</td>
-      <td class="r">${boutonCopier(t.nom, t.type)}</td></tr>`).join('')}</tbody></table>
-    ${plan.taches.length > 12 ? `<p class="muted small">… et ${plan.taches.length - 12} autres dans ce plan (détail dans les listes ci-dessous).</p>` : ''}`;
-  brancherCopier('#plan');
 }
 
 const boutonCopier = (nom, type) => `<button class="copy${S.copies.has(nom) ? ' fait' : ''}" data-nom="${esc(nom)}" data-type="${type}" title="Copier le nom, à coller dans la recherche de l'HDV">${S.copies.has(nom) ? '✓' : COPIER}</button>`;
@@ -150,82 +123,6 @@ async function copier(texte, bouton) {
   S.copies.add(texte);
   bouton.innerHTML = '✓'; bouton.classList.add('fait');
   statut(`« ${texte} » copié : colle-le dans la recherche de l'HDV.`);
-}
-
-// Onglet Scan : listes compactes (copier · nom · valeur · relevé · priorité) qui tiennent dans la fenêtre flottante.
-// Le tableau complet viendra dans un onglet dédié.
-const valeurRessource = x => x.lots ? (x.lots[1] ?? x.lots[10] ?? x.lots[100]) : null;
-const lotRessource = x => !x.lots ? '' : x.lots[1] != null ? '' : x.lots[10] != null ? ' <span class="muted">x10</span>' : ' <span class="muted">x100</span>';
-const COLONNES = {
-  volumes: { t: 'Vendus', v: x => fmt(x.volume), tri: x => x.volume },
-  prixItems: { t: 'Prix min', v: x => fmtK(x.prixMin), tri: x => x.prixMin },
-  ressources: { t: 'Prix x1', v: x => fmtK(valeurRessource(x)) + lotRessource(x), tri: valeurRessource },
-};
-const ageCourt = d => {
-  if (!d) return '–';
-  const j = (Date.now() - d) / JOUR;
-  return j < 1 / 24 ? 'now' : j < 1 ? `${Math.round(j * 24)} h` : `${Math.round(j)} j`;
-};
-const TAG_COURT = { urgent: 'urgent', 'à faire': 'à faire', 'plus tard': 'tard' };
-const tagCourt = t => `<span class="tag ${t === 'urgent' ? 'urgent' : t === 'à faire' ? 'faire' : 'tard'}">${TAG_COURT[t]}</span>`;
-const valeurTri = (x, cle, nom) => cle === 'valeur' ? COLONNES[nom].tri(x) : x[cle];
-
-function renderListe(listes) {
-  const nom = S.etat.liste;
-  $$('#list-switch button').forEach(b => b.classList.toggle('on', b.dataset.list === nom));
-  const cols = COLONNES[nom];
-  const { cle, sens } = S.etat.tri;
-  const f = S.etat.filtre.toLowerCase();
-  let rows = listes[nom].filter(x => (!S.etat.tag || x.tag === S.etat.tag) && (!f || x.nom.toLowerCase().includes(f)));
-  if (['nom', 'valeur', 'date', 'score'].includes(cle)) {
-    rows = [...rows].sort((a, b) => {
-      const va = valeurTri(a, cle, nom), vb = valeurTri(b, cle, nom);
-      if (va == null && vb == null) return 0; if (va == null) return 1; if (vb == null) return -1;
-      return (typeof va === 'string' ? va.localeCompare(vb, 'fr') : va - vb) * sens;
-    });
-  }
-  const vides = { volumes: 'Aucun item dans le focus.', prixItems: 'Aucun item au-dessus du seuil de volume pour l\'instant : commence par les volumes.', ressources: 'Les ressources apparaissent une fois des items au-dessus du seuil de volume.' };
-  if (!rows.length) { $('#liste').innerHTML = `<p class="muted small">${listes[nom].length ? 'Aucune ligne ne correspond au filtre.' : vides[nom]}</p>`; return; }
-  const th = (k, t, cl = '') => `<th class="sort ${cl} ${k === cle ? 'on' : ''}" data-cle="${k}">${t}${k === cle ? (sens > 0 ? ' ▴' : ' ▾') : ''}</th>`;
-  $('#liste').innerHTML = `<table class="rt compact"><colgroup><col class="c-copie"><col><col class="c-val"><col class="c-date"><col class="c-prio"></colgroup>
-    <thead><tr><th></th>${th('nom', 'Nom')}${th('valeur', cols.t, 'r')}${th('date', 'Date', 'r')}${th('score', 'Prio', 'r')}</tr></thead>
-    <tbody>${rows.slice(0, S.plusLignes).map(x => `<tr class="click" data-id="${x.id}">
-      <td>${boutonCopier(x.nom, x.type)}</td><td class="nom" title="${esc(x.nom)}">${esc(x.nom)}</td>
-      <td class="r">${cols.v(x)}</td><td class="r muted">${ageCourt(x.date)}</td><td class="r">${tagCourt(x.tag)}</td></tr>`).join('')}</tbody></table>
-    <p class="muted small">${rows.length} lignes${rows.length > S.plusLignes ? ` · <button class="link small" id="plus">afficher plus</button>` : ''}</p>`;
-  $$('#liste th.sort').forEach(th => th.onclick = () => {
-    const k = th.dataset.cle;
-    S.etat.tri = { cle: k, sens: S.etat.tri.cle === k ? -S.etat.tri.sens : (k === 'nom' ? 1 : -1) };
-    sauverEtat(); renderTout();
-  });
-  $$('#liste tr.click').forEach(tr => tr.onclick = () => saisieManuelle(nom, Number(tr.dataset.id)));
-  brancherCopier('#liste');
-  const plus = $('#plus'); if (plus) plus.onclick = () => { S.plusLignes += 100; renderTout(); };
-}
-
-// Saisie à la main depuis les listes
-function saisieManuelle(liste, id) {
-  const cat = S.catalogue, w = root.defaultView ?? window;
-  const now = Date.now();
-  if (liste === 'ressources') {
-    const nom = cat.ressources[id]?.nom;
-    const l = S.base.ressources[id]?.lots?.valeurs ?? {};
-    const s = w.prompt(`${nom} : prix des lots x1 / x10 / x100 (vide si absent)`, [l[1] ?? '', l[10] ?? '', l[100] ?? ''].join(' / '));
-    if (s == null) return;
-    const [a, b, c] = s.split('/').map(nombreSaisi);
-    const offre = {}; if (a) offre[1] = a; if (b) offre[10] = b; if (c) offre[100] = c;
-    if (Object.keys(offre).length) majRessource(S.base, id, offre, now);
-  } else {
-    const nom = cat.items.find(i => i.id === id)?.nom;
-    if (liste === 'volumes') {
-      const s = w.prompt(`${nom} : articles vendus sur 30 jours`, S.base.items[id]?.volume?.valeur ?? '');
-      if (s == null) return; const v = nombreSaisi(s); if (v != null) majVolume(S.base, id, v, now);
-    } else {
-      const s = w.prompt(`${nom} : prix des annonces les moins chères, séparés par des virgules`, (S.base.items[id]?.prix?.valeurs ?? []).join(', '));
-      if (s == null) return; const v = s.split(/[,;]/).map(nombreSaisi).filter(Boolean); if (v.length) majPrixItem(S.base, id, v, now);
-    }
-  }
-  sauverBase(); renderTout();
 }
 
 // ---------- dernière lecture : enregistrée automatiquement, modifiable ----------
@@ -440,6 +337,14 @@ function brancherDiag() {
 }
 
 // Enregistre une lecture (identifiée) dans la base ; retourne les messages
+// Journal des scans (sert à mesurer la durée réelle d'un scan, par type)
+function noterScan(L) {
+  const k = L.type === 'courbe' ? 'volume' : L.type === 'detail' ? (L.identifie.objet?.genre === 'item' ? 'prixItem' : 'ressource') : null;
+  if (!k || L.manuel) return;
+  S.etat.journal = [...(S.etat.journal ?? []), { k, t: Date.now() }].slice(-60);
+  sauverEtat();
+}
+
 function enregistrer(L) {
   const res = appliquer(S.base, L.type, L.type === 'liste' ? L.identifie.filter(x => !x.inconnu && !x.retire) : L.identifie, L.date);
   sauverBase();
@@ -473,16 +378,26 @@ function validerEdition() {
   renderTout();
 }
 
+// Message éphémère (fin de catégorie, fin d'HDV)
+function toast(msg) {
+  const el = root.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  root.body.appendChild(el);
+  setTimeout(() => el.classList.add('sortie'), 1800);
+  setTimeout(() => el.remove(), 2400);
+}
+
 function statut(msg) { const el = $('#scan-status'); if (el) el.textContent = msg; }
 
 // ---------- résultats ----------
 function renderResultats(cat, p) {
   const ev = baseEvaluation(cat, S.base, p);
   const budget = S.etat.budget * 1e6;
-  $('#eval-sub').textContent = `${ev.eligibles.length} rentables sur ${ev.eligibles.length + ev.ecartes.length} entièrement scannés`;
+  const avert = id => { const a = ev.items.find(i => i.id === id)?.avertissement; return a ? ` <span class="tag faire" title="${esc(a)}">⚠ ${esc(a)}</span>` : ''; };
+  $('#eval-sub').textContent = `${ev.eligibles.length} rentables sur ${ev.eligibles.length + ev.ecartes.length} utilisables`;
 
   if (!ev.items.length) {
-    $('#allocation').innerHTML = '<p class="muted small">Aucun item entièrement scanné pour l\'instant (volume, annonces et lots de toutes les ressources, relevés récents).</p>';
+    $('#allocation').innerHTML = '<p class="muted small">Aucun item utilisable pour l\'instant : il faut un volume et un prix de vente récents, et les lots de toutes les ressources relevés depuis moins d\'une semaine. Lance un plan de scan.</p>';
   } else {
     const a = allouer(ev.items, ev.offres, budget, p);
     const lots = l => [[100, 'x100'], [10, 'x10'], [1, 'x1']].filter(([t]) => l.plan.lots[t]).map(([t, n]) => `${l.plan.lots[t]} × ${n}`).join(' + ');
@@ -493,7 +408,7 @@ function renderResultats(cat, p) {
         <div class="kpi"><div class="v">${a.crafts}</div><div class="l">crafts à faire</div></div>
       </div>
       <table class="rt"><thead><tr><th>Item</th><th class="r">Crafts</th><th class="r">Coût</th><th class="r">Marge</th><th class="r">Rend.</th></tr></thead><tbody>
-      ${a.choix.map(o => `<tr><td class="cn">${esc(o.nom)}${o.alertes.length ? ` <span class="tag faire" title="${esc(o.alertes.join(', '))}">à revérifier</span>` : ''}</td><td class="r">${o.n}</td><td class="r">${fmtK(o.capital)}</td><td class="r">${fmtK(o.marge)}</td><td class="r">${pct(o.rendement)}</td></tr>
+      ${a.choix.map(o => `<tr><td class="cn">${esc(o.nom)}${avert(o.id)}${o.alertes.length ? ` <span class="tag faire" title="${esc(o.alertes.join(', '))}">à revérifier</span>` : ''}</td><td class="r">${o.n}</td><td class="r">${fmtK(o.capital)}</td><td class="r">${fmtK(o.marge)}</td><td class="r">${pct(o.rendement)}</td></tr>
         <tr><td colspan="5"><details class="more"><summary>liste de courses</summary><table class="rt courses"><tbody>
         ${o.craft.lignes.map(l => `<tr><td class="cn">${esc(l.nom)}</td><td class="r">${l.q}</td><td>${lots(l)}</td><td class="r">${fmtK(l.plan.cout)}</td><td>${l.plan.alerte ? '<span class="tag faire">à revérifier</span>' : ''}</td></tr>`).join('')}
         </tbody></table></details></td></tr>`).join('')}
@@ -504,7 +419,7 @@ function renderResultats(cat, p) {
 
   $('#evalues').innerHTML = ev.eligibles.length + ev.ecartes.length ? `
     <table class="rt"><thead><tr><th>Item</th><th class="r">Vol.</th><th class="r">Vente</th><th class="r">Craft</th><th class="r">Rend.</th></tr></thead><tbody>
-    ${ev.eligibles.map(e => { const it = ev.items.find(i => i.id === e.id); return `<tr><td class="cn">${esc(e.nom)}</td><td class="r">${it.volumeMois}</td><td class="r">${fmtK(it.prixVente)}</td><td class="r">${fmtK(e.coutCraft)}</td><td class="r ok">${pct(e.rendement)}</td></tr>`; }).join('')}
+    ${ev.eligibles.map(e => { const it = ev.items.find(i => i.id === e.id); return `<tr><td class="cn">${esc(e.nom)}${avert(e.id)}</td><td class="r">${it.volumeMois}</td><td class="r">${fmtK(it.prixVente)}</td><td class="r">${fmtK(e.coutCraft)}</td><td class="r ok">${pct(e.rendement)}</td></tr>`; }).join('')}
     </tbody></table>
     ${ev.ecartes.length ? `<details class="more"><summary>${ev.ecartes.length} écartés</summary><table class="rt"><tbody>
       ${ev.ecartes.map(e => `<tr><td class="cn">${esc(e.nom)}</td><td class="small muted">${esc(e.raisons.join(' ; '))}</td></tr>`).join('')}</tbody></table></details>` : ''}`
@@ -526,9 +441,17 @@ function renderBase(cat, p) {
     <span>Rendement minimum (%)</span><input class="num" data-reg="margeMin" value="${r.margeMin}">
     <span>Prix de vente visé</span><select data-reg="modePrixVente"><option value="min" ${r.modePrixVente === 'min' ? 'selected' : ''}>annonce la moins chère</option><option value="moy3" ${r.modePrixVente === 'moy3' ? 'selected' : ''}>moyenne des 3 moins chères</option></select>
     <span>Effort par craft (k kamas)</span><input class="num" data-reg="effort" value="${r.effort}">
-    <span>Niveau Forgeron</span><input class="num" data-reg="forgeron" value="${r.forgeron}">`;
+    <span>Niveau Forgeron</span><input class="num" data-reg="forgeron" value="${r.forgeron}">
+    <span>Plan de scan : part pour le craft (%), le reste en entretien</span><input class="num" data-reg="partCraft" value="${r.partCraft}">`;
   $$('#reglages [data-reg]').forEach(el => el.onchange = () => { S.etat.reglages[el.dataset.reg] = el.value; sauverEtat(); renderTout(); });
 }
+
+// Contexte passé aux vues (vue-plan.js, vue-donnees.js)
+const ctx = {
+  S, $: s => $(s), $$: s => $$(s), params, sauverBase, sauverEtat, renderTout: () => renderTout(), toast,
+  esc, fmt, fmtK, pct, age, nombreSaisi, normaliser,
+  boutonCopier: (n, t) => boutonCopier(n, t), brancherCopier: s => brancherCopier(s), choisirMode: m => choisirMode(m),
+};
 
 function renderTout() {
   renderVue();
@@ -536,16 +459,10 @@ function renderTout() {
   renderLecture();
   if (!S.catalogue) return;
   const p = params();
-  if (S.etat.vue === 'scan') {
-    const listes = listesScan(S.catalogue, S.base, p);
-    renderPasse(S.catalogue, p);
-    renderPlan(listes, p);
-    renderListe(listes);
-    $('#minutes').value = S.etat.minutes;
-  } else if (S.etat.vue === 'resultats') {
-    $('#budget').value = S.etat.budget;
-    renderResultats(S.catalogue, p);
-  } else renderBase(S.catalogue, p);
+  if (S.etat.vue === 'scan') renderPlanScan(ctx);
+  else if (S.etat.vue === 'donnees') renderDonnees(ctx);
+  else if (S.etat.vue === 'resultats') { $('#budget').value = S.etat.budget; renderResultats(S.catalogue, p); }
+  else renderBase(S.catalogue, p);
 }
 
 // ---------- capture et scan ----------
@@ -583,6 +500,7 @@ async function scanner() {
         L.enregistre = L.messages.length > 0;
       }
       S.derniere = L;
+      if (L.enregistre) noterScan(L);
       if (!L.enregistre && !o && L.type !== 'liste') ouvrirSaisie(preremplir(L.type, brut.lecture));
       statut(L.enregistre ? 'Enregistré. Corrige avec « Modifier » si besoin, sinon passe au suivant.' : 'Lecture non enregistrée.');
     }
@@ -638,7 +556,6 @@ function ouvrirZones() {
 // ---------- événements ----------
 function brancher() {
   $$('#view-switch button').forEach(b => b.onclick = () => { S.etat.vue = b.dataset.view; sauverEtat(); renderTout(); });
-  $$('#list-switch button').forEach(b => b.onclick = () => { S.etat.liste = b.dataset.list; S.etat.tri = { cle: 'score', sens: -1 }; S.plusLignes = 50; sauverEtat(); renderTout(); });
   $('#cap-start').onclick = basculerCapture;
   $('#scan').onclick = scanner;
   $('#mode').innerHTML = Object.entries(Cap.MODES).map(([k, m]) => `<option value="${k}">${m.libelle}</option>`).join('');
@@ -646,11 +563,7 @@ function brancher() {
   $('#mode').onchange = e => { S.etat.mode = e.target.value; sauverEtat(); renderSaisie(); };
   $('#saisir').onclick = () => { ouvrirSaisie(); renderSaisie(); };
   $('#zones-btn').onclick = ouvrirZones;
-  $('#minutes').onchange = e => { S.etat.minutes = Math.max(1, +e.target.value || 10); sauverEtat(); renderTout(); };
   $('#budget').onchange = e => { S.etat.budget = Math.max(0, Number(String(e.target.value).replace(',', '.')) || 0); sauverEtat(); renderTout(); };
-  $('#list-filter').oninput = e => { S.etat.filtre = e.target.value; renderTout(); };
-  $('#tag-filter').onchange = e => { S.etat.tag = e.target.value; sauverEtat(); renderTout(); };
-  $('#tag-filter').value = S.etat.tag;
   $('#base-export').onclick = () => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([exporter(S.base)], { type: 'application/json' }));
@@ -697,6 +610,7 @@ pipBtn.onclick = async () => {
 };
 
 // ---------- démarrage ----------
+window.__craft = { S, renderTout }; // accès pour les tests automatisés
 brancher();
 renderTout();
 fetch('data/catalogue.json').then(r => r.json()).then(c => { S.catalogue = c; renderTout(); })

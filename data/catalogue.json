@@ -28261,3766 +28261,4304 @@
    "nom": "Goultard",
    "niveau": 40,
    "typeId": 6,
-   "iconId": 6017
+   "iconId": 6017,
+   "type": "Épée"
   },
   "202": {
    "id": 202,
    "nom": "Razielle",
    "niveau": 52,
    "typeId": 6,
-   "iconId": 6016
+   "iconId": 6016,
+   "type": "Épée"
   },
   "395": {
    "id": 395,
    "nom": "Trèfle à 5 feuilles",
    "niveau": 40,
    "typeId": 36,
-   "iconId": 36067
+   "iconId": 36067,
+   "type": "Plante"
   },
   "426": {
    "id": 426,
    "nom": "Fibre de Chanvre",
    "niveau": 176,
    "typeId": 55,
-   "iconId": 55123
+   "iconId": 55123,
+   "type": "Étoffe"
   },
   "1557": {
    "id": 1557,
    "nom": "Rune Ga Pa",
    "niveau": 100,
    "typeId": 78,
-   "iconId": 78055
+   "iconId": 78055,
+   "type": "Rune de forgemagie"
   },
   "1660": {
    "id": 1660,
    "nom": "Ambre d'Abraknyde Sombre",
    "niveau": 78,
    "typeId": 50,
-   "iconId": 50638
+   "iconId": 50638,
+   "type": "Pierre précieuse"
   },
   "2299": {
    "id": 2299,
    "nom": "Mèche Rebelle d'Hell Mina",
    "niveau": 150,
    "typeId": 54,
-   "iconId": 54715
+   "iconId": 54715,
+   "type": "Poil"
   },
   "2639": {
    "id": 2639,
    "nom": "Fausse Griffe de Ceangal",
    "niveau": 95,
    "typeId": 6,
-   "iconId": 6035
+   "iconId": 6035,
+   "type": "Épée"
   },
   "4241": {
    "id": 4241,
    "nom": "Griffe Rose",
    "niveau": 100,
    "typeId": 6,
-   "iconId": 6041
+   "iconId": 6041,
+   "type": "Épée"
   },
   "6490": {
    "id": 6490,
    "nom": "Ambre du Chêne Mou",
    "niveau": 140,
    "typeId": 50,
-   "iconId": 50669
+   "iconId": 50669,
+   "type": "Pierre précieuse"
   },
   "7035": {
    "id": 7035,
    "nom": "Pyrute",
    "niveau": 180,
    "typeId": 40,
-   "iconId": 40708
+   "iconId": 40708,
+   "type": "Alliage"
   },
   "7102": {
    "id": 7102,
    "nom": "Épée du Chevalier de Glace",
    "niveau": 20,
    "typeId": 6,
-   "iconId": 6051
+   "iconId": 6051,
+   "type": "Épée"
   },
   "7192": {
    "id": 7192,
    "nom": "Griffe de Grizmine",
    "niveau": 111,
    "typeId": 6,
-   "iconId": 6059
+   "iconId": 6059,
+   "type": "Épée"
   },
   "7195": {
    "id": 7195,
    "nom": "Karnak",
    "niveau": 158,
    "typeId": 6,
-   "iconId": 6060
+   "iconId": 6060,
+   "type": "Épée"
   },
   "7385": {
    "id": 7385,
    "nom": "Braises bleutées",
    "niveau": 170,
    "typeId": 15,
-   "iconId": 164740
+   "iconId": 164740,
+   "type": "Ressource diverse"
   },
   "7438": {
    "id": 7438,
    "nom": "Rune Po",
    "niveau": 90,
    "typeId": 78,
-   "iconId": 78018
+   "iconId": 78018,
+   "type": "Rune de forgemagie"
   },
   "7442": {
    "id": 7442,
    "nom": "Rune Invo",
    "niveau": 85,
    "typeId": 78,
-   "iconId": 78019
+   "iconId": 78019,
+   "type": "Rune de forgemagie"
   },
   "8094": {
    "id": 8094,
    "nom": "L'Epée Rilleuse",
    "niveau": 169,
    "typeId": 6,
-   "iconId": 6066
+   "iconId": 6066,
+   "type": "Épée"
   },
   "8786": {
    "id": 8786,
    "nom": "Tresse du Poolay",
    "niveau": 150,
    "typeId": 54,
-   "iconId": 15020
+   "iconId": 15020,
+   "type": "Poil"
   },
   "8787": {
    "id": 8787,
    "nom": "Cloaque du Poolay",
    "niveau": 150,
    "typeId": 15,
-   "iconId": 15021
+   "iconId": 15021,
+   "type": "Ressource diverse"
   },
   "8789": {
    "id": 8789,
    "nom": "Chaussette du Kimbo",
    "niveau": 160,
    "typeId": 164,
-   "iconId": 15023
+   "iconId": 15023,
+   "type": "Vêtement"
   },
   "8790": {
    "id": 8790,
    "nom": "Rembourrage de Meupette",
    "niveau": 149,
    "typeId": 15,
-   "iconId": 15024
+   "iconId": 15024,
+   "type": "Ressource diverse"
   },
   "8792": {
    "id": 8792,
    "nom": "Coco du Bitouf aérien",
    "niveau": 152,
    "typeId": 111,
-   "iconId": 111003
+   "iconId": 111003,
+   "type": "Coquille"
   },
   "8793": {
    "id": 8793,
    "nom": "Coquille du Kaskargo",
    "niveau": 154,
    "typeId": 111,
-   "iconId": 111004
+   "iconId": 111004,
+   "type": "Coquille"
   },
   "8796": {
    "id": 8796,
    "nom": "Nœud de l'Abrakleur clair",
    "niveau": 156,
    "typeId": 38,
-   "iconId": 38002
+   "iconId": 38002,
+   "type": "Bois"
   },
   "8801": {
    "id": 8801,
    "nom": "Étoffe de Ouassingue",
    "niveau": 92,
    "typeId": 55,
-   "iconId": 55018
+   "iconId": 55018,
+   "type": "Étoffe"
   },
   "8808": {
    "id": 8808,
    "nom": "Étoffe du Roissingue",
    "niveau": 196,
    "typeId": 55,
-   "iconId": 55019
+   "iconId": 55019,
+   "type": "Étoffe"
   },
   "8809": {
    "id": 8809,
    "nom": "Culotte à l'envers du Roissingue",
    "niveau": 196,
    "typeId": 164,
-   "iconId": 15759
+   "iconId": 15759,
+   "type": "Vêtement"
   },
   "8810": {
    "id": 8810,
    "nom": "Tourbe séchée de Tourbassingue",
    "niveau": 106,
    "typeId": 15,
-   "iconId": 15760
+   "iconId": 15760,
+   "type": "Ressource diverse"
   },
   "8811": {
    "id": 8811,
    "nom": "Faux menton du Bourbassingue",
    "niveau": 101,
    "typeId": 15,
-   "iconId": 15761
+   "iconId": 15761,
+   "type": "Ressource diverse"
   },
   "8812": {
    "id": 8812,
    "nom": "Encre du Kralamoure géant",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15762
+   "iconId": 15762,
+   "type": "Ressource diverse"
   },
   "8813": {
    "id": 8813,
    "nom": "Ventouse du Kralamoure géant",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15763
+   "iconId": 15763,
+   "type": "Ressource diverse"
   },
   "8916": {
    "id": 8916,
    "nom": "Ambre du Tynril",
    "niveau": 140,
    "typeId": 50,
-   "iconId": 50715
+   "iconId": 50715,
+   "type": "Pierre précieuse"
   },
   "9263": {
    "id": 9263,
    "nom": "Écorce de Champaknyde",
    "niveau": 171,
    "typeId": 96,
-   "iconId": 96109
+   "iconId": 96109,
+   "type": "Écorce"
   },
   "9269": {
    "id": 9269,
    "nom": "Langue de Champodonte",
    "niveau": 176,
    "typeId": 15,
-   "iconId": 15765
+   "iconId": 15765,
+   "type": "Ressource diverse"
   },
   "9277": {
    "id": 9277,
    "nom": "Œil de Champmane",
    "niveau": 176,
    "typeId": 109,
-   "iconId": 109587
+   "iconId": 109587,
+   "type": "Œil"
   },
   "9278": {
    "id": 9278,
    "nom": "Lamelle de Champbis",
    "niveau": 176,
    "typeId": 119,
-   "iconId": 15766
+   "iconId": 15766,
+   "type": "Champignon"
   },
   "9279": {
    "id": 9279,
    "nom": "Bave de Champ à Gnons",
    "niveau": 176,
    "typeId": 228,
-   "iconId": 15045
+   "iconId": 15045,
+   "type": "Liquide"
   },
   "9280": {
    "id": 9280,
    "nom": "Épine d'Ougah",
    "niveau": 180,
    "typeId": 119,
-   "iconId": 15040
+   "iconId": 15040,
+   "type": "Champignon"
   },
   "9281": {
    "id": 9281,
    "nom": "Fragment d'Ougalurette",
    "niveau": 180,
    "typeId": 119,
-   "iconId": 15041
+   "iconId": 15041,
+   "type": "Champignon"
   },
   "9401": {
    "id": 9401,
    "nom": "Peau du Bworker",
    "niveau": 180,
    "typeId": 59,
-   "iconId": 59009
+   "iconId": 59009,
+   "type": "Peau"
   },
   "11102": {
    "id": 11102,
    "nom": "Perce-Neige",
    "niveau": 200,
    "typeId": 35,
-   "iconId": 35635
+   "iconId": 35635,
+   "type": "Fleur"
   },
   "11107": {
    "id": 11107,
    "nom": "Bois de Tremble",
    "niveau": 200,
    "typeId": 38,
-   "iconId": 38677
+   "iconId": 38677,
+   "type": "Bois"
   },
   "11110": {
    "id": 11110,
    "nom": "Obsidienne",
    "niveau": 200,
    "typeId": 39,
-   "iconId": 39112
+   "iconId": 39112,
+   "type": "Minerai"
   },
   "11333": {
    "id": 11333,
    "nom": "Scorie d'Obsidiantre",
    "niveau": 160,
    "typeId": 51,
-   "iconId": 51492
+   "iconId": 51492,
+   "type": "Pierre brute"
   },
   "11334": {
    "id": 11334,
    "nom": "Vertèbre d'Obsidiantre",
    "niveau": 160,
    "typeId": 47,
-   "iconId": 47676
+   "iconId": 47676,
+   "type": "Os"
   },
   "11335": {
    "id": 11335,
    "nom": "Patte de Soryo Givrefoux",
    "niveau": 160,
    "typeId": 103,
-   "iconId": 103579
+   "iconId": 103579,
+   "type": "Patte"
   },
   "11336": {
    "id": 11336,
    "nom": "Oreille de Soryo Givrefoux",
    "niveau": 160,
    "typeId": 106,
-   "iconId": 106629
+   "iconId": 106629,
+   "type": "Oreille"
   },
   "11337": {
    "id": 11337,
    "nom": "Cuir de Maho Givrefoux",
    "niveau": 160,
    "typeId": 56,
-   "iconId": 56660
+   "iconId": 56660,
+   "type": "Cuir"
   },
   "11338": {
    "id": 11338,
    "nom": "Laine de Maho Givrefoux",
    "niveau": 160,
    "typeId": 57,
-   "iconId": 57657
+   "iconId": 57657,
+   "type": "Laine"
   },
   "11339": {
    "id": 11339,
    "nom": "Laine de Yokaï Givrefoux",
    "niveau": 160,
    "typeId": 57,
-   "iconId": 57658
+   "iconId": 57658,
+   "type": "Laine"
   },
   "11340": {
    "id": 11340,
    "nom": "Crâne de Yokaï Givrefoux",
    "niveau": 160,
    "typeId": 47,
-   "iconId": 47675
+   "iconId": 47675,
+   "type": "Os"
   },
   "11341": {
    "id": 11341,
    "nom": "Laine de Tengu Givrefoux",
    "niveau": 170,
    "typeId": 57,
-   "iconId": 57659
+   "iconId": 57659,
+   "type": "Laine"
   },
   "11342": {
    "id": 11342,
    "nom": "Cuir de Tengu Givrefoux",
    "niveau": 170,
    "typeId": 56,
-   "iconId": 56662
+   "iconId": 56662,
+   "type": "Cuir"
   },
   "11503": {
    "id": 11503,
    "nom": "Pain de Frostiz",
    "niveau": 200,
    "typeId": 33,
-   "iconId": 33072
+   "iconId": 33072,
+   "type": "Pain"
   },
   "11504": {
    "id": 11504,
    "nom": "Pain de Frostiz soufflé",
    "niveau": 200,
    "typeId": 33,
-   "iconId": 33073
+   "iconId": 33073,
+   "type": "Pain"
   },
   "11507": {
    "id": 11507,
    "nom": "Potion Étoilée",
    "niveau": 200,
    "typeId": 12,
-   "iconId": 12722
+   "iconId": 12722,
+   "type": "Potion"
   },
   "11517": {
    "id": 11517,
    "nom": "Eclat temporel",
    "niveau": 190,
    "typeId": 50,
-   "iconId": 50708
+   "iconId": 50708,
+   "type": "Pierre précieuse"
   },
   "11519": {
    "id": 11519,
    "nom": "Oreille de Gobosteur",
    "niveau": 180,
    "typeId": 106,
-   "iconId": 106628
+   "iconId": 106628,
+   "type": "Oreille"
   },
   "11521": {
    "id": 11521,
    "nom": "Œil de Sapeur",
    "niveau": 181,
    "typeId": 109,
-   "iconId": 109593
+   "iconId": 109593,
+   "type": "Œil"
   },
   "11522": {
    "id": 11522,
    "nom": "Fragment de pépite de Sakaï",
    "niveau": 185,
    "typeId": 51,
-   "iconId": 51467
+   "iconId": 51467,
+   "type": "Pierre brute"
   },
   "11525": {
    "id": 11525,
    "nom": "Péroné du Marôdeur",
    "niveau": 184,
    "typeId": 47,
-   "iconId": 47670
+   "iconId": 47670,
+   "type": "Os"
   },
   "11527": {
    "id": 11527,
    "nom": "Peau d'Ouilleur",
    "niveau": 183,
    "typeId": 59,
-   "iconId": 59630
+   "iconId": 59630,
+   "type": "Peau"
   },
   "11530": {
    "id": 11530,
    "nom": "Pierre du Courtilieur",
    "niveau": 187,
    "typeId": 51,
-   "iconId": 51466
+   "iconId": 51466,
+   "type": "Pierre brute"
   },
   "11533": {
    "id": 11533,
    "nom": "Œuf de Gobus",
    "niveau": 189,
    "typeId": 105,
-   "iconId": 105644
+   "iconId": 105644,
+   "type": "Œuf"
   },
   "11880": {
    "id": 11880,
    "nom": "Malléole de Yomi Givrefoux",
    "niveau": 160,
    "typeId": 47,
-   "iconId": 47678
+   "iconId": 47678,
+   "type": "Os"
   },
   "11882": {
    "id": 11882,
    "nom": "Queue de Yomi Givrefoux",
    "niveau": 160,
    "typeId": 65,
-   "iconId": 65758
+   "iconId": 65758,
+   "type": "Queue"
   },
   "11883": {
    "id": 11883,
    "nom": "Condyle de Fuji Givrefoux",
    "niveau": 190,
    "typeId": 47,
-   "iconId": 47677
+   "iconId": 47677,
+   "type": "Os"
   },
   "11884": {
    "id": 11884,
    "nom": "Cuir de Fuji Givrefoux",
    "niveau": 190,
    "typeId": 56,
-   "iconId": 56661
+   "iconId": 56661,
+   "type": "Cuir"
   },
   "11885": {
    "id": 11885,
    "nom": "Lamelle de Dramanite",
    "niveau": 170,
    "typeId": 119,
-   "iconId": 119001
+   "iconId": 119001,
+   "type": "Champignon"
   },
   "11886": {
    "id": 11886,
    "nom": "Œil de Dramanite",
    "niveau": 170,
    "typeId": 109,
-   "iconId": 109595
+   "iconId": 109595,
+   "type": "Œil"
   },
   "11887": {
    "id": 11887,
    "nom": "Oreille de Fistulor",
    "niveau": 170,
    "typeId": 106,
-   "iconId": 106630
+   "iconId": 106630,
+   "type": "Oreille"
   },
   "11888": {
    "id": 11888,
    "nom": "Volve de Fistulor",
    "niveau": 170,
    "typeId": 119,
-   "iconId": 119002
+   "iconId": 119002,
+   "type": "Champignon"
   },
   "11889": {
    "id": 11889,
    "nom": "Pédoncule de Fongeur",
    "niveau": 170,
    "typeId": 119,
-   "iconId": 119005
+   "iconId": 119005,
+   "type": "Champignon"
   },
   "11890": {
    "id": 11890,
    "nom": "Volve de Fongeur",
    "niveau": 170,
    "typeId": 119,
-   "iconId": 119004
+   "iconId": 119004,
+   "type": "Champignon"
   },
   "11891": {
    "id": 11891,
    "nom": "Écorce d'Abrazif",
    "niveau": 170,
    "typeId": 96,
-   "iconId": 96668
+   "iconId": 96668,
+   "type": "Écorce"
   },
   "11892": {
    "id": 11892,
    "nom": "Racine d'Abrazif",
    "niveau": 170,
    "typeId": 98,
-   "iconId": 98669
+   "iconId": 98669,
+   "type": "Racine"
   },
   "11893": {
    "id": 11893,
    "nom": "Lamelle de Mérulette",
    "niveau": 170,
    "typeId": 119,
-   "iconId": 119003
+   "iconId": 119003,
+   "type": "Champignon"
   },
   "11894": {
    "id": 11894,
    "nom": "Pédoncule de Mérulette",
    "niveau": 170,
    "typeId": 119,
-   "iconId": 119006
+   "iconId": 119006,
+   "type": "Champignon"
   },
   "11895": {
    "id": 11895,
    "nom": "Patte de Korriandre",
    "niveau": 180,
    "typeId": 103,
-   "iconId": 103580
+   "iconId": 103580,
+   "type": "Patte"
   },
   "11896": {
    "id": 11896,
    "nom": "Œil de Korriandre",
    "niveau": 180,
    "typeId": 109,
-   "iconId": 109596
+   "iconId": 109596,
+   "type": "Œil"
   },
   "11919": {
    "id": 11919,
    "nom": "Œil de Fleuro",
    "niveau": 180,
    "typeId": 109,
-   "iconId": 109597
+   "iconId": 109597,
+   "type": "Œil"
   },
   "11920": {
    "id": 11920,
    "nom": "Oreille de Fleuro",
    "niveau": 180,
    "typeId": 106,
-   "iconId": 106631
+   "iconId": 106631,
+   "type": "Oreille"
   },
   "11921": {
    "id": 11921,
    "nom": "Queue de Wolvero",
    "niveau": 180,
    "typeId": 65,
-   "iconId": 65759
+   "iconId": 65759,
+   "type": "Queue"
   },
   "11922": {
    "id": 11922,
    "nom": "Manubrium de Wolvero",
    "niveau": 180,
    "typeId": 47,
-   "iconId": 47679
+   "iconId": 47679,
+   "type": "Os"
   },
   "11923": {
    "id": 11923,
    "nom": "Griffe de Blérauve",
    "niveau": 180,
    "typeId": 47,
-   "iconId": 47680
+   "iconId": 47680,
+   "type": "Os"
   },
   "11924": {
    "id": 11924,
    "nom": "Poil de Blérauve",
    "niveau": 180,
    "typeId": 54,
-   "iconId": 54681
+   "iconId": 54681,
+   "type": "Poil"
   },
   "11925": {
    "id": 11925,
    "nom": "Étoffe de Croleur",
    "niveau": 180,
    "typeId": 55,
-   "iconId": 55734
+   "iconId": 55734,
+   "type": "Étoffe"
   },
   "11926": {
    "id": 11926,
    "nom": "Oreille de Croleur",
    "niveau": 180,
    "typeId": 106,
-   "iconId": 106632
+   "iconId": 106632,
+   "type": "Oreille"
   },
   "11927": {
    "id": 11927,
    "nom": "Molaire de Blérice",
    "niveau": 180,
    "typeId": 47,
-   "iconId": 47681
+   "iconId": 47681,
+   "type": "Os"
   },
   "11928": {
    "id": 11928,
    "nom": "Oreille de Blérice",
    "niveau": 180,
    "typeId": 106,
-   "iconId": 106633
+   "iconId": 106633,
+   "type": "Oreille"
   },
   "11929": {
    "id": 11929,
    "nom": "Queue de Blérom",
    "niveau": 180,
    "typeId": 65,
-   "iconId": 65760
+   "iconId": 65760,
+   "type": "Queue"
   },
   "11930": {
    "id": 11930,
    "nom": "Omoplate de Blérom",
    "niveau": 180,
    "typeId": 47,
-   "iconId": 47682
+   "iconId": 47682,
+   "type": "Os"
   },
   "11931": {
    "id": 11931,
    "nom": "Griffe de Kolosso",
    "niveau": 190,
    "typeId": 47,
-   "iconId": 47683
+   "iconId": 47683,
+   "type": "Os"
   },
   "11932": {
    "id": 11932,
    "nom": "Étoffe de Kolosso",
    "niveau": 190,
    "typeId": 55,
-   "iconId": 55735
+   "iconId": 55735,
+   "type": "Étoffe"
   },
   "11933": {
    "id": 11933,
    "nom": "Vomer d'Apériglours",
    "niveau": 180,
    "typeId": 47,
-   "iconId": 47684
+   "iconId": 47684,
+   "type": "Os"
   },
   "11934": {
    "id": 11934,
    "nom": "Oreille d'Apériglours",
    "niveau": 180,
    "typeId": 106,
-   "iconId": 106634
+   "iconId": 106634,
+   "type": "Oreille"
   },
   "11935": {
    "id": 11935,
    "nom": "Iris de Boulglours",
    "niveau": 190,
    "typeId": 109,
-   "iconId": 109598
+   "iconId": 109598,
+   "type": "Œil"
   },
   "11936": {
    "id": 11936,
    "nom": "Poils de Boulglours",
    "niveau": 190,
    "typeId": 54,
-   "iconId": 54682
+   "iconId": 54682,
+   "type": "Poil"
   },
   "11937": {
    "id": 11937,
    "nom": "Laine de Glouragan",
    "niveau": 190,
    "typeId": 57,
-   "iconId": 57214
+   "iconId": 57214,
+   "type": "Laine"
   },
   "11938": {
    "id": 11938,
    "nom": "Cuir de Glouragan",
    "niveau": 190,
    "typeId": 56,
-   "iconId": 56663
+   "iconId": 56663,
+   "type": "Cuir"
   },
   "11939": {
    "id": 11939,
    "nom": "Incisive de Glourmand",
    "niveau": 190,
    "typeId": 47,
-   "iconId": 47686
+   "iconId": 47686,
+   "type": "Os"
   },
   "11940": {
    "id": 11940,
    "nom": "Étoffe de Glourmand",
    "niveau": 190,
    "typeId": 55,
-   "iconId": 55736
+   "iconId": 55736,
+   "type": "Étoffe"
   },
   "11941": {
    "id": 11941,
    "nom": "Aile de Gloursaya",
    "niveau": 190,
    "typeId": 104,
-   "iconId": 104217
+   "iconId": 104217,
+   "type": "Aile"
   },
   "11942": {
    "id": 11942,
    "nom": "Antenne de Gloursaya",
    "niveau": 190,
    "typeId": 15,
-   "iconId": 15787
+   "iconId": 15787,
+   "type": "Ressource diverse"
   },
   "11943": {
    "id": 11943,
    "nom": "Queue de Glourséleste",
    "niveau": 190,
    "typeId": 65,
-   "iconId": 65761
+   "iconId": 65761,
+   "type": "Queue"
   },
   "11944": {
    "id": 11944,
    "nom": "Hamatum de Glourséleste",
    "niveau": 190,
    "typeId": 47,
-   "iconId": 47687
+   "iconId": 47687,
+   "type": "Os"
   },
   "11945": {
    "id": 11945,
    "nom": "Queue de Meliglours",
    "niveau": 190,
    "typeId": 65,
-   "iconId": 65762
+   "iconId": 65762,
+   "type": "Queue"
   },
   "11946": {
    "id": 11946,
    "nom": "Calcanéus de Meliglours",
    "niveau": 190,
    "typeId": 47,
-   "iconId": 47688
+   "iconId": 47688,
+   "type": "Os"
   },
   "11948": {
    "id": 11948,
    "nom": "Cornée de Kami Givrefoux",
    "niveau": 160,
    "typeId": 109,
-   "iconId": 109599
+   "iconId": 109599,
+   "type": "Œil"
   },
   "11949": {
    "id": 11949,
    "nom": "Incisive de Kami Givrefoux",
    "niveau": 160,
    "typeId": 47,
-   "iconId": 47685
+   "iconId": 47685,
+   "type": "Os"
   },
   "12001": {
    "id": 12001,
    "nom": "Larme de Givrefoux",
    "niveau": 170,
    "typeId": 228,
-   "iconId": 24871
+   "iconId": 24871,
+   "type": "Liquide"
   },
   "12431": {
    "id": 12431,
    "nom": "Boue Vénérable",
    "niveau": 175,
    "typeId": 228,
-   "iconId": 15793
+   "iconId": 15793,
+   "type": "Liquide"
   },
   "12435": {
    "id": 12435,
    "nom": "Poudre Vénérable",
    "niveau": 175,
    "typeId": 48,
-   "iconId": 48281
+   "iconId": 48281,
+   "type": "Poudre"
   },
   "12439": {
    "id": 12439,
    "nom": "Cendres Vénérables",
    "niveau": 175,
    "typeId": 48,
-   "iconId": 48282
+   "iconId": 48282,
+   "type": "Poudre"
   },
   "12443": {
    "id": 12443,
    "nom": "Flaque Vénérable",
    "niveau": 175,
    "typeId": 228,
-   "iconId": 15794
+   "iconId": 15794,
+   "type": "Liquide"
   },
   "12447": {
    "id": 12447,
    "nom": "Fumée Vénérable",
    "niveau": 175,
    "typeId": 15,
-   "iconId": 15795
+   "iconId": 15795,
+   "type": "Ressource diverse"
   },
   "12451": {
    "id": 12451,
    "nom": "Croc de Krokille",
    "niveau": 175,
    "typeId": 47,
-   "iconId": 47092
+   "iconId": 47092,
+   "type": "Os"
   },
   "12728": {
    "id": 12728,
    "nom": "Ardonite",
    "niveau": 200,
    "typeId": 40,
-   "iconId": 40710
+   "iconId": 40710,
+   "type": "Alliage"
   },
   "12740": {
    "id": 12740,
    "nom": "Galet brasillant",
    "niveau": 195,
    "typeId": 152,
-   "iconId": 15289
+   "iconId": 15289,
+   "type": "Galet"
   },
   "12845": {
    "id": 12845,
    "nom": "Flocon de Neige",
    "niveau": 1,
    "typeId": 153,
-   "iconId": 153007
+   "iconId": 153007,
+   "type": "Nowel"
   },
   "12970": {
    "id": 12970,
    "nom": "Paquet Cadeau du Minotoboule de Nowel",
    "niveau": 197,
    "typeId": 153,
-   "iconId": 153013
+   "iconId": 153013,
+   "type": "Nowel"
   },
   "13140": {
    "id": 13140,
    "nom": "Serrure du Coffre des Forgerons",
    "niveau": 50,
    "typeId": 15,
-   "iconId": 15799
+   "iconId": 15799,
+   "type": "Ressource diverse"
   },
   "13154": {
    "id": 13154,
    "nom": "Poudre glaciale",
    "niveau": 190,
    "typeId": 48,
-   "iconId": 48292
+   "iconId": 48292,
+   "type": "Poudre"
   },
   "13157": {
    "id": 13157,
    "nom": "Ongle du Bworker",
    "niveau": 180,
    "typeId": 47,
-   "iconId": 47695
+   "iconId": 47695,
+   "type": "Os"
   },
   "13164": {
    "id": 13164,
    "nom": "Sphénoïde du Kimbo",
    "niveau": 160,
    "typeId": 47,
-   "iconId": 47692
+   "iconId": 47692,
+   "type": "Os"
   },
   "13193": {
    "id": 13193,
    "nom": "Fiole de gaz draconique",
    "niveau": 200,
    "typeId": 71,
-   "iconId": 15846
+   "iconId": 15846,
+   "type": "Matériel d'alchimie"
   },
   "13196": {
    "id": 13196,
    "nom": "Cuir synthétique",
    "niveau": 199,
    "typeId": 56,
-   "iconId": 56664
+   "iconId": 56664,
+   "type": "Cuir"
   },
   "13490": {
    "id": 13490,
    "nom": "Bave de Ouassingue",
    "niveau": 98,
    "typeId": 228,
-   "iconId": 15093
+   "iconId": 15093,
+   "type": "Liquide"
   },
   "13608": {
    "id": 13608,
    "nom": "Poils de Kerubim",
    "niveau": 10,
    "typeId": 54,
-   "iconId": 54685
+   "iconId": 54685,
+   "type": "Poil"
   },
   "13736": {
    "id": 13736,
    "nom": "Furoncle de la Mama Bwork",
    "niveau": 174,
    "typeId": 15,
-   "iconId": 15819
+   "iconId": 15819,
+   "type": "Ressource diverse"
   },
   "13737": {
    "id": 13737,
    "nom": "String en Cuir de la Mama Bwork",
    "niveau": 174,
    "typeId": 164,
-   "iconId": 164000
+   "iconId": 164000,
+   "type": "Vêtement"
   },
   "13738": {
    "id": 13738,
    "nom": "Bandeau troué de Feu",
    "niveau": 175,
    "typeId": 164,
-   "iconId": 164001
+   "iconId": 164001,
+   "type": "Vêtement"
   },
   "13740": {
    "id": 13740,
    "nom": "Bandeau troué de Terre",
    "niveau": 175,
    "typeId": 164,
-   "iconId": 164003
+   "iconId": 164003,
+   "type": "Vêtement"
   },
   "13741": {
    "id": 13741,
    "nom": "Caleçon Brun",
    "niveau": 175,
    "typeId": 164,
-   "iconId": 164004
+   "iconId": 164004,
+   "type": "Vêtement"
   },
   "13742": {
    "id": 13742,
    "nom": "Bandeau troué d'Eau",
    "niveau": 175,
    "typeId": 164,
-   "iconId": 164005
+   "iconId": 164005,
+   "type": "Vêtement"
   },
   "13743": {
    "id": 13743,
    "nom": "Caleçon Bleu",
    "niveau": 175,
    "typeId": 164,
-   "iconId": 164006
+   "iconId": 164006,
+   "type": "Vêtement"
   },
   "13744": {
    "id": 13744,
    "nom": "Bandeau troué d'Air",
    "niveau": 175,
    "typeId": 164,
-   "iconId": 164007
+   "iconId": 164007,
+   "type": "Vêtement"
   },
   "13745": {
    "id": 13745,
    "nom": "Caleçon Blanc",
    "niveau": 175,
    "typeId": 164,
-   "iconId": 164008
+   "iconId": 164008,
+   "type": "Vêtement"
   },
   "13746": {
    "id": 13746,
    "nom": "Boulon de Cybwork",
    "niveau": 179,
    "typeId": 15,
-   "iconId": 15820
+   "iconId": 15820,
+   "type": "Ressource diverse"
   },
   "13747": {
    "id": 13747,
    "nom": "Caleçon de Cybwork",
    "niveau": 179,
    "typeId": 164,
-   "iconId": 164009
+   "iconId": 164009,
+   "type": "Vêtement"
   },
   "13913": {
    "id": 13913,
    "nom": "Œil de Harrogant",
    "niveau": 200,
    "typeId": 109,
-   "iconId": 109602
+   "iconId": 109602,
+   "type": "Œil"
   },
   "13914": {
    "id": 13914,
    "nom": "Culotte de Harrogant",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 164010
+   "iconId": 164010,
+   "type": "Vêtement"
   },
   "13915": {
    "id": 13915,
    "nom": "Cuir de Grodruche",
    "niveau": 200,
    "typeId": 56,
-   "iconId": 56665
+   "iconId": 56665,
+   "type": "Cuir"
   },
   "13916": {
    "id": 13916,
    "nom": "Étoffe de Grodruche",
    "niveau": 200,
    "typeId": 55,
-   "iconId": 55737
+   "iconId": 55737,
+   "type": "Étoffe"
   },
   "13917": {
    "id": 13917,
    "nom": "Cervelle de Peunch",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15821
+   "iconId": 15821,
+   "type": "Ressource diverse"
   },
   "13918": {
    "id": 13918,
    "nom": "Cuir de Peunch",
    "niveau": 200,
    "typeId": 56,
-   "iconId": 56666
+   "iconId": 56666,
+   "type": "Cuir"
   },
   "13919": {
    "id": 13919,
    "nom": "Cuir d'Empaillé",
    "niveau": 200,
    "typeId": 56,
-   "iconId": 56667
+   "iconId": 56667,
+   "type": "Cuir"
   },
   "13920": {
    "id": 13920,
    "nom": "Cœur d'Empaillé",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15822
+   "iconId": 15822,
+   "type": "Ressource diverse"
   },
   "13921": {
    "id": 13921,
    "nom": "Cuir de Cuirboule",
    "niveau": 200,
    "typeId": 56,
-   "iconId": 56668
+   "iconId": 56668,
+   "type": "Cuir"
   },
   "13922": {
    "id": 13922,
    "nom": "Dent de Cuirboule",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47805
+   "iconId": 47805,
+   "type": "Os"
   },
   "13923": {
    "id": 13923,
    "nom": "Moustache de Klime",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54689
+   "iconId": 54689,
+   "type": "Poil"
   },
   "13924": {
    "id": 13924,
    "nom": "Scalp de Klime",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15823
+   "iconId": 15823,
+   "type": "Ressource diverse"
   },
   "13925": {
    "id": 13925,
    "nom": "Sang de Ventrublion",
    "niveau": 200,
    "typeId": 228,
-   "iconId": 15824
+   "iconId": 15824,
+   "type": "Liquide"
   },
   "13926": {
    "id": 13926,
    "nom": "Molaire de Ventrublion",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47806
+   "iconId": 47806,
+   "type": "Os"
   },
   "13927": {
    "id": 13927,
    "nom": "Incisive de Stalak",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47807
+   "iconId": 47807,
+   "type": "Os"
   },
   "13928": {
    "id": 13928,
    "nom": "Ethmoïde de Stalak",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47808
+   "iconId": 47808,
+   "type": "Os"
   },
   "13929": {
    "id": 13929,
    "nom": "Sang de Karkanik",
    "niveau": 200,
    "typeId": 228,
-   "iconId": 15825
+   "iconId": 15825,
+   "type": "Liquide"
   },
   "13930": {
    "id": 13930,
    "nom": "Malleus de Karkanik",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15826
+   "iconId": 15826,
+   "type": "Ressource diverse"
   },
   "13931": {
    "id": 13931,
    "nom": "Incus de Verglasseur",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47809
+   "iconId": 47809,
+   "type": "Os"
   },
   "13932": {
    "id": 13932,
    "nom": "Cervelle de Verglasseur",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15827
+   "iconId": 15827,
+   "type": "Ressource diverse"
   },
   "13933": {
    "id": 13933,
    "nom": "Stapes de Frimar",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47810
+   "iconId": 47810,
+   "type": "Os"
   },
   "13934": {
    "id": 13934,
    "nom": "Moustache de Frimar",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54690
+   "iconId": 54690,
+   "type": "Poil"
   },
   "13935": {
    "id": 13935,
    "nom": "Poil d'aisselle de Missiz Frizz",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54691
+   "iconId": 54691,
+   "type": "Poil"
   },
   "13936": {
    "id": 13936,
    "nom": "Culotte de Missiz Frizz",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 164011
+   "iconId": 164011,
+   "type": "Vêtement"
   },
   "13937": {
    "id": 13937,
    "nom": "Bave de Nessil",
    "niveau": 200,
    "typeId": 228,
-   "iconId": 15828
+   "iconId": 15828,
+   "type": "Liquide"
   },
   "13938": {
    "id": 13938,
    "nom": "Molaire de Nessil",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47811
+   "iconId": 47811,
+   "type": "Os"
   },
   "13939": {
    "id": 13939,
    "nom": "Canine de Krakal",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47812
+   "iconId": 47812,
+   "type": "Os"
   },
   "13940": {
    "id": 13940,
    "nom": "Crinière de Krakal",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54692
+   "iconId": 54692,
+   "type": "Poil"
   },
   "13941": {
    "id": 13941,
    "nom": "Plume de Dodox",
    "niveau": 200,
    "typeId": 53,
-   "iconId": 53655
+   "iconId": 53655,
+   "type": "Plume"
   },
   "13942": {
    "id": 13942,
    "nom": "Bec de Dodox",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47813
+   "iconId": 47813,
+   "type": "Os"
   },
   "13943": {
    "id": 13943,
    "nom": "Patte de Termystique",
    "niveau": 200,
    "typeId": 103,
-   "iconId": 103718
+   "iconId": 103718,
+   "type": "Patte"
   },
   "13944": {
    "id": 13944,
    "nom": "Carapace de Termystique",
    "niveau": 200,
    "typeId": 107,
-   "iconId": 107736
+   "iconId": 107736,
+   "type": "Carapace"
   },
   "13945": {
    "id": 13945,
    "nom": "Bractée de Drosérâle",
    "niveau": 200,
    "typeId": 36,
-   "iconId": 36639
+   "iconId": 36639,
+   "type": "Plante"
   },
   "13946": {
    "id": 13946,
    "nom": "Sépale de Drosérâle",
    "niveau": 200,
    "typeId": 36,
-   "iconId": 36640
+   "iconId": 36640,
+   "type": "Plante"
   },
   "13947": {
    "id": 13947,
    "nom": "Broderie de Nileza",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 164012
+   "iconId": 164012,
+   "type": "Vêtement"
   },
   "13948": {
    "id": 13948,
    "nom": "Braguette de Nileza",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 164013
+   "iconId": 164013,
+   "type": "Vêtement"
   },
   "13949": {
    "id": 13949,
    "nom": "Canine de Kanimate",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47814
+   "iconId": 47814,
+   "type": "Os"
   },
   "13950": {
    "id": 13950,
    "nom": "Griffe de Kanimate",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47815
+   "iconId": 47815,
+   "type": "Os"
   },
   "13971": {
    "id": 13971,
    "nom": "Maxillaire de Brikoglours",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47816
+   "iconId": 47816,
+   "type": "Os"
   },
   "13972": {
    "id": 13972,
    "nom": "Queue de Brikoglours",
    "niveau": 200,
    "typeId": 65,
-   "iconId": 65763
+   "iconId": 65763,
+   "type": "Queue"
   },
   "13973": {
    "id": 13973,
    "nom": "Bec de Mansordide",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47817
+   "iconId": 47817,
+   "type": "Os"
   },
   "13974": {
    "id": 13974,
    "nom": "Sternum de Mansordide",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47818
+   "iconId": 47818,
+   "type": "Os"
   },
   "13975": {
    "id": 13975,
    "nom": "Astragale de Mécanofoux",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47819
+   "iconId": 47819,
+   "type": "Os"
   },
   "13976": {
    "id": 13976,
    "nom": "Oreille de Mécanofoux",
    "niveau": 200,
    "typeId": 106,
-   "iconId": 106636
+   "iconId": 106636,
+   "type": "Oreille"
   },
   "13977": {
    "id": 13977,
    "nom": "Volve de Mérulor",
    "niveau": 200,
    "typeId": 119,
-   "iconId": 119007
+   "iconId": 119007,
+   "type": "Champignon"
   },
   "13978": {
    "id": 13978,
    "nom": "Pédoncule de Mérulor",
    "niveau": 200,
    "typeId": 119,
-   "iconId": 119008
+   "iconId": 119008,
+   "type": "Champignon"
   },
   "13982": {
    "id": 13982,
    "nom": "Laine de Sylargh",
    "niveau": 200,
    "typeId": 57,
-   "iconId": 57660
+   "iconId": 57660,
+   "type": "Laine"
   },
   "13983": {
    "id": 13983,
    "nom": "Incisive de Sylargh",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47820
+   "iconId": 47820,
+   "type": "Os"
   },
   "13984": {
    "id": 13984,
    "nom": "Plume de Granduk",
    "niveau": 200,
    "typeId": 53,
-   "iconId": 53656
+   "iconId": 53656,
+   "type": "Plume"
   },
   "13985": {
    "id": 13985,
    "nom": "Bec de Granduk",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47821
+   "iconId": 47821,
+   "type": "Os"
   },
   "13986": {
    "id": 13986,
    "nom": "Griffe de Strigide",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 15830
+   "iconId": 15830,
+   "type": "Os"
   },
   "13987": {
    "id": 13987,
    "nom": "Bec de Strigide",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47822
+   "iconId": 47822,
+   "type": "Os"
   },
   "13988": {
    "id": 13988,
    "nom": "Œil de Cycloïde",
    "niveau": 200,
    "typeId": 109,
-   "iconId": 109603
+   "iconId": 109603,
+   "type": "Œil"
   },
   "13989": {
    "id": 13989,
    "nom": "Plume de Cycloïde",
    "niveau": 200,
    "typeId": 53,
-   "iconId": 53657
+   "iconId": 53657,
+   "type": "Plume"
   },
   "13990": {
    "id": 13990,
    "nom": "Aile de Sinistrofu",
    "niveau": 200,
    "typeId": 104,
-   "iconId": 104745
+   "iconId": 104745,
+   "type": "Aile"
   },
   "13991": {
    "id": 13991,
    "nom": "Queue de Sinistrofu",
    "niveau": 200,
    "typeId": 65,
-   "iconId": 65764
+   "iconId": 65764,
+   "type": "Queue"
   },
   "13992": {
    "id": 13992,
    "nom": "Aile de Nocturlabe",
    "niveau": 200,
    "typeId": 104,
-   "iconId": 104746
+   "iconId": 104746,
+   "type": "Aile"
   },
   "13993": {
    "id": 13993,
    "nom": "Pic du Nocturlabe",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47823
+   "iconId": 47823,
+   "type": "Os"
   },
   "13994": {
    "id": 13994,
    "nom": "Scapula du Comte Harebourg",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47824
+   "iconId": 47824,
+   "type": "Os"
   },
   "13995": {
    "id": 13995,
    "nom": "Bandelette du Comte Harebourg",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15831
+   "iconId": 15831,
+   "type": "Ressource diverse"
   },
   "14141": {
    "id": 14141,
    "nom": "Racine cristalline",
    "niveau": 200,
    "typeId": 98,
-   "iconId": 98671
+   "iconId": 98671,
+   "type": "Racine"
   },
   "14142": {
    "id": 14142,
    "nom": "Boulon neuf",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15832
+   "iconId": 15832,
+   "type": "Ressource diverse"
   },
   "14143": {
    "id": 14143,
    "nom": "Fermeture éclair",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 15833
+   "iconId": 15833,
+   "type": "Vêtement"
   },
   "14144": {
    "id": 14144,
    "nom": "Mycoses gelées",
    "niveau": 200,
    "typeId": 119,
-   "iconId": 119009
+   "iconId": 119009,
+   "type": "Champignon"
   },
   "14145": {
    "id": 14145,
    "nom": "Œil de verre",
    "niveau": 200,
    "typeId": 109,
-   "iconId": 109604
+   "iconId": 109604,
+   "type": "Œil"
   },
   "14267": {
    "id": 14267,
    "nom": "Pointe osseuse de Grasmera",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47826
+   "iconId": 47826,
+   "type": "Os"
   },
   "14268": {
    "id": 14268,
    "nom": "Poche de magma de Grasmera",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15835
+   "iconId": 15835,
+   "type": "Ressource diverse"
   },
   "14635": {
    "id": 14635,
    "nom": "Pépite",
    "niveau": 1,
    "typeId": 50,
-   "iconId": 50718
+   "iconId": 50718,
+   "type": "Pierre précieuse"
   },
   "14795": {
    "id": 14795,
    "nom": "Pile Steamer",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15839
+   "iconId": 15839,
+   "type": "Ressource diverse"
   },
   "14817": {
    "id": 14817,
    "nom": "Pince de Krabouilleur",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47831
+   "iconId": 47831,
+   "type": "Os"
   },
   "14819": {
    "id": 14819,
    "nom": "Carapace de Krabouilleur",
    "niveau": 200,
    "typeId": 107,
-   "iconId": 107737
+   "iconId": 107737,
+   "type": "Carapace"
   },
   "14822": {
    "id": 14822,
    "nom": "Pic de Pikoleur",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47832
+   "iconId": 47832,
+   "type": "Os"
   },
   "14823": {
    "id": 14823,
    "nom": "Huile de Pikoleur",
    "niveau": 200,
    "typeId": 60,
-   "iconId": 60376
+   "iconId": 60376,
+   "type": "Huile"
   },
   "14853": {
    "id": 14853,
    "nom": "Œil de Harpo",
    "niveau": 200,
    "typeId": 109,
-   "iconId": 109606
+   "iconId": 109606,
+   "type": "Œil"
   },
   "14859": {
    "id": 14859,
    "nom": "Sang de Harpo",
    "niveau": 200,
    "typeId": 228,
-   "iconId": 15840
+   "iconId": 15840,
+   "type": "Liquide"
   },
   "14860": {
    "id": 14860,
    "nom": "Cuir d'Eskoglyphe",
    "niveau": 200,
    "typeId": 56,
-   "iconId": 56670
+   "iconId": 56670,
+   "type": "Cuir"
   },
   "14861": {
    "id": 14861,
    "nom": "Broderie d'Eskoglyphe",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 164027
+   "iconId": 164027,
+   "type": "Vêtement"
   },
   "14862": {
    "id": 14862,
    "nom": "Barbe du Cyclophandre",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54697
+   "iconId": 54697,
+   "type": "Poil"
   },
   "14863": {
    "id": 14863,
    "nom": "Chaussette du Cyclophandre",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 164028
+   "iconId": 164028,
+   "type": "Vêtement"
   },
   "14864": {
    "id": 14864,
    "nom": "Barbe de Merkator",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54696
+   "iconId": 54696,
+   "type": "Poil"
   },
   "14865": {
    "id": 14865,
    "nom": "Cœur de Merkator",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15841
+   "iconId": 15841,
+   "type": "Ressource diverse"
   },
   "14868": {
    "id": 14868,
    "nom": "Vieille Tête de Marteau",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15845
+   "iconId": 15845,
+   "type": "Ressource diverse"
   },
   "14921": {
    "id": 14921,
    "nom": "Étoffe Mystérieuse",
    "niveau": 1,
    "typeId": 55,
-   "iconId": 15848
+   "iconId": 15848,
+   "type": "Étoffe"
   },
   "14922": {
    "id": 14922,
    "nom": "Masque du Vide",
    "niveau": 190,
    "typeId": 164,
-   "iconId": 164029
+   "iconId": 164029,
+   "type": "Vêtement"
   },
   "14923": {
    "id": 14923,
    "nom": "Masque de la Vengeance",
    "niveau": 190,
    "typeId": 164,
-   "iconId": 164030
+   "iconId": 164030,
+   "type": "Vêtement"
   },
   "14924": {
    "id": 14924,
    "nom": "Masque de la Violence",
    "niveau": 190,
    "typeId": 164,
-   "iconId": 164031
+   "iconId": 164031,
+   "type": "Vêtement"
   },
   "14925": {
    "id": 14925,
    "nom": "Masque de la Vivacité",
    "niveau": 190,
    "typeId": 164,
-   "iconId": 164032
+   "iconId": 164032,
+   "type": "Vêtement"
   },
   "14926": {
    "id": 14926,
    "nom": "Masque du Vice",
    "niveau": 190,
    "typeId": 164,
-   "iconId": 164033
+   "iconId": 164033,
+   "type": "Vêtement"
   },
   "14927": {
    "id": 14927,
    "nom": "Symbole des Obscuranti",
    "niveau": 190,
    "typeId": 15,
-   "iconId": 15860
+   "iconId": 15860,
+   "type": "Ressource diverse"
   },
   "14928": {
    "id": 14928,
    "nom": "Corne d'Ombre",
    "niveau": 190,
    "typeId": 47,
-   "iconId": 47833
+   "iconId": 47833,
+   "type": "Os"
   },
   "14936": {
    "id": 14936,
    "nom": "Insigne des Justiciers",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15849
+   "iconId": 15849,
+   "type": "Ressource diverse"
   },
   "15008": {
    "id": 15008,
    "nom": "Patron du Père Fwetar",
    "niveau": 190,
    "typeId": 153,
-   "iconId": 153014
+   "iconId": 153014,
+   "type": "Nowel"
   },
   "15039": {
    "id": 15039,
    "nom": "Poils de Kanigroula",
    "niveau": 160,
    "typeId": 54,
-   "iconId": 54698
+   "iconId": 54698,
+   "type": "Poil"
   },
   "15170": {
    "id": 15170,
    "nom": "Défense du Phossile",
    "niveau": 150,
    "typeId": 47,
-   "iconId": 15869
+   "iconId": 15869,
+   "type": "Os"
   },
   "15172": {
    "id": 15172,
    "nom": "Peau de Métaphorreur",
    "niveau": 150,
    "typeId": 59,
-   "iconId": 15871
+   "iconId": 15871,
+   "type": "Peau"
   },
   "15173": {
    "id": 15173,
    "nom": "Corne de Père Phorreur",
    "niveau": 150,
    "typeId": 47,
-   "iconId": 15872
+   "iconId": 15872,
+   "type": "Os"
   },
   "15176": {
    "id": 15176,
    "nom": "Joyau de la couronne du roi Nidas",
    "niveau": 200,
    "typeId": 50,
-   "iconId": 15875
+   "iconId": 15875,
+   "type": "Pierre précieuse"
   },
   "15177": {
    "id": 15177,
    "nom": "Corne de Kamasterisk",
    "niveau": 200,
    "typeId": 50,
-   "iconId": 15876
+   "iconId": 15876,
+   "type": "Pierre précieuse"
   },
   "15178": {
    "id": 15178,
    "nom": "Sourcil de Barbétoal",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 15877
+   "iconId": 15877,
+   "type": "Poil"
   },
   "15179": {
    "id": 15179,
    "nom": "Dent de Lévitrof",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 15878
+   "iconId": 15878,
+   "type": "Os"
   },
   "15180": {
    "id": 15180,
    "nom": "Morceau de clef de Paspartou",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15879
+   "iconId": 15879,
+   "type": "Ressource diverse"
   },
   "15181": {
    "id": 15181,
    "nom": "Boule en or de Piloztère",
    "niveau": 200,
    "typeId": 50,
-   "iconId": 15880
+   "iconId": 15880,
+   "type": "Pierre précieuse"
   },
   "15182": {
    "id": 15182,
    "nom": "Kamatrix",
    "niveau": 100,
    "typeId": 15,
-   "iconId": 15881
+   "iconId": 15881,
+   "type": "Ressource diverse"
   },
   "15219": {
    "id": 15219,
    "nom": "Trame Dimensionnelle",
    "niveau": 100,
    "typeId": 55,
-   "iconId": 59642
+   "iconId": 59642,
+   "type": "Étoffe"
   },
   "15271": {
    "id": 15271,
    "nom": "Tourmaline",
    "niveau": 10,
    "typeId": 50,
-   "iconId": 50719
+   "iconId": 50719,
+   "type": "Pierre précieuse"
   },
   "15444": {
    "id": 15444,
    "nom": "Tête de mort",
    "niveau": 100,
    "typeId": 15,
-   "iconId": 15885
+   "iconId": 15885,
+   "type": "Ressource diverse"
   },
   "15445": {
    "id": 15445,
    "nom": "Broderie de la Reine des Voleurs",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 59643
+   "iconId": 59643,
+   "type": "Vêtement"
   },
   "15446": {
    "id": 15446,
    "nom": "Piège désamorcé de Mâchassin",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15886
+   "iconId": 15886,
+   "type": "Ressource diverse"
   },
   "15447": {
    "id": 15447,
    "nom": "Mèche de bombe de Terristocrate",
    "niveau": 200,
    "typeId": 229,
-   "iconId": 15887
+   "iconId": 15887,
+   "type": "Ressource de combat"
   },
   "15448": {
    "id": 15448,
    "nom": "Chouchou de Doublure",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 164043
+   "iconId": 164043,
+   "type": "Vêtement"
   },
   "15449": {
    "id": 15449,
    "nom": "Épaulière de Bourôliste",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 15888
+   "iconId": 15888,
+   "type": "Vêtement"
   },
   "15450": {
    "id": 15450,
    "nom": "Crâne magique de Magouille",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47838
+   "iconId": 47838,
+   "type": "Os"
   },
   "15451": {
    "id": 15451,
    "nom": "Sang du Toxoliath",
    "niveau": 180,
    "typeId": 228,
-   "iconId": 15889
+   "iconId": 15889,
+   "type": "Liquide"
   },
   "15551": {
    "id": 15551,
    "nom": "Bouteille de Gein",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24970
+   "iconId": 24970,
+   "type": "Ressource diverse"
   },
   "15661": {
    "id": 15661,
    "nom": "Ossements sacrés de Givrefoux",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 24861
+   "iconId": 24861,
+   "type": "Os"
   },
   "15684": {
    "id": 15684,
    "nom": "Œil de Verminocule",
    "niveau": 200,
    "typeId": 109,
-   "iconId": 109608
+   "iconId": 109608,
+   "type": "Œil"
   },
   "15685": {
    "id": 15685,
    "nom": "Patte de Tabacille",
    "niveau": 200,
    "typeId": 103,
-   "iconId": 103723
+   "iconId": 103723,
+   "type": "Patte"
   },
   "15686": {
    "id": 15686,
    "nom": "Antenne de Bacterrib",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 164046
+   "iconId": 164046,
+   "type": "Ressource diverse"
   },
   "15687": {
    "id": 15687,
    "nom": "Coquille de Virustine",
    "niveau": 200,
    "typeId": 111,
-   "iconId": 111753
+   "iconId": 111753,
+   "type": "Coquille"
   },
   "15688": {
    "id": 15688,
    "nom": "Peau de Pataugerme",
    "niveau": 200,
    "typeId": 59,
-   "iconId": 59647
+   "iconId": 59647,
+   "type": "Peau"
   },
   "15689": {
    "id": 15689,
    "nom": "Noyau de Protozorreur",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 164047
+   "iconId": 164047,
+   "type": "Ressource diverse"
   },
   "15691": {
    "id": 15691,
    "nom": "Sel de Baleine",
    "niveau": 200,
    "typeId": 48,
-   "iconId": 164045
+   "iconId": 164045,
+   "type": "Poudre"
   },
   "15715": {
    "id": 15715,
    "nom": "Aile de Vortex",
    "niveau": 200,
    "typeId": 104,
-   "iconId": 15895
+   "iconId": 15895,
+   "type": "Aile"
   },
   "15716": {
    "id": 15716,
    "nom": "Serre d'Ikargn",
    "niveau": 200,
    "typeId": 103,
-   "iconId": 15896
+   "iconId": 15896,
+   "type": "Patte"
   },
   "15717": {
    "id": 15717,
    "nom": "Corne de Méjaire",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 15897
+   "iconId": 15897,
+   "type": "Os"
   },
   "15718": {
    "id": 15718,
    "nom": "Œil de Harpille",
    "niveau": 200,
    "typeId": 109,
-   "iconId": 15898
+   "iconId": 15898,
+   "type": "Œil"
   },
   "15719": {
    "id": 15719,
    "nom": "Griffe de Buboxor",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 15899
+   "iconId": 15899,
+   "type": "Os"
   },
   "15720": {
    "id": 15720,
    "nom": "Plume de Brabuzar",
    "niveau": 200,
    "typeId": 53,
-   "iconId": 15900
+   "iconId": 15900,
+   "type": "Plume"
   },
   "15721": {
    "id": 15721,
    "nom": "Corne de XLII",
    "niveau": 170,
    "typeId": 47,
-   "iconId": 15901
+   "iconId": 15901,
+   "type": "Os"
   },
   "15722": {
    "id": 15722,
    "nom": "Dent de Trezz",
    "niveau": 170,
    "typeId": 47,
-   "iconId": 15902
+   "iconId": 15902,
+   "type": "Os"
   },
   "15723": {
    "id": 15723,
    "nom": "Peau de Vindeux",
    "niveau": 170,
    "typeId": 59,
-   "iconId": 15903
+   "iconId": 15903,
+   "type": "Peau"
   },
   "15724": {
    "id": 15724,
    "nom": "Pagne de Trantroa",
    "niveau": 170,
    "typeId": 164,
-   "iconId": 15904
+   "iconId": 15904,
+   "type": "Vêtement"
   },
   "15726": {
    "id": 15726,
    "nom": "Touffe de cheveux de Soissanth",
    "niveau": 170,
    "typeId": 54,
-   "iconId": 15906
+   "iconId": 15906,
+   "type": "Poil"
   },
   "15733": {
    "id": 15733,
    "nom": "Sablier miniature",
    "niveau": 100,
    "typeId": 15,
-   "iconId": 15913
+   "iconId": 15913,
+   "type": "Ressource diverse"
   },
   "16008": {
    "id": 16008,
    "nom": "Batterie rechargeable de l'Hyperscampe",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 164052
+   "iconId": 164052,
+   "type": "Ressource diverse"
   },
   "16156": {
    "id": 16156,
    "nom": "Ambre d'Abraknyde Sombre Irascible",
    "niveau": 130,
    "typeId": 50,
-   "iconId": 50721
+   "iconId": 50721,
+   "type": "Pierre précieuse"
   },
   "16459": {
    "id": 16459,
    "nom": "Substrat de Forêt vierge",
    "niveau": 180,
    "typeId": 183,
-   "iconId": 177002
+   "iconId": 177002,
+   "type": "Substrat"
   },
   "16460": {
    "id": 16460,
    "nom": "Substrat de Sylve",
    "niveau": 200,
    "typeId": 183,
-   "iconId": 177003
+   "iconId": 177003,
+   "type": "Substrat"
   },
   "16944": {
    "id": 16944,
    "nom": "Bûche de Tremble",
    "niveau": 200,
    "typeId": 42,
-   "iconId": 42196
+   "iconId": 42196,
+   "type": "Friandise"
   },
   "17021": {
    "id": 17021,
    "nom": "Pavé",
    "niveau": 200,
    "typeId": 51,
-   "iconId": 51497
+   "iconId": 51497,
+   "type": "Pierre brute"
   },
   "17022": {
    "id": 17022,
    "nom": "Basalte",
    "niveau": 200,
    "typeId": 51,
-   "iconId": 51498
+   "iconId": 51498,
+   "type": "Pierre brute"
   },
   "17117": {
    "id": 17117,
    "nom": "Pied de Voldelor",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 164082
+   "iconId": 164082,
+   "type": "Ressource diverse"
   },
   "17118": {
    "id": 17118,
    "nom": "Peau du Grand Kongoku",
    "niveau": 200,
    "typeId": 59,
-   "iconId": 59648
+   "iconId": 59648,
+   "type": "Peau"
   },
   "17567": {
    "id": 17567,
    "nom": "Biscuit de chance",
    "niveau": 100,
    "typeId": 15,
-   "iconId": 164085
+   "iconId": 164085,
+   "type": "Ressource diverse"
   },
   "17620": {
    "id": 17620,
    "nom": "Moustache de Ush",
    "niveau": 160,
    "typeId": 54,
-   "iconId": 164087
+   "iconId": 164087,
+   "type": "Poil"
   },
   "17621": {
    "id": 17621,
    "nom": "Pique du Soldat",
    "niveau": 200,
    "typeId": 229,
-   "iconId": 164088
+   "iconId": 164088,
+   "type": "Ressource de combat"
   },
   "17622": {
    "id": 17622,
    "nom": "Plume du Cavalier",
    "niveau": 200,
    "typeId": 53,
-   "iconId": 53664
+   "iconId": 53664,
+   "type": "Plume"
   },
   "17623": {
    "id": 17623,
    "nom": "Gilet du Valet",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 15031
+   "iconId": 15031,
+   "type": "Vêtement"
   },
   "17624": {
    "id": 17624,
    "nom": "Ceinture de la Dame",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 15032
+   "iconId": 15032,
+   "type": "Vêtement"
   },
   "17625": {
    "id": 17625,
    "nom": "Sceau du Roi Joueur",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 164089
+   "iconId": 164089,
+   "type": "Ressource diverse"
   },
   "17626": {
    "id": 17626,
    "nom": "Dé du Chalœil",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 164090
+   "iconId": 164090,
+   "type": "Ressource diverse"
   },
   "17641": {
    "id": 17641,
    "nom": "Cheveu d'Atcham",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54706
+   "iconId": 54706,
+   "type": "Poil"
   },
   "17853": {
    "id": 17853,
    "nom": "Jus de poisson méphitique",
    "niveau": 200,
    "typeId": 228,
-   "iconId": 176002
+   "iconId": 176002,
+   "type": "Liquide"
   },
   "17864": {
    "id": 17864,
    "nom": "Ambre de muldo",
    "niveau": 60,
    "typeId": 50,
-   "iconId": 50005
+   "iconId": 50005,
+   "type": "Pierre précieuse"
   },
   "17970": {
    "id": 17970,
    "nom": "Bave de Mol Usk",
    "niveau": 200,
    "typeId": 228,
-   "iconId": 15937
+   "iconId": 15937,
+   "type": "Liquide"
   },
   "17971": {
    "id": 17971,
    "nom": "Pince de Crabe Yoloniste",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47852
+   "iconId": 47852,
+   "type": "Os"
   },
   "17972": {
    "id": 17972,
    "nom": "Écaille de Gambaf",
    "niveau": 200,
    "typeId": 59,
-   "iconId": 59650
+   "iconId": 59650,
+   "type": "Peau"
   },
   "17973": {
    "id": 17973,
    "nom": "Queue de Mantaze",
    "niveau": 200,
    "typeId": 65,
-   "iconId": 65769
+   "iconId": 65769,
+   "type": "Queue"
   },
   "17974": {
    "id": 17974,
    "nom": "Parasite Aquatique",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15936
+   "iconId": 15936,
+   "type": "Ressource diverse"
   },
   "17975": {
    "id": 17975,
    "nom": "Lanterne de Tourthon",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15939
+   "iconId": 15939,
+   "type": "Ressource diverse"
   },
   "17976": {
    "id": 17976,
    "nom": "Poil de Meno",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54707
+   "iconId": 54707,
+   "type": "Poil"
   },
   "17977": {
    "id": 17977,
    "nom": "Encre de Poulpée",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15940
+   "iconId": 15940,
+   "type": "Ressource diverse"
   },
   "17978": {
    "id": 17978,
    "nom": "Trident de Tryde",
    "niveau": 200,
    "typeId": 229,
-   "iconId": 15941
+   "iconId": 15941,
+   "type": "Ressource de combat"
   },
   "17979": {
    "id": 17979,
    "nom": "Moustache de Rilur",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54708
+   "iconId": 54708,
+   "type": "Poil"
   },
   "17980": {
    "id": 17980,
    "nom": "Épine de Diondin",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47853
+   "iconId": 47853,
+   "type": "Os"
   },
   "17981": {
    "id": 17981,
    "nom": "Peau de Trithon",
    "niveau": 200,
    "typeId": 59,
-   "iconId": 59651
+   "iconId": 59651,
+   "type": "Peau"
   },
   "17982": {
    "id": 17982,
    "nom": "Dentier de Dantinéa",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47854
+   "iconId": 47854,
+   "type": "Os"
   },
   "17983": {
    "id": 17983,
    "nom": "Tentacule de Grofond",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 103729
+   "iconId": 103729,
+   "type": "Ressource diverse"
   },
   "17984": {
    "id": 17984,
    "nom": "Tentacule de N'Yalg",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 103728
+   "iconId": 103728,
+   "type": "Ressource diverse"
   },
   "17985": {
    "id": 17985,
    "nom": "Patte de Li-Fo",
    "niveau": 200,
    "typeId": 103,
-   "iconId": 103727
+   "iconId": 103727,
+   "type": "Patte"
   },
   "17986": {
    "id": 17986,
    "nom": "Œil de Shokkoth",
    "niveau": 200,
    "typeId": 109,
-   "iconId": 109614
+   "iconId": 109614,
+   "type": "Œil"
   },
   "17987": {
    "id": 17987,
    "nom": "Flûte de Klûtiste",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15938
+   "iconId": 15938,
+   "type": "Ressource diverse"
   },
   "17988": {
    "id": 17988,
    "nom": "Pierre Angulaire",
    "niveau": 200,
    "typeId": 51,
-   "iconId": 51499
+   "iconId": 51499,
+   "type": "Pierre brute"
   },
   "17989": {
    "id": 17989,
    "nom": "Aile de Larve de Koutoulou",
    "niveau": 200,
    "typeId": 104,
-   "iconId": 104749
+   "iconId": 104749,
+   "type": "Aile"
   },
   "17990": {
    "id": 17990,
    "nom": "Dent de Tilamproie",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47851
+   "iconId": 47851,
+   "type": "Os"
   },
   "18318": {
    "id": 18318,
    "nom": "Soie chatoyante",
    "niveau": 200,
    "typeId": 55,
-   "iconId": 136078
+   "iconId": 136078,
+   "type": "Étoffe"
   },
   "18441": {
    "id": 18441,
    "nom": "Cocktail cacterre",
    "niveau": 200,
    "typeId": 228,
-   "iconId": 164122
+   "iconId": 164122,
+   "type": "Liquide"
   },
   "18537": {
    "id": 18537,
    "nom": "Fragment de Chakanoubis",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15952
+   "iconId": 15952,
+   "type": "Ressource diverse"
   },
   "18538": {
    "id": 18538,
    "nom": "Dent de Bandleth",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47857
+   "iconId": 47857,
+   "type": "Os"
   },
   "18539": {
    "id": 18539,
    "nom": "Grenat de Momistik",
    "niveau": 200,
    "typeId": 50,
-   "iconId": 50727
+   "iconId": 50727,
+   "type": "Pierre précieuse"
   },
   "18540": {
    "id": 18540,
    "nom": "Paupière Dorée de Rykaon",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15953
+   "iconId": 15953,
+   "type": "Ressource diverse"
   },
   "18541": {
    "id": 18541,
    "nom": "Oreille de Griffotep",
    "niveau": 200,
    "typeId": 106,
-   "iconId": 106642
+   "iconId": 106642,
+   "type": "Oreille"
   },
   "18542": {
    "id": 18542,
    "nom": "Cheveux de Tal Kasha",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54711
+   "iconId": 54711,
+   "type": "Poil"
   },
   "18543": {
    "id": 18543,
    "nom": "Scarabée Chrysonéfritin",
    "niveau": 200,
    "typeId": 50,
-   "iconId": 15954
+   "iconId": 15954,
+   "type": "Pierre précieuse"
   },
   "18568": {
    "id": 18568,
    "nom": "Œil du Père Ver",
    "niveau": 170,
    "typeId": 109,
-   "iconId": 109616
+   "iconId": 109616,
+   "type": "Œil"
   },
   "18729": {
    "id": 18729,
    "nom": "Sang de Viandargh",
    "niveau": 190,
    "typeId": 228,
-   "iconId": 15956
+   "iconId": 15956,
+   "type": "Liquide"
   },
   "18730": {
    "id": 18730,
    "nom": "Queue de Chevrotine",
    "niveau": 190,
    "typeId": 65,
-   "iconId": 15957
+   "iconId": 15957,
+   "type": "Queue"
   },
   "18731": {
    "id": 18731,
    "nom": "Bave de Brokouillon",
    "niveau": 190,
    "typeId": 228,
-   "iconId": 15958
+   "iconId": 15958,
+   "type": "Liquide"
   },
   "18732": {
    "id": 18732,
    "nom": "Os de Nemroz",
    "niveau": 190,
    "typeId": 47,
-   "iconId": 15959
+   "iconId": 15959,
+   "type": "Os"
   },
   "18733": {
    "id": 18733,
    "nom": "Flèche de Crâmbo",
    "niveau": 190,
    "typeId": 15,
-   "iconId": 15960
+   "iconId": 15960,
+   "type": "Ressource diverse"
   },
   "18734": {
    "id": 18734,
    "nom": "Poils du Comte Razof",
    "niveau": 190,
    "typeId": 54,
-   "iconId": 15961
+   "iconId": 15961,
+   "type": "Poil"
   },
   "18735": {
    "id": 18735,
    "nom": "Bouteille de Bouchonnois",
    "niveau": 190,
    "typeId": 15,
-   "iconId": 15962
+   "iconId": 15962,
+   "type": "Ressource diverse"
   },
   "19068": {
    "id": 19068,
    "nom": "Pic d'Anerice",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 164137
+   "iconId": 164137,
+   "type": "Ressource diverse"
   },
   "19069": {
    "id": 19069,
    "nom": "Ongle de Goulafre",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47861
+   "iconId": 47861,
+   "type": "Os"
   },
   "19070": {
    "id": 19070,
    "nom": "Aile de Kérigoule",
    "niveau": 200,
    "typeId": 104,
-   "iconId": 104751
+   "iconId": 104751,
+   "type": "Aile"
   },
   "19071": {
    "id": 19071,
    "nom": "Œil de Gouligane",
    "niveau": 200,
    "typeId": 109,
-   "iconId": 109617
+   "iconId": 109617,
+   "type": "Œil"
   },
   "19072": {
    "id": 19072,
    "nom": "Poils de Goultime",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54712
+   "iconId": 54712,
+   "type": "Poil"
   },
   "19073": {
    "id": 19073,
    "nom": "Nez de Pipisteuse",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 164138
+   "iconId": 164138,
+   "type": "Ressource diverse"
   },
   "19074": {
    "id": 19074,
    "nom": "Goulobule rouge",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 164139
+   "iconId": 164139,
+   "type": "Ressource diverse"
   },
   "19231": {
    "id": 19231,
    "nom": "Œil de Feutôme",
    "niveau": 200,
    "typeId": 109,
-   "iconId": 15988
+   "iconId": 15988,
+   "type": "Œil"
   },
   "19232": {
    "id": 19232,
    "nom": "Pince de Crâme",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 15989
+   "iconId": 15989,
+   "type": "Os"
   },
   "19233": {
    "id": 19233,
    "nom": "Brûlâme encapsulé",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15984
+   "iconId": 15984,
+   "type": "Ressource diverse"
   },
   "19234": {
    "id": 19234,
    "nom": "Cendres de Chause",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15986
+   "iconId": 15986,
+   "type": "Ressource diverse"
   },
   "19235": {
    "id": 19235,
    "nom": "Fragment d'Ectorche",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15987
+   "iconId": 15987,
+   "type": "Ressource diverse"
   },
   "19236": {
    "id": 19236,
    "nom": "Restes d'Esprigné",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15985
+   "iconId": 15985,
+   "type": "Ressource diverse"
   },
   "19237": {
    "id": 19237,
    "nom": "Plume d'Ilyzaelle",
    "niveau": 200,
    "typeId": 53,
-   "iconId": 15991
+   "iconId": 15991,
+   "type": "Plume"
   },
   "19399": {
    "id": 19399,
    "nom": "Dent de Klémort",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 40713
+   "iconId": 40713,
+   "type": "Os"
   },
   "19400": {
    "id": 19400,
    "nom": "Vertèbre de Trépavois",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47862
+   "iconId": 47862,
+   "type": "Os"
   },
   "19401": {
    "id": 19401,
    "nom": "Langue de Hacharné",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 164145
+   "iconId": 164145,
+   "type": "Ressource diverse"
   },
   "19402": {
    "id": 19402,
    "nom": "Grenade de Moribombe",
    "niveau": 200,
    "typeId": 229,
-   "iconId": 114008
+   "iconId": 114008,
+   "type": "Ressource de combat"
   },
   "19403": {
    "id": 19403,
    "nom": "Œil de Halbardent",
    "niveau": 200,
    "typeId": 109,
-   "iconId": 109618
+   "iconId": 109618,
+   "type": "Œil"
   },
   "19404": {
    "id": 19404,
    "nom": "Cervelle de Solar",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 182019
+   "iconId": 182019,
+   "type": "Ressource diverse"
   },
   "19405": {
    "id": 19405,
    "nom": "Sang de Calciné",
    "niveau": 200,
    "typeId": 228,
-   "iconId": 12771
+   "iconId": 12771,
+   "type": "Liquide"
   },
   "19406": {
    "id": 19406,
    "nom": "Chair de Zombruth",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 111755
+   "iconId": 111755,
+   "type": "Ressource diverse"
   },
   "19407": {
    "id": 19407,
    "nom": "Pointe de Lance de Tournoyé",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 40714
+   "iconId": 40714,
+   "type": "Os"
   },
   "19408": {
    "id": 19408,
    "nom": "Protection de Funespadon",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 164146
+   "iconId": 164146,
+   "type": "Vêtement"
   },
   "19409": {
    "id": 19409,
    "nom": "Aquarakne de Crânonier",
    "niveau": 200,
    "typeId": 111,
-   "iconId": 111754
+   "iconId": 111754,
+   "type": "Coquille"
   },
   "19410": {
    "id": 19410,
    "nom": "Bout d'Armure de Macrab",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 164147
+   "iconId": 164147,
+   "type": "Vêtement"
   },
   "19411": {
    "id": 19411,
    "nom": "Queue de Bethel Akarna",
    "niveau": 200,
    "typeId": 65,
-   "iconId": 65772
+   "iconId": 65772,
+   "type": "Queue"
   },
   "19412": {
    "id": 19412,
    "nom": "Coquille de Submergé",
    "niveau": 200,
    "typeId": 111,
-   "iconId": 111756
+   "iconId": 111756,
+   "type": "Coquille"
   },
   "19968": {
    "id": 19968,
    "nom": "Chope de Bière",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 37002
+   "iconId": 37002,
+   "type": "Ressource diverse"
   },
   "19969": {
    "id": 19969,
    "nom": "Épaulière de Dazak Martegel",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 25162
+   "iconId": 25162,
+   "type": "Vêtement"
   },
   "19970": {
    "id": 19970,
    "nom": "Armure de Tanklume",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 25161
+   "iconId": 25161,
+   "type": "Vêtement"
   },
   "19971": {
    "id": 19971,
    "nom": "Fronde de Boufbos",
    "niveau": 200,
    "typeId": 51,
-   "iconId": 25163
+   "iconId": 25163,
+   "type": "Pierre brute"
   },
   "19972": {
    "id": 19972,
    "nom": "Poils de barbe de Barbélier",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54713
+   "iconId": 54713,
+   "type": "Poil"
   },
   "19973": {
    "id": 19973,
    "nom": "Jambière de Kasrok",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 25164
+   "iconId": 25164,
+   "type": "Vêtement"
   },
   "19974": {
    "id": 19974,
    "nom": "Dent de Vatenbière",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47863
+   "iconId": 47863,
+   "type": "Os"
   },
   "19975": {
    "id": 19975,
    "nom": "Corne de volkorne",
    "niveau": 60,
    "typeId": 47,
-   "iconId": 47864
+   "iconId": 47864,
+   "type": "Os"
   },
   "20452": {
    "id": 20452,
    "nom": "Andésite",
    "niveau": 200,
    "typeId": 51,
-   "iconId": 39400
+   "iconId": 39400,
+   "type": "Pierre brute"
   },
   "20648": {
    "id": 20648,
    "nom": "Légende de Brumaire",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164614
+   "iconId": 164614,
+   "type": "Ressource des Songes"
   },
   "20649": {
    "id": 20649,
    "nom": "Légende de Brâm Barbe-Monde",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164625
+   "iconId": 164625,
+   "type": "Ressource des Songes"
   },
   "20650": {
    "id": 20650,
    "nom": "Légende de Crocobur",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164612
+   "iconId": 164612,
+   "type": "Ressource des Songes"
   },
   "20651": {
    "id": 20651,
    "nom": "Légende du Trompe-la-Mort",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164617
+   "iconId": 164617,
+   "type": "Ressource des Songes"
   },
   "20652": {
    "id": 20652,
    "nom": "Légende de Dame Jhessica",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164622
+   "iconId": 164622,
+   "type": "Ressource des Songes"
   },
   "20653": {
    "id": 20653,
    "nom": "Légende de Mille Lieues",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164618
+   "iconId": 164618,
+   "type": "Ressource des Songes"
   },
   "20654": {
    "id": 20654,
    "nom": "Légende de Dodge",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164623
+   "iconId": 164623,
+   "type": "Ressource des Songes"
   },
   "20655": {
    "id": 20655,
    "nom": "Légende de Fallanster",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164616
+   "iconId": 164616,
+   "type": "Ressource des Songes"
   },
   "20656": {
    "id": 20656,
    "nom": "Légende du Cul Botté",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164619
+   "iconId": 164619,
+   "type": "Ressource des Songes"
   },
   "20657": {
    "id": 20657,
    "nom": "Légende du Destin",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164613
+   "iconId": 164613,
+   "type": "Ressource des Songes"
   },
   "20658": {
    "id": 20658,
    "nom": "Légende de Rykke Errel",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164620
+   "iconId": 164620,
+   "type": "Ressource des Songes"
   },
   "20659": {
    "id": 20659,
    "nom": "Légende de Buhorado",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164615
+   "iconId": 164615,
+   "type": "Ressource des Songes"
   },
   "20660": {
    "id": 20660,
    "nom": "Légende de Jahash Jurgen",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164621
+   "iconId": 164621,
+   "type": "Ressource des Songes"
   },
   "20661": {
    "id": 20661,
    "nom": "Légende de Ganymède",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164624
+   "iconId": 164624,
+   "type": "Ressource des Songes"
   },
   "20907": {
    "id": 20907,
    "nom": "Tablette Chocomancienne",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15003
+   "iconId": 15003,
+   "type": "Ressource diverse"
   },
   "20908": {
    "id": 20908,
    "nom": "Mèche de Pralicienne",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 59663
+   "iconId": 59663,
+   "type": "Poil"
   },
   "20909": {
    "id": 20909,
    "nom": "Peau de Torréfactueur",
    "niveau": 200,
    "typeId": 59,
-   "iconId": 59662
+   "iconId": 59662,
+   "type": "Peau"
   },
   "20910": {
    "id": 20910,
    "nom": "Chaudron de Températurge",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 59664
+   "iconId": 59664,
+   "type": "Ressource diverse"
   },
   "20911": {
    "id": 20911,
    "nom": "Toque de Cabosseur",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 59665
+   "iconId": 59665,
+   "type": "Vêtement"
   },
   "20912": {
    "id": 20912,
    "nom": "Diadème de Chocoligarque",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 59661
+   "iconId": 59661,
+   "type": "Ressource diverse"
   },
   "20913": {
    "id": 20913,
    "nom": "Broderie de la Prêtresse de Kao",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 59660
+   "iconId": 59660,
+   "type": "Vêtement"
   },
   "20914": {
    "id": 20914,
    "nom": "Éclat Kao brisé",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 50732
+   "iconId": 50732,
+   "type": "Ressource diverse"
   },
   "21206": {
    "id": 21206,
    "nom": "Œil de Crocodaille albinos",
    "niveau": 200,
    "typeId": 109,
-   "iconId": 109621
+   "iconId": 109621,
+   "type": "Œil"
   },
   "21207": {
    "id": 21207,
    "nom": "Écaille de Torkélonia",
    "niveau": 200,
    "typeId": 59,
-   "iconId": 59674
+   "iconId": 59674,
+   "type": "Peau"
   },
   "21208": {
    "id": 21208,
    "nom": "Langue de Kashkaille",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 164635
+   "iconId": 164635,
+   "type": "Ressource diverse"
   },
   "21209": {
    "id": 21209,
    "nom": "Bandeau de Voapah",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 16580
+   "iconId": 16580,
+   "type": "Vêtement"
   },
   "21210": {
    "id": 21210,
    "nom": "Poupée de Caïguille",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 25011
+   "iconId": 25011,
+   "type": "Ressource diverse"
   },
   "21211": {
    "id": 21211,
    "nom": "Pagne d'Alashasss",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 10339
+   "iconId": 10339,
+   "type": "Vêtement"
   },
   "21212": {
    "id": 21212,
    "nom": "Canine de Cronnibal",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47867
+   "iconId": 47867,
+   "type": "Os"
   },
   "22046": {
    "id": 22046,
    "nom": "Plume de Misère",
    "niveau": 200,
    "typeId": 53,
-   "iconId": 53666
+   "iconId": 53666,
+   "type": "Plume"
   },
   "22047": {
    "id": 22047,
    "nom": "Épaulière de Ferrailleur",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 164638
+   "iconId": 164638,
+   "type": "Vêtement"
   },
   "22048": {
    "id": 22048,
    "nom": "Langue de Krèvladal",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24277
+   "iconId": 24277,
+   "type": "Ressource diverse"
   },
   "22049": {
    "id": 22049,
    "nom": "Côtes de Désosseur",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47871
+   "iconId": 47871,
+   "type": "Os"
   },
   "22050": {
    "id": 22050,
    "nom": "Capuche de Skentu",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 164639
+   "iconId": 164639,
+   "type": "Vêtement"
   },
   "22051": {
    "id": 22051,
    "nom": "Œil de Dawaj",
    "niveau": 200,
    "typeId": 109,
-   "iconId": 109623
+   "iconId": 109623,
+   "type": "Œil"
   },
   "22052": {
    "id": 22052,
    "nom": "Terre Stérile",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24276
+   "iconId": 24276,
+   "type": "Ressource diverse"
   },
   "22203": {
    "id": 22203,
    "nom": "Germes corrompus",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24269
+   "iconId": 24269,
+   "type": "Ressource diverse"
   },
   "22204": {
    "id": 22204,
    "nom": "Corne de Corruption",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 24275
+   "iconId": 24275,
+   "type": "Os"
   },
   "22207": {
    "id": 22207,
    "nom": "Langue de Pistilangue",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24270
+   "iconId": 24270,
+   "type": "Ressource diverse"
   },
   "22208": {
    "id": 22208,
    "nom": "Peau pourrie de Dolid",
    "niveau": 200,
    "typeId": 59,
-   "iconId": 24271
+   "iconId": 24271,
+   "type": "Peau"
   },
   "22210": {
    "id": 22210,
    "nom": "Patte de Nheur'Gueule",
    "niveau": 200,
    "typeId": 103,
-   "iconId": 24272
+   "iconId": 24272,
+   "type": "Patte"
   },
   "22211": {
    "id": 22211,
    "nom": "Tentacule de Tentaclaque",
    "niveau": 200,
    "typeId": 103,
-   "iconId": 24273
+   "iconId": 24273,
+   "type": "Patte"
   },
   "22212": {
    "id": 22212,
    "nom": "Pétale de Gangredogue",
    "niveau": 200,
    "typeId": 35,
-   "iconId": 24274
+   "iconId": 24274,
+   "type": "Fleur"
   },
   "22216": {
    "id": 22216,
    "nom": "Bois de pagaie usée",
    "niveau": 200,
    "typeId": 38,
-   "iconId": 24267
+   "iconId": 24267,
+   "type": "Bois"
   },
   "22217": {
    "id": 22217,
    "nom": "Capuche d'Armécréante",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 15999
+   "iconId": 15999,
+   "type": "Vêtement"
   },
   "22218": {
    "id": 22218,
    "nom": "Baguette Rythmique",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15998
+   "iconId": 15998,
+   "type": "Ressource diverse"
   },
   "22219": {
    "id": 22219,
    "nom": "Verrou de Servitude",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24268
+   "iconId": 24268,
+   "type": "Ressource diverse"
   },
   "22222": {
    "id": 22222,
    "nom": "Collier d'esclave",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15997
+   "iconId": 15997,
+   "type": "Ressource diverse"
   },
   "22223": {
    "id": 22223,
    "nom": "Boulet lesté",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24266
+   "iconId": 24266,
+   "type": "Ressource diverse"
   },
   "22224": {
    "id": 22224,
    "nom": "Manche de Fouet",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24265
+   "iconId": 24265,
+   "type": "Ressource diverse"
   },
   "22246": {
    "id": 22246,
    "nom": "Bonnet de Guerre",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 164640
+   "iconId": 164640,
+   "type": "Vêtement"
   },
   "22247": {
    "id": 22247,
    "nom": "Étoffe sanglante",
    "niveau": 200,
    "typeId": 55,
-   "iconId": 55740
+   "iconId": 55740,
+   "type": "Étoffe"
   },
   "22248": {
    "id": 22248,
    "nom": "Sang coagulé",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24278
+   "iconId": 24278,
+   "type": "Ressource diverse"
   },
   "22249": {
    "id": 22249,
    "nom": "Canine tranchante",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47872
+   "iconId": 47872,
+   "type": "Os"
   },
   "22250": {
    "id": 22250,
    "nom": "Fragment d'armure",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24280
+   "iconId": 24280,
+   "type": "Ressource diverse"
   },
   "22251": {
    "id": 22251,
    "nom": "Linothorax",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24281
+   "iconId": 24281,
+   "type": "Ressource diverse"
   },
   "22253": {
    "id": 22253,
    "nom": "Lame tranchante",
    "niveau": 200,
    "typeId": 229,
-   "iconId": 24279
+   "iconId": 24279,
+   "type": "Ressource de combat"
   },
   "22415": {
    "id": 22415,
    "nom": "Légende de Misère",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164642
+   "iconId": 164642,
+   "type": "Ressource des Songes"
   },
   "22416": {
    "id": 22416,
    "nom": "Légende de Guerre",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164643
+   "iconId": 164643,
+   "type": "Ressource des Songes"
   },
   "22417": {
    "id": 22417,
    "nom": "Légende de Servitude",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164644
+   "iconId": 164644,
+   "type": "Ressource des Songes"
   },
   "22418": {
    "id": 22418,
    "nom": "Légende de Corruption",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164641
+   "iconId": 164641,
+   "type": "Ressource des Songes"
   },
   "23957": {
    "id": 23957,
    "nom": "Pétale de Papier",
    "niveau": 200,
    "typeId": 36,
-   "iconId": 164861
+   "iconId": 164861,
+   "type": "Plante"
   },
   "23958": {
    "id": 23958,
    "nom": "Poing-virgule d'Imushin",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24193
+   "iconId": 24193,
+   "type": "Ressource diverse"
   },
   "23959": {
    "id": 23959,
    "nom": "Carapace circonflexe d'Imorok",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 59676
+   "iconId": 59676,
+   "type": "Ressource diverse"
   },
   "23960": {
    "id": 23960,
    "nom": "Guillemets d'Imiyama",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 47875
+   "iconId": 47875,
+   "type": "Ressource diverse"
   },
   "23961": {
    "id": 23961,
    "nom": "Cédille d'Imetsu",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 103732
+   "iconId": 103732,
+   "type": "Ressource diverse"
   },
   "23962": {
    "id": 23962,
    "nom": "Apostrophe d'Imafugo",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 47873
+   "iconId": 47873,
+   "type": "Ressource diverse"
   },
   "23963": {
    "id": 23963,
    "nom": "Diacritique du Roi Imagami",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15413
+   "iconId": 15413,
+   "type": "Ressource diverse"
   },
   "23965": {
    "id": 23965,
    "nom": "Pétale d'encre",
    "niveau": 200,
    "typeId": 36,
-   "iconId": 164854
+   "iconId": 164854,
+   "type": "Plante"
   },
   "23966": {
    "id": 23966,
    "nom": "Poing-virgule de Shinlam",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24194
+   "iconId": 24194,
+   "type": "Ressource diverse"
   },
   "23967": {
    "id": 23967,
    "nom": "Carapace circonflexe de Rokoram",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 59677
+   "iconId": 59677,
+   "type": "Ressource diverse"
   },
   "23968": {
    "id": 23968,
    "nom": "Guillemets de Mabram",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 47876
+   "iconId": 47876,
+   "type": "Ressource diverse"
   },
   "23969": {
    "id": 23969,
    "nom": "Cédille de Tsunam",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 103731
+   "iconId": 103731,
+   "type": "Ressource diverse"
   },
   "23970": {
    "id": 23970,
    "nom": "Apostrophe de Fugokam",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 47874
+   "iconId": 47874,
+   "type": "Ressource diverse"
   },
   "23971": {
    "id": 23971,
    "nom": "Diacritique de la Reine Amirukam",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15414
+   "iconId": 15414,
+   "type": "Ressource diverse"
   },
   "24144": {
    "id": 24144,
    "nom": "Substrat Astral",
    "niveau": 200,
    "typeId": 183,
-   "iconId": 164833
+   "iconId": 164833,
+   "type": "Substrat"
   },
   "25176": {
    "id": 25176,
    "nom": "Spalière de Krâradia",
    "niveau": 200,
    "typeId": 229,
-   "iconId": 176030
+   "iconId": 176030,
+   "type": "Ressource de combat"
   },
   "25177": {
    "id": 25177,
    "nom": "Diadème de Belilith",
    "niveau": 200,
    "typeId": 229,
-   "iconId": 176031
+   "iconId": 176031,
+   "type": "Ressource de combat"
   },
   "25178": {
    "id": 25178,
    "nom": "Scalp de Bwariok",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 176032
+   "iconId": 176032,
+   "type": "Ressource diverse"
   },
   "25179": {
    "id": 25179,
    "nom": "Groin de Porkzebuth",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 176033
+   "iconId": 176033,
+   "type": "Ressource diverse"
   },
   "25180": {
    "id": 25180,
    "nom": "Aile d'Eninferno",
    "niveau": 200,
    "typeId": 104,
-   "iconId": 176034
+   "iconId": 176034,
+   "type": "Aile"
   },
   "25181": {
    "id": 25181,
    "nom": "Sceptre brisé de Kabahal",
    "niveau": 200,
    "typeId": 229,
-   "iconId": 176038
+   "iconId": 176038,
+   "type": "Ressource de combat"
   },
   "25182": {
    "id": 25182,
    "nom": "Appendice Démoniaque",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 176029
+   "iconId": 176029,
+   "type": "Os"
   },
   "26031": {
    "id": 26031,
    "nom": "Mâchoire de Brutasmodan",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 165039
+   "iconId": 165039,
+   "type": "Ressource diverse"
   },
   "26032": {
    "id": 26032,
    "nom": "Langue de Diabélial",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 165040
+   "iconId": 165040,
+   "type": "Ressource diverse"
   },
   "26033": {
    "id": 26033,
    "nom": "Corne de Typhomet",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 165041
+   "iconId": 165041,
+   "type": "Os"
   },
   "26034": {
    "id": 26034,
    "nom": "Tentacule de Démoloch",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 165042
+   "iconId": 165042,
+   "type": "Ressource diverse"
   },
   "26035": {
    "id": 26035,
    "nom": "Épaule de Maléphisto",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 165043
+   "iconId": 165043,
+   "type": "Ressource diverse"
   },
   "26036": {
    "id": 26036,
    "nom": "Pic de Ravageur",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 165038
+   "iconId": 165038,
+   "type": "Ressource diverse"
   },
   "26037": {
    "id": 26037,
    "nom": "Masque cauchemardesque de l'Éternel Conflit",
    "niveau": 200,
    "typeId": 229,
-   "iconId": 165044
+   "iconId": 165044,
+   "type": "Ressource de combat"
   },
   "26870": {
    "id": 26870,
    "nom": "Fragment d'anomalie",
    "niveau": 1,
    "typeId": 266,
-   "iconId": 176051
+   "iconId": 176051,
+   "type": "Ressource des Anomalies Temporelles"
   },
   "27397": {
    "id": 27397,
    "nom": "Liane de Soldalia",
    "niveau": 200,
    "typeId": 36,
-   "iconId": 36660
+   "iconId": 36660,
+   "type": "Plante"
   },
   "27398": {
    "id": 27398,
    "nom": "Mousse de Caméliache",
    "niveau": 200,
    "typeId": 36,
-   "iconId": 36661
+   "iconId": 36661,
+   "type": "Plante"
   },
   "27399": {
    "id": 27399,
    "nom": "Épine d'Armuguet",
    "niveau": 200,
    "typeId": 36,
-   "iconId": 47883
+   "iconId": 47883,
+   "type": "Plante"
   },
   "27400": {
    "id": 27400,
    "nom": "Poing de Coquelicogne",
    "niveau": 200,
    "typeId": 229,
-   "iconId": 165065
+   "iconId": 165065,
+   "type": "Ressource de combat"
   },
   "27401": {
    "id": 27401,
    "nom": "Casque de Statulipe",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 165066
+   "iconId": 165066,
+   "type": "Vêtement"
   },
   "27402": {
    "id": 27402,
    "nom": "Rouge à lèvres de Belladone",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24293
+   "iconId": 24293,
+   "type": "Ressource diverse"
   },
   "27403": {
    "id": 27403,
    "nom": "Fleur des protecteurs",
    "niveau": 200,
    "typeId": 35,
-   "iconId": 36662
+   "iconId": 36662,
+   "type": "Fleur"
   },
   "27433": {
    "id": 27433,
    "nom": "Poils de barbe de Marteau-Aigri",
    "niveau": 190,
    "typeId": 54,
-   "iconId": 165064
+   "iconId": 165064,
+   "type": "Poil"
   },
   "27434": {
    "id": 27434,
    "nom": "Armure de Blindur",
    "niveau": 190,
    "typeId": 229,
-   "iconId": 165058
+   "iconId": 165058,
+   "type": "Ressource de combat"
   },
   "27435": {
    "id": 27435,
    "nom": "Bave de Marthos",
    "niveau": 190,
    "typeId": 228,
-   "iconId": 165059
+   "iconId": 165059,
+   "type": "Liquide"
   },
   "27436": {
    "id": 27436,
    "nom": "Mèche de Serpyn",
    "niveau": 190,
    "typeId": 54,
-   "iconId": 165060
+   "iconId": 165060,
+   "type": "Poil"
   },
   "27437": {
    "id": 27437,
    "nom": "Fronde de Boufronde",
    "niveau": 190,
    "typeId": 229,
-   "iconId": 165061
+   "iconId": 165061,
+   "type": "Ressource de combat"
   },
   "27438": {
    "id": 27438,
    "nom": "Élastique de barbe de Sanglirok",
    "niveau": 190,
    "typeId": 15,
-   "iconId": 165062
+   "iconId": 165062,
+   "type": "Ressource diverse"
   },
   "27439": {
    "id": 27439,
    "nom": "Cloche de Barbéryl Clochecuivre",
    "niveau": 190,
    "typeId": 15,
-   "iconId": 165063
+   "iconId": 165063,
+   "type": "Ressource diverse"
   },
   "27517": {
    "id": 27517,
    "nom": "Cire de Cire Momore",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 165068
+   "iconId": 165068,
+   "type": "Ressource diverse"
   },
   "27518": {
    "id": 27518,
    "nom": "Cœur de Cire Momore",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 165067
+   "iconId": 165067,
+   "type": "Ressource diverse"
   },
   "27736": {
    "id": 27736,
    "nom": "Superbe cadeau de Nowel",
    "niveau": 1,
    "typeId": 89,
-   "iconId": 89062
+   "iconId": 89062,
+   "type": "Cadeau"
   },
   "29444": {
    "id": 29444,
    "nom": "Galet rayonnant",
    "niveau": 150,
    "typeId": 152,
-   "iconId": 152001
+   "iconId": 152001,
+   "type": "Galet"
   },
   "30779": {
    "id": 30779,
    "nom": "Pâte à tarte de Mama Ayuto",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15565
+   "iconId": 15565,
+   "type": "Ressource diverse"
   },
   "30780": {
    "id": 30780,
    "nom": "Os du Captain Chafer",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47884
+   "iconId": 47884,
+   "type": "Os"
   },
   "30781": {
    "id": 30781,
    "nom": "Mèche enflammée du Dark Vlad",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15698
+   "iconId": 15698,
+   "type": "Ressource diverse"
   },
   "31528": {
    "id": 31528,
    "nom": "Slip feuillu de Supervizœuf",
    "niveau": 170,
    "typeId": 164,
-   "iconId": 56671
+   "iconId": 56671,
+   "type": "Vêtement"
   },
   "31533": {
    "id": 31533,
    "nom": "Carapace de Supervizœuf",
    "niveau": 170,
    "typeId": 107,
-   "iconId": 107440
+   "iconId": 107440,
+   "type": "Carapace"
   },
   "31624": {
    "id": 31624,
    "nom": "Os Divinatoire de Voracle",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47887
+   "iconId": 47887,
+   "type": "Os"
   },
   "31625": {
    "id": 31625,
    "nom": "Mise en plis de Voracle",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54719
+   "iconId": 54719,
+   "type": "Poil"
   },
   "31626": {
    "id": 31626,
    "nom": "Tresse de Domptueuse",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54721
+   "iconId": 54721,
+   "type": "Poil"
   },
   "31627": {
    "id": 31627,
    "nom": "Frange d'Ébourifauve",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54718
+   "iconId": 54718,
+   "type": "Poil"
   },
   "31628": {
    "id": 31628,
    "nom": "Toison de la Déchireuse",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54720
+   "iconId": 54720,
+   "type": "Poil"
   },
   "31629": {
    "id": 31629,
    "nom": "Bandeau d'Ébourifauve",
    "niveau": 200,
    "typeId": 164,
-   "iconId": 164958
+   "iconId": 164958,
+   "type": "Vêtement"
   },
   "31630": {
    "id": 31630,
    "nom": "Daguosseuse de Domptueuse",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47895
+   "iconId": 47895,
+   "type": "Os"
   },
   "31631": {
    "id": 31631,
    "nom": "Griffe de la Déchireuse",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 44788
+   "iconId": 44788,
+   "type": "Os"
   },
   "31655": {
    "id": 31655,
    "nom": "Squame du Graogarm",
    "niveau": 100,
    "typeId": 59,
-   "iconId": 59680
+   "iconId": 59680,
+   "type": "Peau"
   },
   "31667": {
    "id": 31667,
    "nom": "Lampe de Gyrafor",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 165961
+   "iconId": 165961,
+   "type": "Ressource diverse"
   },
   "31668": {
    "id": 31668,
    "nom": "Oreille de Lapilope",
    "niveau": 200,
    "typeId": 106,
-   "iconId": 106644
+   "iconId": 106644,
+   "type": "Oreille"
   },
   "31669": {
    "id": 31669,
    "nom": "Groin de Brutapir",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 165962
+   "iconId": 165962,
+   "type": "Ressource diverse"
   },
   "31670": {
    "id": 31670,
    "nom": "Mâchoire de Gropotam",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 47894
+   "iconId": 47894,
+   "type": "Ressource diverse"
   },
   "31671": {
    "id": 31671,
    "nom": "Langue d'Amphibouc",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 165963
+   "iconId": 165963,
+   "type": "Ressource diverse"
   },
   "31672": {
    "id": 31672,
    "nom": "Crinière du Vénérable Endormi",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54722
+   "iconId": 54722,
+   "type": "Poil"
   },
   "31673": {
    "id": 31673,
    "nom": "Corne de Gyrafor",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47889
+   "iconId": 47889,
+   "type": "Os"
   },
   "31674": {
    "id": 31674,
    "nom": "Corne de Lapilope",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47890
+   "iconId": 47890,
+   "type": "Os"
   },
   "31675": {
    "id": 31675,
    "nom": "Défense de Brutapir",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47892
+   "iconId": 47892,
+   "type": "Os"
   },
   "31676": {
    "id": 31676,
    "nom": "Front osseux de Gropotam",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47893
+   "iconId": 47893,
+   "type": "Os"
   },
   "31677": {
    "id": 31677,
    "nom": "Corne d'Amphibouc",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47888
+   "iconId": 47888,
+   "type": "Os"
   },
   "31678": {
    "id": 31678,
    "nom": "Corne du Vénérable Endormi",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 47891
+   "iconId": 47891,
+   "type": "Os"
   },
   "31889": {
    "id": 31889,
    "nom": "Poil de Rhoarim perturbé",
    "niveau": 200,
    "typeId": 54,
-   "iconId": 54723
+   "iconId": 54723,
+   "type": "Poil"
   },
   "31890": {
    "id": 31890,
    "nom": "Dent de zarbivore perturbé",
    "niveau": 200,
    "typeId": 47,
-   "iconId": 44791
+   "iconId": 44791,
+   "type": "Os"
   },
   "31891": {
    "id": 31891,
    "nom": "Patte de Kabombz perturbé",
    "niveau": 170,
    "typeId": 103,
-   "iconId": 103037
+   "iconId": 103037,
+   "type": "Patte"
   },
   "31892": {
    "id": 31892,
    "nom": "Feu sacré de Gargandyas",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 79021
+   "iconId": 79021,
+   "type": "Ressource diverse"
   },
   "32079": {
    "id": 32079,
    "nom": "Reflet onirique",
    "niveau": 1,
    "typeId": 219,
-   "iconId": 164149
+   "iconId": 164149,
+   "type": "Ressource des Songes"
   },
   "32129": {
    "id": 32129,
    "nom": "Légende d'Oto Mustam",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164603
+   "iconId": 164603,
+   "type": "Ressource des Songes"
   },
   "32130": {
    "id": 32130,
    "nom": "Légende du Miroir",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164604
+   "iconId": 164604,
+   "type": "Ressource des Songes"
   },
   "32131": {
    "id": 32131,
    "nom": "Légende de Mériana",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164605
+   "iconId": 164605,
+   "type": "Ressource des Songes"
   },
   "32132": {
    "id": 32132,
    "nom": "Légende de Menalt",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164606
+   "iconId": 164606,
+   "type": "Ressource des Songes"
   },
   "32133": {
    "id": 32133,
    "nom": "Légende de Thanatena",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164607
+   "iconId": 164607,
+   "type": "Ressource des Songes"
   },
   "32134": {
    "id": 32134,
    "nom": "Légende d'Helséphine",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164608
+   "iconId": 164608,
+   "type": "Ressource des Songes"
   },
   "32135": {
    "id": 32135,
    "nom": "Légende d'Henual",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164609
+   "iconId": 164609,
+   "type": "Ressource des Songes"
   },
   "32162": {
    "id": 32162,
    "nom": "Légende d'Amayiro",
    "niveau": 200,
    "typeId": 219,
-   "iconId": 164602
+   "iconId": 164602,
+   "type": "Ressource des Songes"
   },
   "32252": {
    "id": 32252,
    "nom": "Laine de Fuji Givrefoux",
    "niveau": 190,
    "typeId": 57,
-   "iconId": 57216
+   "iconId": 57216,
+   "type": "Laine"
   },
   "32253": {
    "id": 32253,
    "nom": "Éclair de Flasho",
    "niveau": 190,
    "typeId": 15,
-   "iconId": 80047
+   "iconId": 80047,
+   "type": "Ressource diverse"
   },
   "32254": {
    "id": 32254,
    "nom": "Moustache du Docteur Eggob",
    "niveau": 190,
    "typeId": 54,
-   "iconId": 54016
+   "iconId": 54016,
+   "type": "Poil"
   },
   "32255": {
    "id": 32255,
    "nom": "Miel de Viti Glourson",
    "niveau": 200,
    "typeId": 228,
-   "iconId": 80048
+   "iconId": 80048,
+   "type": "Liquide"
   },
   "32256": {
    "id": 32256,
    "nom": "Âme glacée du Chevalier de Glace",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 80049
+   "iconId": 80049,
+   "type": "Ressource diverse"
   },
   "32257": {
    "id": 32257,
    "nom": "Cœur de Culbutœuf",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15699
+   "iconId": 15699,
+   "type": "Ressource diverse"
   },
   "32258": {
    "id": 32258,
    "nom": "Dard d'abeille de Glourdorak",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 80050
+   "iconId": 80050,
+   "type": "Ressource diverse"
   },
   "32259": {
    "id": 32259,
    "nom": "Huile de Mekamouth",
    "niveau": 200,
    "typeId": 60,
-   "iconId": 15704
+   "iconId": 15704,
+   "type": "Huile"
   },
   "32260": {
    "id": 32260,
    "nom": "Cuir de Psikopompe",
    "niveau": 200,
    "typeId": 56,
-   "iconId": 56015
+   "iconId": 56015,
+   "type": "Cuir"
   },
   "32582": {
    "id": 32582,
    "nom": "Scalp de Predagob",
    "niveau": 190,
    "typeId": 15,
-   "iconId": 15584
+   "iconId": 15584,
+   "type": "Ressource diverse"
   },
   "33515": {
    "id": 33515,
    "nom": "Neurone de dragodinde",
    "niveau": 60,
    "typeId": 15,
-   "iconId": 15295
+   "iconId": 15295,
+   "type": "Ressource diverse"
   },
   "34323": {
    "id": 34323,
    "nom": "Fleur des protecteurs du Sanctuaire",
    "niveau": 200,
    "typeId": 35,
-   "iconId": 24526
+   "iconId": 24526,
+   "type": "Fleur"
   },
   "34324": {
    "id": 34324,
    "nom": "Pièce d'armure des Gardiens du Sanctuaire",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24527
+   "iconId": 24527,
+   "type": "Ressource diverse"
   },
   "34325": {
    "id": 34325,
    "nom": "Pommeau brisé de la Reine Écarlate",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24528
+   "iconId": 24528,
+   "type": "Ressource diverse"
   },
   "34326": {
    "id": 34326,
    "nom": "Bouquet de lianes de la Princesse Maudite",
    "niveau": 200,
    "typeId": 35,
-   "iconId": 24529
+   "iconId": 24529,
+   "type": "Fleur"
   },
   "34337": {
    "id": 34337,
    "nom": "Venin de Mureine",
    "niveau": 200,
    "typeId": 228,
-   "iconId": 15301
+   "iconId": 15301,
+   "type": "Liquide"
   },
   "34338": {
    "id": 34338,
    "nom": "Carapace d'Exécrabe",
    "niveau": 200,
    "typeId": 107,
-   "iconId": 24534
+   "iconId": 24534,
+   "type": "Carapace"
   },
   "34339": {
    "id": 34339,
    "nom": "Aileron de Willorque",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24535
+   "iconId": 24535,
+   "type": "Ressource diverse"
   },
   "34340": {
    "id": 34340,
    "nom": "Lueur abyssale",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 24536
+   "iconId": 24536,
+   "type": "Ressource diverse"
   },
   "34538": {
    "id": 34538,
    "nom": "Enduit sufokien",
    "niveau": 200,
    "typeId": 15,
-   "iconId": 15394
+   "iconId": 15394,
+   "type": "Ressource diverse"
   }
  }
 }

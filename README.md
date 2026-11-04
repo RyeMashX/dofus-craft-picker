@@ -38,31 +38,28 @@ Pour le volume, la courbe doit être sur l'onglet **30 jours** (détecté à sa 
 | Détail d'une ressource | prix des lots x1 / x10 / x100 |
 | Cours du marché, onglet 30 jours | nombre d'articles vendus |
 
+## Fraîcheur des données
+
+| Info | Noir | Orange (périmé) | Jaune (à risque) | Vert (à jour) |
+|---|---|---|---|---|
+| Volume 30 j | aucune | > 2 mois | > 1 mois | < 1 mois |
+| Prix équipement | aucune | prix moyen seul, ou > 2 semaines | > 1 semaine | < 1 semaine |
+| Prix ressource | aucune | prix moyen seul, ou > 1 semaine | > 3 jours | < 3 jours |
+
+- **Prêt pour le craft** : volume vert ou jaune, prix vert, ressources sans orange ni noir et au plus 2 jaunes.
+- **Utilisable** : aucune donnée orange ou noire. Le plan de craft (Résultats) prend les items utilisables et signale ceux qui ne sont pas prêts (⚠).
+
 ## Plan de scan
 
-1. **Passe initiale** : volumes de tous les items du focus, puis prix moyens (liste HDV équipements et ressources, plusieurs lignes par capture).
-2. **Priorisation** : le prix moyen ne sert qu'à estimer un rendement grossier pour décider quoi scanner. Il n'entre jamais dans la décision d'achat.
-3. **Base d'évaluation** : un item n'y entre que lorsqu'il est entièrement scanné et frais (volume, annonces, lots de toutes ses ressources).
-4. **Trois listes de scan**, chacune triable, avec un tag urgent / à faire / plus tard :
+1. Tu indiques le temps disponible. L'outil le convertit en scans (durée par type mesurée sur tes scans réels, sinon 15 s / 15 s / 10 s) et affiche combien d'items seront prêts à la fin.
+2. **Préparer le craft (70 %, réglable)** : on complète les dossiers d'items pour qu'ils deviennent prêts, en prenant à chaque fois celui qui rapporte le plus par seconde de scan restante (marge estimée × ventes par jour ; une ressource partagée ne compte qu'une fois).
+3. **Entretien (le reste)** : données noires, orange puis jaunes du reste de la base, pondérées par leur importance (ventes de l'item, proximité du seuil de volume, nombre d'items vendables qui utilisent la ressource). Une donnée rafraîchie repasse au vert : ce ne sont jamais les mêmes qui reviennent.
+4. **Déroulé** : HDV Équipements puis HDV Ressources (les prix des ressources bougent le plus, on les relève en dernier). Un groupe = un réglage de filtres (catégories cochées et niveaux min / max). Les petites catégories sont regroupées, les très grosses découpées par tranche de niveau. Lignes triées dans l'ordre de l'HDV (accents après le z).
+5. « Je scanne » suit la prochaine tâche. Une ligne se coche quand sa donnée est relevée ; fin de catégorie et fin d'HDV sont signalées.
 
-| Liste | Contenu | Le score monte quand… |
-|---|---|---|
-| Volumes | tous les items du focus | le relevé vieillit (validité 14 j) et le dernier volume est proche du seuil de 60 |
-| Prix items | items ≥ 60 ventes/mois | le relevé vieillit (2 j) et le rendement estimé est élevé |
-| Ressources | ressources des items ≥ 60 ventes/mois | le relevé vieillit (3 j) et la ressource sert à des items prometteurs |
+## Onglet Données
 
-`score = âge / validité × poids` (jamais relevé = 1,5). Urgent à partir de 1,2, à faire à partir de 0,8.
-
-5. **Plan pour un temps donné** : on prend les tâches urgentes puis à faire, par score, jusqu'à épuiser le temps disponible (15 s par capture d'item, 10 s par ressource, à calibrer).
-
-## Fraîcheur des relevés
-
-| Donnée | Validité |
-|---|---|
-| Volume de ventes d'un équipement | 14 jours |
-| Annonces en vente d'un équipement | 2 jours |
-| Lots x1/x10/x100 d'une ressource | 3 jours |
-| Prix moyen (liste HDV) | 14 jours |
+KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources), puis deux tables (Équipements, Ressources) : recherche, filtres (catégorie, état ou fraîcheur, vendables), tri par colonne, modification directe des valeurs (clic sur une valeur soulignée), et détail au clic sur le nom (recette d'un équipement, items qui utilisent une ressource).
 
 ## Processus cible
 
@@ -133,7 +130,10 @@ src/allocation.js  répartition du budget
 src/catalogue.js   filtre par métiers, ressources à relever
 src/base.js        base de prix horodatée, export / import
 src/entonnoir.js   estimation (pour prioriser) et base d'évaluation (pour décider)
-src/priorites.js   listes de scan, tags de priorité, plan de scan
+src/fraicheur.js   niveaux de fraîcheur, état prêt / utilisable, ordre alphabétique de Dofus
+src/plan.js        plan de scan : choix des scans, groupes HDV / filtres
+src/vue-plan.js    onglet Scan
+src/vue-donnees.js onglet Données
 scripts/catalogue.mjs  génération du catalogue depuis DofusDB
 data/catalogue.json    catalogue généré
 src/ocr/           prétraitement, lecteurs d'écrans, rapprochement des noms
