@@ -90,3 +90,4 @@ body.pip header.top h1 { display: none; }
 button.copy { padding: 2px 6px; line-height: 0; color: var(--muted); background: transparent; }
 button.copy:hover { color: var(--accent); border-color: var(--accent); }
 button.copy.fait { color: var(--sc); border-color: var(--sc); line-height: 1.2; font-size: 12px; }
+.tag.ok-tag { background: var(--sc); color: #fff; }

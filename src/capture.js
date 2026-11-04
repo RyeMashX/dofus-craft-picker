@@ -74,28 +74,27 @@ async function reconnaisseur(onProgres) {
 // zones = { liste, detail, courbe } en fractions de l'image ({ x, y, w, h } entre 0 et 1)
 const enPixels = (z, f) => ({ x: z.x * f.width, y: z.y * f.height, w: z.w * f.width, h: z.h * f.height });
 
-// Lit les zones utiles de l'image courante.
-// Le panneau détail et la courbe sont lus s'ils sont ouverts ; la liste HDV seulement si
-// aucun des deux ne l'est (le panneau détail masque le début des noms de la liste).
-export async function scanner(zones, onProgres) {
+// Ce que l'on scanne → écran à lire et zone où regarder
+export const MODES = {
+  courbe: { ecran: 'courbe', zone: 'courbe', libelle: 'Courbe 30 j (volume)' },
+  annonces: { ecran: 'detail', zone: 'detail', libelle: "Annonces d'un item (prix)" },
+  lots: { ecran: 'detail', zone: 'detail', libelle: "Lots d'une ressource" },
+  liste: { ecran: 'liste', zone: 'liste', libelle: 'Liste HDV (prix moyens)' },
+};
+
+// Lit, dans l'image courante, le seul écran correspondant au mode choisi.
+// Retourne { type, lecture } ou null si rien d'exploitable.
+export async function scanner(zones, mode, onProgres) {
   const { frame } = image();
   const rec = await reconnaisseur(onProgres);
-  const lectures = [];
-
-  onProgres?.({ status: 'lecture du panneau détail' });
-  const detail = await lireEcran('detail', frame, enPixels(zones.detail, frame), rec);
-  if (detail.titre && detail.annonces.length) lectures.push({ type: 'detail', lecture: detail });
-
-  onProgres?.({ status: 'lecture de la courbe' });
-  const courbe = await lireEcran('courbe', frame, enPixels(zones.courbe, frame), rec);
-  if (courbe.vendus != null) lectures.push({ type: 'courbe', lecture: courbe });
-  if (!lectures.length) {
-    onProgres?.({ status: 'lecture de la liste' });
-    const liste = await lireEcran('liste', frame, enPixels(zones.liste, frame), rec);
-    if (liste.length) lectures.push({ type: 'liste', lecture: liste });
-  }
-  window.__derniereLecture = { detail, courbe, lectures }; // pour le diagnostic
-  return lectures;
+  const { ecran, zone } = MODES[mode];
+  onProgres?.({ status: MODES[mode].libelle.toLowerCase() });
+  const lecture = await lireEcran(ecran, frame, enPixels(zones[zone], frame), rec);
+  window.__derniereLecture = { mode, lecture }; // pour le diagnostic
+  const utile = ecran === 'courbe' ? lecture.vendus != null
+    : ecran === 'detail' ? !!(lecture.titre && lecture.annonces.length)
+    : lecture.length > 0;
+  return utile ? { type: ecran, lecture } : null;
 }
 
 // Précharge tesseract (au démarrage de la capture), pour un premier scan plus rapide.

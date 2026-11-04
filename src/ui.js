@@ -30,8 +30,8 @@ const REGLAGES_DEFAUT = {
 const S = {
   catalogue: null,
   base: lireLS(KB, null) ?? creerBase(),
-  etat: { vue: 'scan', liste: 'volumes', minutes: 10, budget: 30, tri: { cle: 'score', sens: -1 }, filtre: '', tag: '', zones: ZONES_DEFAUT, ...lireLS(KE, {}) },
-  lectures: [],
+  etat: { vue: 'scan', mode: 'courbe', liste: 'volumes', minutes: 10, budget: 30, tri: { cle: 'score', sens: -1 }, filtre: '', tag: '', zones: ZONES_DEFAUT, ...lireLS(KE, {}) },
+  derniere: null, // dernière lecture OCR
   plusLignes: 50,
   copies: new Set(), // noms déjà copiés pendant la session (repère visuel)
 };
@@ -115,9 +115,16 @@ function renderPlan(listes, p) {
       ${plan.parType.volume} courbes, ${plan.parType.prixItem} annonces, ${plan.parType.ressource} ressources.
       ${plan.restantes ? `<span class="muted">${plan.restantes} autres en attente.</span>` : ''}</p>
     <table class="rt"><tbody>${plan.taches.slice(0, 12).map(t => `<tr><td>${tagHtml(t.tag)}</td><td class="muted">${ACTION[t.type]}</td><td class="cn">${esc(t.nom)}</td>
-      <td class="r"><button class="copy${S.copies.has(t.nom) ? ' fait' : ''}" data-nom="${esc(t.nom)}" title="Copier le nom, à coller dans la recherche de l'HDV">${S.copies.has(t.nom) ? '✓' : COPIER}</button></td></tr>`).join('')}</tbody></table>
+      <td class="r"><button class="copy${S.copies.has(t.nom) ? ' fait' : ''}" data-nom="${esc(t.nom)}" data-type="${t.type}" title="Copier le nom, à coller dans la recherche de l'HDV">${S.copies.has(t.nom) ? '✓' : COPIER}</button></td></tr>`).join('')}</tbody></table>
     ${plan.taches.length > 12 ? `<p class="muted small">… et ${plan.taches.length - 12} autres dans ce plan (détail dans les listes ci-dessous).</p>` : ''}`;
-  $$('#plan button.copy').forEach(b => b.onclick = () => copier(b.dataset.nom, b));
+  $$('#plan button.copy').forEach(b => b.onclick = () => { copier(b.dataset.nom, b); choisirMode(MODE_TACHE[b.dataset.type]); });
+}
+
+const MODE_TACHE = { volume: 'courbe', prixItem: 'annonces', ressource: 'lots' };
+function choisirMode(mode) {
+  if (!mode || S.etat.mode === mode) return;
+  S.etat.mode = mode; sauverEtat();
+  const sel = $('#mode'); if (sel) sel.value = mode;
 }
 
 const COPIER = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
@@ -217,58 +224,87 @@ function saisieManuelle(liste, id) {
   sauverBase(); renderTout();
 }
 
-// ---------- lecture OCR à valider ----------
-function renderLecture() {
-  if (!S.lectures.length) { $('#lecture').innerHTML = ''; return; }
-  const blocs = S.lectures.map((L, k) => {
-    const r = L.identifie;
-    if (L.type === 'liste') {
-      return `<div class="lect"><h3>Liste HDV · ${r.length} lignes</h3><table class="rt"><tbody>${r.map((x, i) => `
-        <tr class="${x.inconnu ? 'off' : ''}"><td><input type="checkbox" data-k="${k}" data-i="${i}" class="chk" ${x.inconnu ? 'disabled' : 'checked'}></td>
-        <td class="cn">${x.inconnu ? `<span class="muted">hors catalogue : ${esc(x.inconnu)}</span>` : esc(x.nom)}</td>
-        <td class="r"><input class="num" data-k="${k}" data-i="${i}" data-champ="prixMoyen" value="${x.prixMoyen ?? ''}" ${x.inconnu ? 'disabled' : ''}></td></tr>`).join('')}</tbody></table></div>`;
-    }
-    if (!r.objet) return `<div class="lect"><h3>${L.type === 'courbe' ? 'Courbe' : 'Détail'} · objet non reconnu</h3><p class="small muted">Titre lu : « ${esc(r.titre ?? '?')} ». Rien ne sera enregistré.</p></div>`;
-    if (L.type === 'courbe') {
-      return `<div class="lect"><h3>Courbe · ${esc(r.objet.nom)}</h3>
-        ${r.trenteJours ? '' : '<p class="small bad">Onglet 30 jours non détecté : vérifie que l\'onglet 30 jours est sélectionné.</p>'}
-        <div class="row small">Vendus sur 30 jours <input class="num" data-k="${k}" data-champ="vendus" value="${r.vendus ?? ''}"></div></div>`;
-    }
-    if (r.objet.genre === 'ressource') {
-      const lot = t => r.annonces.find(a => a.lot === t)?.prix ?? '';
-      return `<div class="lect"><h3>Lots · ${esc(r.objet.nom)}</h3><div class="row small">
-        x1 <input class="num" data-k="${k}" data-champ="x1" value="${lot(1)}">
-        x10 <input class="num" data-k="${k}" data-champ="x10" value="${lot(10)}">
-        x100 <input class="num" data-k="${k}" data-champ="x100" value="${lot(100)}"></div></div>`;
-    }
-    return `<div class="lect"><h3>Annonces · ${esc(r.objet.nom)}</h3>
-      <div class="row small">${r.annonces.slice(0, 8).map((a, i) => `<input class="num big" data-k="${k}" data-i="${i}" data-champ="prix" value="${a.prix ?? ''}"${a.sur ? '' : ' title="à vérifier" style="border-color:var(--ec)"'}>`).join('')}</div></div>`;
-  });
-  $('#lecture').innerHTML = blocs.join('') + `<div class="row"><button id="lect-ok" class="primary small">Enregistrer</button><button id="lect-ko" class="secondary small">Ignorer</button></div>`;
-  $('#lect-ok').onclick = enregistrerLectures;
-  $('#lect-ko').onclick = () => { S.lectures = []; renderTout(); };
+// ---------- dernière lecture : enregistrée automatiquement, modifiable ----------
+// S.derniere = { type, identifie, avant (base avant enregistrement), edition, enregistre, alerte, messages }
+
+function resume(L) {
+  const r = L.identifie;
+  if (L.type === 'liste') {
+    const ok = r.filter(x => !x.inconnu);
+    return `<table class="rt"><tbody>${ok.map(x => `<tr><td class="cn">${esc(x.nom)}</td><td class="r">${fmt(x.prixMoyen)}</td></tr>`).join('')}</tbody></table>
+      ${r.length > ok.length ? `<p class="muted small">${r.length - ok.length} lignes hors catalogue ignorées.</p>` : ''}`;
+  }
+  if (!r.objet) return `<p class="small">Titre lu : « ${esc(r.titre ?? '?')} ».</p>`;
+  if (L.type === 'courbe') return `<p class="small">${fmt(r.vendus)} vendus sur 30 jours</p>`;
+  if (r.objet.genre === 'ressource') {
+    const lot = t => fmt(r.annonces.find(a => a.lot === t)?.prix);
+    return `<p class="small">x1 <b>${lot(1)}</b> · x10 <b>${lot(10)}</b> · x100 <b>${lot(100)}</b></p>`;
+  }
+  return `<p class="small">${r.annonces.slice(0, 8).map(a => `<b${a.sur ? '' : ' class="bad" title="à vérifier"'}>${fmt(a.prix)}</b>`).join(' · ')}</p>`;
 }
 
-function enregistrerLectures() {
-  const val = (k, champ, i) => nombreSaisi($(`input[data-k="${k}"][data-champ="${champ}"]${i != null ? `[data-i="${i}"]` : ''}`)?.value ?? '');
-  const now = Date.now(), messages = [];
-  S.lectures.forEach((L, k) => {
-    const r = L.identifie;
-    if (L.type === 'liste') {
-      const lignes = r.map((x, i) => ({ ...x, prixMoyen: val(k, 'prixMoyen', i) }))
-        .filter((x, i) => !x.inconnu && $(`input.chk[data-k="${k}"][data-i="${i}"]`)?.checked);
-      const res = appliquer(S.base, 'liste', lignes, now); messages.push(...res.enregistres);
-      return;
-    }
-    if (!r.objet) return;
-    if (L.type === 'courbe') { r.vendus = val(k, 'vendus'); r.trenteJours = true; }
-    else if (r.objet.genre === 'ressource') r.annonces = [[1, 'x1'], [10, 'x10'], [100, 'x100']].map(([lot, c]) => ({ lot, prix: val(k, c), sur: true }));
-    else r.annonces = r.annonces.slice(0, 8).map((a, i) => ({ lot: 1, prix: val(k, 'prix', i), sur: true }));
-    const res = appliquer(S.base, L.type, r, now); messages.push(...res.enregistres);
-  });
+function formulaire(L) {
+  const r = L.identifie;
+  if (L.type === 'liste') {
+    return `<table class="rt"><tbody>${r.map((x, i) => `
+      <tr class="${x.inconnu ? 'off' : ''}"><td><input type="checkbox" data-i="${i}" class="chk" ${x.inconnu ? 'disabled' : 'checked'}></td>
+      <td class="cn">${x.inconnu ? `<span class="muted">hors catalogue : ${esc(x.inconnu)}</span>` : esc(x.nom)}</td>
+      <td class="r"><input class="num" data-i="${i}" data-champ="prixMoyen" value="${x.prixMoyen ?? ''}" ${x.inconnu ? 'disabled' : ''}></td></tr>`).join('')}</tbody></table>`;
+  }
+  if (L.type === 'courbe') return `<div class="row small">Vendus sur 30 jours <input class="num" data-champ="vendus" value="${r.vendus ?? ''}"></div>`;
+  if (r.objet.genre === 'ressource') {
+    const lot = t => r.annonces.find(a => a.lot === t)?.prix ?? '';
+    return `<div class="row small">x1 <input class="num" data-champ="x1" value="${lot(1)}"> x10 <input class="num" data-champ="x10" value="${lot(10)}"> x100 <input class="num" data-champ="x100" value="${lot(100)}"></div>`;
+  }
+  return `<div class="row small">${Array.from({ length: Math.max(5, Math.min(8, r.annonces.length)) }, (_, i) => r.annonces[i]).map((a, i) =>
+    `<input class="num big" data-i="${i}" data-champ="prix" value="${a?.prix ?? ''}"${a && !a.sur ? ' title="à vérifier" style="border-color:var(--ec)"' : ''}>`).join('')}</div>`;
+}
+
+const TITRES = { courbe: 'Courbe 30 j', liste: 'Liste HDV' };
+function titreLecture(L) {
+  const r = L.identifie;
+  if (L.type === 'liste') return `Liste HDV · ${r.filter(x => !x.inconnu).length} prix moyens`;
+  const genre = L.type === 'courbe' ? TITRES.courbe : r.objet?.genre === 'ressource' ? 'Lots' : 'Annonces';
+  return `${genre} · ${r.objet ? esc(r.objet.nom) : 'objet non reconnu'}`;
+}
+
+function renderLecture() {
+  const L = S.derniere;
+  if (!L) { $('#lecture').innerHTML = ''; return; }
+  const etat = L.enregistre ? '<span class="tag ok-tag">enregistré</span>' : '<span class="tag faire">non enregistré</span>';
+  const boutons = L.edition
+    ? `<button id="lect-valider" class="primary small">Valider</button><button id="lect-fermer" class="secondary small">Fermer</button>`
+    : `${L.identifie.objet !== null || L.type === 'liste' ? `<button id="lect-modifier" class="secondary small">${L.enregistre ? 'Modifier' : 'Corriger et enregistrer'}</button>` : ''}
+       ${L.enregistre ? '<button id="lect-annuler" class="link small">annuler</button>' : ''}`;
+  $('#lecture').innerHTML = `<div class="lect"><div class="row"><h3>${titreLecture(L)}</h3><div class="spacer"></div>${etat}</div>
+    ${L.alerte ? `<p class="small bad">${esc(L.alerte)}</p>` : ''}
+    ${L.edition ? formulaire(L) : resume(L)}
+    <div class="row">${boutons}</div></div>`;
+  const on = (id, fn) => { const el = $(id); if (el) el.onclick = fn; };
+  on('#lect-modifier', () => { L.edition = true; renderLecture(); });
+  on('#lect-fermer', () => { L.edition = false; renderLecture(); });
+  on('#lect-valider', validerEdition);
+  on('#lect-annuler', () => { S.base = importer(L.avant); sauverBase(); S.derniere = null; statut('Lecture annulée : la base est revenue à son état précédent.'); renderTout(); });
+}
+
+// Enregistre une lecture (identifiée) dans la base ; retourne les messages
+function enregistrer(L) {
+  const res = appliquer(S.base, L.type, L.type === 'liste' ? L.identifie.filter(x => !x.inconnu && x.garder !== false) : L.identifie, L.date);
   sauverBase();
-  S.lectures = [];
-  statut(messages.length ? `Enregistré : ${messages.join(' · ')}` : 'Rien à enregistrer.');
+  return res.enregistres;
+}
+
+function validerEdition() {
+  const L = S.derniere, r = L.identifie;
+  const val = (champ, i) => nombreSaisi($(`#lecture input[data-champ="${champ}"]${i != null ? `[data-i="${i}"]` : ''}`)?.value ?? '');
+  if (L.type === 'liste') r.forEach((x, i) => { x.prixMoyen = val('prixMoyen', i); x.garder = !!$(`#lecture input.chk[data-i="${i}"]`)?.checked; });
+  else if (L.type === 'courbe') { r.vendus = val('vendus'); r.trenteJours = true; }
+  else if (r.objet.genre === 'ressource') r.annonces = [[1, 'x1'], [10, 'x10'], [100, 'x100']].map(([lot, c]) => ({ lot, prix: val(c), sur: true })).filter(a => a.prix);
+  else r.annonces = $$('#lecture input[data-champ="prix"]').map(el => ({ lot: 1, prix: nombreSaisi(el.value), sur: true })).filter(a => a.prix);
+  S.base = importer(L.avant); // on repart de la base d'avant la lecture
+  L.messages = enregistrer(L);
+  L.enregistre = L.messages.length > 0; L.alerte = null; L.edition = false;
+  statut(L.enregistre ? `Corrigé : ${L.messages.join(' · ')}` : 'Rien à enregistrer.');
   renderTout();
 }
 
@@ -360,10 +396,26 @@ async function basculerCapture() {
 
 async function scanner() {
   const b = $('#scan'); b.classList.add('busy'); b.disabled = true;
+  const mode = S.etat.mode;
   try {
-    const lectures = await Cap.scanner(S.etat.zones, m => m.status && statut(`Lecture : ${m.status}…`));
-    S.lectures = lectures.map(L => ({ type: L.type, identifie: identifier(L.type, L.lecture, S.catalogue) }));
-    statut(S.lectures.length ? 'Vérifie la lecture puis enregistre.' : 'Aucun écran HDV reconnu. Vérifie que la fenêtre est visible, ou redéfinis les zones.');
+    const brut = await Cap.scanner(S.etat.zones, mode, m => m.status && statut(`Lecture : ${m.status}…`));
+    if (!brut) {
+      S.derniere = null;
+      statut(`Rien lu dans la zone « ${Cap.MODES[mode].libelle} ». Vérifie que la fenêtre est ouverte et visible, ou redéfinis les zones.`);
+    } else {
+      const L = { type: brut.type, identifie: identifier(brut.type, brut.lecture, S.catalogue), avant: exporter(S.base), date: Date.now(), edition: false };
+      const o = L.identifie.objet;
+      if (L.type !== 'liste' && !o) L.alerte = 'Objet non reconnu : rien n\'a été enregistré.';
+      else if (L.type === 'courbe' && !L.identifie.trenteJours) L.alerte = 'Onglet 30 jours non détecté : rien n\'a été enregistré. Passe sur l\'onglet 30 jours et relance, ou corrige à la main.';
+      else {
+        if (mode === 'lots' && o?.genre === 'item') L.alerte = 'Mode « lots de ressource » mais l\'objet est un équipement : enregistré comme annonces.';
+        if (mode === 'annonces' && o?.genre === 'ressource') L.alerte = 'Mode « annonces d\'item » mais l\'objet est une ressource : enregistré comme lots.';
+        L.messages = enregistrer(L);
+        L.enregistre = L.messages.length > 0;
+      }
+      S.derniere = L;
+      statut(L.enregistre ? 'Enregistré. Corrige avec « Modifier » si besoin, sinon passe au suivant.' : 'Lecture non enregistrée.');
+    }
   } catch (e) { statut('Erreur de lecture : ' + e.message); }
   b.classList.remove('busy'); b.disabled = !Cap.enCours();
   renderTout();
@@ -421,6 +473,9 @@ function brancher() {
   $$('#list-switch button').forEach(b => b.onclick = () => { S.etat.liste = b.dataset.list; S.etat.tri = { cle: 'score', sens: -1 }; S.plusLignes = 50; sauverEtat(); renderTout(); });
   $('#cap-start').onclick = basculerCapture;
   $('#scan').onclick = scanner;
+  $('#mode').innerHTML = Object.entries(Cap.MODES).map(([k, m]) => `<option value="${k}">${m.libelle}</option>`).join('');
+  $('#mode').value = S.etat.mode;
+  $('#mode').onchange = e => { S.etat.mode = e.target.value; sauverEtat(); };
   $('#zones-btn').onclick = ouvrirZones;
   $('#minutes').onchange = e => { S.etat.minutes = Math.max(1, +e.target.value || 10); sauverEtat(); renderTout(); };
   $('#budget').onchange = e => { S.etat.budget = Math.max(0, Number(String(e.target.value).replace(',', '.')) || 0); sauverEtat(); renderTout(); };
