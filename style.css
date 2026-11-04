@@ -1,0 +1,87 @@
+/* Même charte que fm-dofus */
+:root {
+  --bg: #121316; --card: #1b1d22; --card2: #15171b; --line: #2a2d35; --text: #e8e6e3; --muted: #9a9ca3;
+  --sc: #3cbf63; --sn: #4a8ff0; --ec: #e0524d; --accent: #f0b84a; --accent-text: #1a1200;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main, header.top, footer { max-width: 620px; margin: 0 auto; }
+main { padding: 0 10px 40px; }
+header.top { display: flex; align-items: center; gap: 10px; padding: 10px 10px 4px; flex-wrap: wrap; }
+h1 { font-size: 18px; margin: 0; letter-spacing: .02em; white-space: nowrap; }
+h2 { font-size: 15px; margin: 0; }
+footer { padding: 0 10px 24px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+.hidden { display: none !important; }
+.muted { color: var(--muted); } .small { font-size: 12px; } .grow { flex: 1; min-width: 0; }
+.row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
+.spacer { flex: 1; }
+.ok { color: var(--sc); } .warn { color: var(--accent); } .bad { color: var(--ec); }
+
+input, select, button { font: inherit; color: var(--text); background: var(--card2); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=search] { width: 100%; margin: 4px 0; }
+input.num { width: 64px; text-align: right; font-variant-numeric: tabular-nums; }
+input.num.small { width: 54px; padding: 3px 6px; } input.num.big { width: 110px; }
+button { cursor: pointer; }
+button.small, select.small { padding: 3px 8px; font-size: 12px; }
+button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+button.secondary { background: transparent; }
+button.link { background: none; border: none; padding: 0; color: var(--accent); text-decoration: underline; }
+button:disabled { opacity: .4; cursor: default; }
+button.cta-cap { background: #10261a; border-color: var(--sc); color: var(--sc); font-weight: 600; }
+button.cta-cap:hover, button.cta-cap.on { background: var(--sc); color: #fff; }
+button.busy { position: relative; color: transparent !important; }
+button.busy::after { content: ''; position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border: 2px solid #0006; border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+label.sel { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { border: none; border-radius: 0; background: transparent; padding: 4px 12px; }
+.seg button.on { background: var(--accent); color: var(--accent-text); font-weight: 600; }
+
+/* Tableaux */
+.rt { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 4px; }
+.rt th { text-align: left; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding: 4px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.rt th.sort { cursor: pointer; } .rt th.sort:hover { color: var(--text); } .rt th.on { color: var(--accent); }
+.rt td { padding: 4px 6px; border-top: 1px solid #22252c; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rt td.cn { white-space: normal; min-width: 120px; }
+.rt .r { text-align: right; }
+.rt tr.click { cursor: pointer; } .rt tr.click:hover td { background: #20232a; }
+.rt input.num { width: 100%; min-width: 70px; padding: 2px 5px; }
+.rt tr.off td { opacity: .45; }
+
+/* Tags de priorité */
+.tag { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.tag.urgent { background: var(--ec); color: #fff; }
+.tag.faire { background: var(--accent); color: var(--accent-text); }
+.tag.tard { background: #2a2d35; color: var(--muted); }
+.prec { font-size: 10px; color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 0 3px; margin-left: 4px; }
+
+/* Passe initiale */
+.bars { display: grid; gap: 6px; margin: 4px 0; }
+.bar-l { display: flex; justify-content: space-between; font-size: 12px; }
+.bar { height: 6px; background: #2a2d35; border-radius: 3px; overflow: hidden; } .bar i { display: block; height: 100%; background: var(--sc); }
+
+/* KPI */
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 8px 0; }
+.kpi { background: var(--card2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; min-width: 0; }
+.kpi .v { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; } .kpi .l { font-size: 11px; color: var(--muted); }
+.kpi .v.ok { color: var(--sc); }
+
+/* Lecture OCR à valider */
+.lect { border: 1px solid var(--accent); border-radius: 8px; padding: 6px 8px; margin-top: 8px; background: #1f1a10; }
+.lect h3 { font-size: 13px; margin: 2px 0; }
+
+details.more summary { cursor: pointer; color: var(--muted); font-size: 12px; margin-top: 6px; }
+.courses { margin: 4px 0 8px 10px; }
+.reglages { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; font-size: 13px; }
+
+/* Modale des zones */
+.modal { position: fixed; inset: 0; background: #000b; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 10px; }
+.modal-box { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; max-width: 1200px; max-height: 100%; overflow: auto; }
+.zones-wrap canvas { width: 100%; height: auto; cursor: crosshair; display: block; border-radius: 6px; }
+
+.pip-placeholder { max-width: 460px; margin: 20px auto; text-align: center; }
+body.pip header.top h1 { display: none; }
+@media (max-width: 480px) { .kpis { grid-template-columns: 1fr 1fr; } }

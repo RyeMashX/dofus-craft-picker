@@ -51,16 +51,19 @@ export function potentiel(rendement, p) {
 // Base d'évaluation : items entièrement scannés et frais.
 export function baseEvaluation(catalogue, base, p, maintenant = Date.now()) {
   const offres = offresFraiches(base, p.validite.ressources, maintenant);
-  const evalues = [];
+  const evalues = [], items = [];
   for (const it of itemsFocus(catalogue, p)) {
     const b = base.items[it.id] ?? {};
     if (fraicheur(b.volume, p.validite.volume, maintenant) !== 'frais') continue;
     if (fraicheur(b.prix, p.validite.prixItem, maintenant) !== 'frais') continue;
     if (!it.recette.every(r => offres[r.id])) continue;
     const prixVente = prixVenteEstime(b.prix.valeurs, p).estime;
-    evalues.push(evaluerItem(versMoteur(it, catalogue, { volumeMois: b.volume.valeur, prixVente }), offres, p, 1));
+    const m = versMoteur(it, catalogue, { volumeMois: b.volume.valeur, prixVente });
+    items.push(m);
+    evalues.push(evaluerItem(m, offres, p, 1));
   }
   return {
+    items, offres,
     eligibles: evalues.filter(e => e.eligible).sort((a, b) => b.rendement - a.rendement),
     ecartes: evalues.filter(e => !e.eligible),
   };

@@ -3,7 +3,7 @@
 //   'liste'  : liste HDV (équipements ou ressources) → [{ nom, niveau, prixMoyen }]
 //   'detail' : détail d'un objet (annonces d'un équipement ou lots d'une ressource)
 //              → { titre, niveau, prixMoyen, annonces: [{ lot, prix }] }
-//   'courbe' : cours du marché → { titre, vendus, median, moyen }
+//   'courbe' : cours du marché → { titre, niveau, vendus, moyen, trenteJours }
 //
 // Deux passes OCR : une lecture complète repère les lignes et les colonnes, puis une
 // seconde lecture de la seule colonne des prix, en chiffres uniquement, donne les montants.
@@ -23,8 +23,14 @@ export function nombre(s) {
   if (groupes.length === 1) return { valeur: Number(groupes[0]), valide: true };
   if (groupes[0].length > 3) return { valeur: Number(groupes.join('')), valide: false };
   const gardes = [groupes[0]];
-  for (const g of groupes.slice(1)) { if (g.length !== 3) break; gardes.push(g); }
-  return { valeur: Number(gardes.join('')), valide: gardes.length === groupes.length };
+  let valide = true;
+  for (const g of groupes.slice(1)) {
+    if (g.length === 3) { gardes.push(g); continue; }
+    valide = false;
+    if (g.length === 4) gardes.push(g.slice(0, 3)); // "0004" : chiffre parasite collé (icône kama)
+    break;
+  }
+  return { valeur: Number(gardes.join('')), valide };
 }
 
 const centre = b => (b.y0 + b.y1) / 2;
@@ -135,28 +141,53 @@ export async function lireDetail(pre, reconnaitre) {
 }
 
 // ---------- courbe 30 jours ----------
-export async function lireCourbe(pre, reconnaitre) {
+// Lue sans masquage du jaune : l'onglet sélectionné (24 heures / 7 jours / 30 jours) est écrit en jaune.
+// On le repère à la part de pixels jaunes sous chaque libellé, dans l'image d'origine.
+function partJaune(orig, b, echelle) {
+  if (!orig) return 0;
+  const x0 = Math.max(0, Math.floor(b.x0 / echelle)), x1 = Math.min(orig.width, Math.ceil(b.x1 / echelle));
+  const y0 = Math.max(0, Math.floor(b.y0 / echelle)), y1 = Math.min(orig.height, Math.ceil(b.y1 / echelle));
+  let n = 0, j = 0;
+  for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
+    const k = (y * orig.width + x) * 4, r = orig.data[k], g = orig.data[k + 1], bl = orig.data[k + 2];
+    n++; if (r > 150 && g > 120 && bl < 120 && r - bl > 60) j++;
+  }
+  return n ? j / n : 0;
+}
+
+export async function lireCourbe(pre, reconnaitre, orig = null, echelle = 2) {
   const lignes = rangees(await reconnaitre(pre, {}));
   const texte = lignes.map(l => l.texte).join('\n');
   const iNiv = lignes.findIndex(l => /^niv(eau)?\.?\s*\d/i.test(l.texte.trim()));
   const titre = iNiv > 0 ? lettres(lignes[iNiv - 1].texte) : null;
   const niveau = iNiv >= 0 ? Number(lignes[iNiv].texte.match(/\d+/)[0]) : null;
-  const vendus = texte.match(/(\d[\d  ]*)\s*articles?\s*vendus?/i);
-  const median = texte.match(/m[ée]dian\s*:?\s*(\d[\d  ]*)/i);
-  const moyen = texte.match(/moyen\s*:?\s*(\d[\d  ]*)/i);
-  const trente = /30\s*jours/i.test(texte);
+  const vendus = texte.match(/(\d[\d \u00a0]*)\s*articles?\s*vendus?/i);
+  const moyen = texte.match(/moyen\s*:?\s*(\d[\d \u00a0]*)/i);
+
+  // onglets : premier mot de chaque libellé ("24", "7" ou "7jours", "30")
+  const mots = lignes.flatMap(l => l.mots);
+  const onglet = re => mots.find(m => re.test(m.texte));
+  const tabs = { '24h': onglet(/^24(heures)?$/i), '7j': onglet(/^7(jours?)?$/i), '30j': onglet(/^30(jours?)?$/i) };
+  const jaune = Object.fromEntries(Object.entries(tabs).map(([k, m]) => [k, m ? partJaune(orig, m.bbox, echelle) : 0]));
+  const actif = Object.entries(jaune).sort((a, b) => b[1] - a[1])[0];
+  const trenteJours = orig ? actif[0] === '30j' && actif[1] > 0.03 : /30\s*jours/i.test(texte);
+
   return {
     titre, niveau,
     vendus: vendus ? nombre(vendus[1]).valeur : null,
-    median: median ? nombre(median[1]).valeur : null,
     moyen: moyen ? nombre(moyen[1]).valeur : null,
-    trenteJours: trente,
+    trenteJours,
   };
 }
 
 const LECTEURS = { liste: lireListe, detail: lireDetail, courbe: lireCourbe };
 
-export async function lireEcran(type, img, zone, reconnaitre, opts) {
+export async function lireEcran(type, img, zone, reconnaitre, opts = {}) {
+  if (type === 'courbe') {
+    const echelle = opts.echelle ?? 2;
+    const pre = pretraiter(img, zone, { ...opts, masquerJaune: false });
+    return lireCourbe(pre, reconnaitre, recadrer(img, zone), echelle);
+  }
   const pre = pretraiter(img, zone, opts);
   return LECTEURS[type](pre, reconnaitre);
 }

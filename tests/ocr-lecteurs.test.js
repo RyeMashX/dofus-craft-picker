@@ -7,6 +7,7 @@ test('nombre : groupes de 3 chiffres', () => {
   assert.deepEqual(nombre('112 999 999'), { valeur: 112999999, valide: true });
   assert.deepEqual(nombre('2874'), { valeur: 2874, valide: true });
   assert.deepEqual(nombre('123 707 331 4'), { valeur: 123707331, valide: false }); // reste d'icône kama
+  assert.deepEqual(nombre('121 598 0004'), { valeur: 121598000, valide: false });
 });
 
 test('rangées : mots sur la même hauteur regroupés', () => {

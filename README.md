@@ -11,7 +11,17 @@ Aucune lecture réseau du client, aucun clic automatisé : uniquement des captur
 Étape 2 : catalogue DofusDB (`data/catalogue.json`, régénéré par `node scripts/catalogue.mjs`) : 642 équipements craftables 190-200, 538 ressources ; 554 craftables avec les métiers actuels (Forgeron 190).
 Étape 3 : base de prix horodatée, base d'évaluation, listes de scan priorisées et plan de scan. Focus actuel : items niveau 200 (364 craftables).
 Étape 4 : lecture OCR des quatre écrans HDV (liste, annonces d'un équipement, lots d'une ressource, courbe 30 jours), validée sur de vraies captures (`npm run test:ocr`).
-Pas encore d'interface.
+Étape 5 : interface (vues Scan, Résultats, Base), fenêtre flottante, capture du jeu et scan en un clic.
+
+## Utilisation
+
+1. Ouvre la page dans **Chrome**, clique **Flottant** : l'outil passe dans une petite fenêtre qui reste au-dessus du jeu.
+2. **Capturer le jeu** : choisis la fenêtre Dofus dans la boîte de partage.
+3. Ouvre un écran HDV en jeu, puis **Scanner**. L'outil lit le panneau détail et la courbe s'ils sont ouverts, sinon la liste HDV.
+4. Vérifie la lecture (valeurs modifiables) puis **Enregistrer**.
+5. Si les fenêtres du jeu ne sont pas à leur place habituelle, **Zones** permet d'encadrer une fois la liste, le panneau détail et la courbe.
+
+Pour le volume, la courbe doit être sur l'onglet **30 jours** (détecté à sa couleur). Un clic sur une ligne des listes permet aussi la saisie à la main.
 
 ## Lecture OCR
 

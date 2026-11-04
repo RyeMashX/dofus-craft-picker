@@ -60,7 +60,7 @@ const plein = img => ({ x: 0, y: 0, w: img.width, h: img.height });
   const img = lire('courbe-item.png');
   const r = identifier('courbe', await lireEcran('courbe', img, plein(img), reconnaitre), catalogue);
   verifier('courbe : objet', r.objet?.nom, 'Jugement de Thanatena');
-  verifier('courbe : vendus / médian / moyen / 30 j', [r.vendus, r.median, r.moyen, r.trenteJours], [81, 121598000, 123707331, true]);
+  verifier('courbe : vendus / moyen / onglet 30 j actif', [r.vendus, r.moyen, r.trenteJours], [81, 123707331, true]);
 }
 
 // 4. Liste HDV ressources
