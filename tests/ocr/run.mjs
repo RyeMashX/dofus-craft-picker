@@ -95,6 +95,13 @@ for (const [f, echelle] of [['detail-lots-galet.png', 2], ['detail-lots-galet-de
   verifier(`galet (${echelle === 2 ? 'pleine' : 'demi'}) : lots`, [r.objet?.nom, ...r.annonces.map(a => [a.lot, a.prix])], ['Galet brasillant', [1, 229813], [10, 2299902], [100, 26999999]]);
 }
 
+// 3 sexies. Lot x1000 (Pépite) ; à demi-résolution les numéros de lot sont illisibles et déduits
+for (const [f, echelle] of [['detail-lots-pepite.png', 2], ['detail-lots-pepite-demi.png', 4]]) {
+  const img = lire(f);
+  const r = identifier('detail', await lireEcran('detail', img, plein(img), reconnaitre, { echelle }), catalogue);
+  verifier(`pépite (${echelle === 2 ? 'pleine' : 'demi'}) : lots`, [r.objet?.nom, ...r.annonces.map(a => [a.lot, a.prix])], ['Pépite', [1, 400], [10, 2498], [100, 22221], [1000, 210940]]);
+}
+
 // 4. Liste HDV ressources
 {
   const img = lire('liste-ressources.png');

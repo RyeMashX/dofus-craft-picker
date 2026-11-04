@@ -35,3 +35,14 @@ test('séparer le lot du prix : grand blanc après 1 / 10 / 100', async () => {
   assert.deepEqual(separerLot({ texte: '1 10 125 000', mots: [mot('1', 256, 270), mot('10', 588, 630), mot('125', 648, 709), mot('000', 726, 800)] }), { lot: 1, texte: '10 125 000' });
   assert.deepEqual(separerLot({ texte: '10 125 000', mots: [mot('10', 588, 630), mot('125', 648, 709), mot('000', 726, 800)] }).lot, null);
 });
+
+test('lots illisibles déduits par ordre croissant et cohérence des prix unitaires', async () => {
+  const { deduireLots } = await import('../src/ocr/identification.js');
+  const lots = a => deduireLots(a).map(x => x.lot);
+  // Pépite : 400 / 2 498 / 22 221 / 210 940, aucun lot lu
+  assert.deepEqual(lots([400, 2498, 22221, 210940].map(prix => ({ lot: null, prix }))), [1, 10, 100, 1000]);
+  // Galet : x1 et x100 seulement, sans lots lus
+  assert.deepEqual(lots([229813, 26999999].map(prix => ({ lot: null, prix }))), [1, 100]);
+  // un lot lu reste prioritaire
+  assert.deepEqual(lots([{ lot: null, prix: 2299902 }, { lot: 100, prix: 26999999 }]), [10, 100]);
+});

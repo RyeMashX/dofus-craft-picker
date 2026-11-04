@@ -32,7 +32,37 @@ export function identifier(type, lecture, catalogue) {
     });
   }
   const m = lecture.titre ? meilleur([lecture.titre], liste, lecture.niveau) : null;
-  return m ? { ...lecture, objet: { ...m.candidat, confiance: m.confiance } } : { ...lecture, objet: null };
+  if (!m) return { ...lecture, objet: null };
+  const objet = { ...m.candidat, confiance: m.confiance };
+  // ressource : lots illisibles déduits tout de suite (l'encart de lecture les affiche)
+  const annonces = type === 'detail' && objet.genre === 'ressource' ? deduireLots(lecture.annonces) : lecture.annonces;
+  return { ...lecture, annonces, objet };
+}
+
+// Lots illisibles (écrits petit, en gris) : on les déduit. L'HDV range les lots d'une ressource
+// par taille croissante (1, 10, 100, 1000) et le prix unitaire reste du même ordre d'un lot à l'autre :
+// on choisit les tailles croissantes, compatibles avec les lots lus, qui donnent les prix unitaires les plus proches.
+export function deduireLots(annonces) {
+  const rangs = annonces.filter(a => a.prix != null);
+  if (!rangs.length || rangs.every(a => a.lot != null) || rangs.length > 4) return annonces;
+  const tailles = [1, 10, 100, 1000];
+  let best = null;
+  const essayer = (i, depuis, choix) => {
+    if (i === rangs.length) {
+      const logs = rangs.map((a, k) => Math.log10(a.prix / choix[k]));
+      const moy = logs.reduce((s, x) => s + x, 0) / logs.length;
+      const ecart = logs.reduce((s, x) => s + (x - moy) ** 2, 0);
+      if (!best || ecart < best.ecart) best = { ecart, choix: [...choix] };
+      return;
+    }
+    for (let t = depuis; t < tailles.length; t++) {
+      if (rangs[i].lot != null && rangs[i].lot !== tailles[t]) continue;
+      essayer(i + 1, t + 1, [...choix, tailles[t]]);
+    }
+  };
+  essayer(0, 0, []);
+  if (!best) return annonces;
+  return annonces.map(a => { const k = rangs.indexOf(a); return k < 0 || a.lot != null ? a : { ...a, lot: best.choix[k], deduit: true }; });
 }
 
 const f = n => n == null ? '-' : Math.round(n).toLocaleString('fr-FR');
@@ -65,7 +95,7 @@ export function appliquer(base, type, identifie, date = Date.now()) {
       const prix = identifie.annonces.filter(a => a.prix != null && (a.lot ?? 1) === 1).map(a => a.prix);
       if (prix.length) { majPrixItem(base, o.id, prix, date); enregistres.push(`${o.nom} : ${prix.length} annonces, min ${f(Math.min(...prix))}`); }
     } else {
-      const ok = identifie.annonces.filter(a => a.prix != null && a.lot != null);
+      const ok = deduireLots(identifie.annonces).filter(a => a.prix != null && a.lot != null);
       const offre = {};
       for (const a of ok) offre[a.lot] = Math.min(offre[a.lot] ?? Infinity, a.prix);
       if (Object.keys(offre).length) { majRessource(base, o.id, offre, date); enregistres.push(`${o.nom} : x1 ${f(offre[1])} / x10 ${f(offre[10])} / x100 ${f(offre[100])}${offre[1000] ? ` / x1000 ${f(offre[1000])}` : ''}`); }
