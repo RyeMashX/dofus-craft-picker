@@ -149,14 +149,16 @@ export async function lireDetail(pre, reconnaitre) {
   const rangs = lignes.filter(l => /ACHETER/i.test(l.texte)).map(l => {
     const acheter = l.mots.find(w => /ACHETER/i.test(w.texte));
     const xAch = acheter?.bbox.x0 ?? Infinity;
-    const nums = l.mots.filter(w => /^\d+$/.test(w.texte) && w.bbox.x1 < xAch);
+    // mots qui commencent par un chiffre (un prix peut être collé à un reste d'icône : « 2299902: »)
+    const nums = l.mots.filter(w => /^\d/.test(w.texte) && w.bbox.x1 < xAch);
     const h = nums.length ? nums[0].bbox.y1 - nums[0].bbox.y0 : 0;
     const estLot = nums.length >= 2 && /^(1|10|100)$/.test(nums[0].texte) && nums[1].bbox.x0 - nums[0].bbox.x1 > 2.5 * h;
+    // (le prix de secours ne garde que les chiffres de chaque mot)
     const prixMots = estLot ? nums.slice(1) : nums;
     return {
-      ligne: l, lot: estLot ? Number(nums[0].texte) : null, xLot: estLot ? nums[0].bbox.x1 : null,
+      ligne: l, lot: estLot ? Number(nums[0].texte) : null, xLot: estLot ? nums[0].bbox.x1 : null, premier: nums[0] ?? null,
       xPrix: prixMots[0]?.bbox.x0 ?? null, xAcheter: acheter?.bbox.x0 ?? null,
-      texte1: prixMots.map(w => w.texte).join(' '), // prix lu en première passe (secours)
+      texte1: prixMots.map(w => w.texte.replace(/\D+$/, '')).join(' '), // prix lu en première passe (secours)
     };
   });
 
@@ -164,6 +166,10 @@ export async function lireDetail(pre, reconnaitre) {
   if (rangs.length) {
     const med = l => { const t = l.filter(v => v != null).sort((x, y) => x - y); return t.length ? t[Math.floor(t.length / 2)] : null; };
     const xLot = med(rangs.map(r => r.xLot));
+    // seconde chance : un 1 / 10 / 100 seul, aligné sur la colonne Lot des autres rangées (prix illisible en première passe)
+    if (xLot != null) for (const r of rangs) {
+      if (r.lot == null && r.premier && /^(1|10|100)$/.test(r.premier.texte) && Math.abs(r.premier.bbox.x1 - xLot) < 50) r.lot = Number(r.premier.texte);
+    }
     const xPrix = Math.min(...rangs.map(r => r.xPrix ?? Infinity));
     const x0 = xLot != null ? xLot + 8 : Number.isFinite(xPrix) ? Math.max(0, xPrix - 30) : 0;
     const xAch = Math.min(...rangs.map(r => r.xAcheter ?? pre.width)) - 8;

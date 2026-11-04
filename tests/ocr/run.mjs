@@ -88,6 +88,13 @@ const plein = img => ({ x: 0, y: 0, w: img.width, h: img.height });
   verifier('zéros : prix', r.annonces.map(a => a.prix), [8300000, 8300000, 8300000, 9000000, 9000000, 9090909, 9100000, 9999999, 10999999, 13999420, 15100000, 15222222, 15499999]);
 }
 
+// 3 quinquies. Lots d'une ressource, prix collé à un reste d'icône, en pleine et demi-résolution
+for (const [f, echelle] of [['detail-lots-galet.png', 2], ['detail-lots-galet-demi.png', 4]]) {
+  const img = lire(f);
+  const r = identifier('detail', await lireEcran('detail', img, plein(img), reconnaitre, { echelle }), catalogue);
+  verifier(`galet (${echelle === 2 ? 'pleine' : 'demi'}) : lots`, [r.objet?.nom, ...r.annonces.map(a => [a.lot, a.prix])], ['Galet brasillant', [1, 229813], [10, 2299902], [100, 26999999]]);
+}
+
 // 4. Liste HDV ressources
 {
   const img = lire('liste-ressources.png');
