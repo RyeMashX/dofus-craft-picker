@@ -101,3 +101,11 @@ pre.brut { white-space: pre-wrap; font-size: 11px; color: var(--muted); backgrou
 .ac-item.on, .ac-item:hover { background: #2a2416; }
 button.retirer { padding: 0 6px; line-height: 1.4; color: var(--muted); background: transparent; font-size: 12px; }
 button.retirer:hover { color: var(--ec); border-color: var(--ec); }
+
+/* Listes compactes de l'onglet Scan : largeur fixe, nom tronqué */
+.rt.compact { table-layout: fixed; }
+.rt.compact col.c-copie { width: 28px; } .rt.compact col.c-val { width: 64px; }
+.rt.compact col.c-date { width: 40px; } .rt.compact col.c-prio { width: 56px; }
+.rt.compact th, .rt.compact td { padding: 4px 3px; }
+.rt.compact td.nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rt.compact th.sort { overflow: hidden; text-overflow: ellipsis; }

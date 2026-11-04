@@ -152,32 +152,23 @@ async function copier(texte, bouton) {
   statut(`« ${texte} » copié : colle-le dans la recherche de l'HDV.`);
 }
 
+// Onglet Scan : listes compactes (copier · nom · valeur · relevé · priorité) qui tiennent dans la fenêtre flottante.
+// Le tableau complet viendra dans un onglet dédié.
+const valeurRessource = x => x.lots ? (x.lots[1] ?? x.lots[10] ?? x.lots[100]) : null;
+const lotRessource = x => !x.lots ? '' : x.lots[1] != null ? '' : x.lots[10] != null ? ' <span class="muted">x10</span>' : ' <span class="muted">x100</span>';
 const COLONNES = {
-  volumes: [
-    { cle: 'nom', t: 'Nom', v: x => esc(x.nom), cl: 'cn' },
-    { cle: 'volume', t: 'Vendus 30 j', v: x => fmt(x.volume), cl: 'r' },
-    { cle: 'date', t: 'Relevé', v: x => age(x.date) },
-    { cle: 'score', t: 'Priorité', v: x => tagHtml(x.tag) },
-  ],
-  prixItems: [
-    { cle: 'nom', t: 'Nom', v: x => esc(x.nom), cl: 'cn' },
-    { cle: 'volume', t: 'Vol.', v: x => fmt(x.volume), cl: 'r' },
-    { cle: 'prixMin', t: 'Prix min', v: x => fmtK(x.prixMin), cl: 'r' },
-    { cle: 'rendementEstime', t: 'Rend. est.', v: x => pct(x.rendementEstime) + (x.precision ? `<span class="prec">${x.precision}</span>` : ''), cl: 'r' },
-    { cle: 'date', t: 'Relevé', v: x => age(x.date) },
-    { cle: 'score', t: 'Priorité', v: x => tagHtml(x.tag) },
-  ],
-  ressources: [
-    { cle: 'nom', t: 'Nom', v: x => esc(x.nom), cl: 'cn' },
-    { cle: 'items', t: 'Items', v: x => x.items, cl: 'r' },
-    { cle: 'x1', t: 'x1', v: x => fmtK(x.lots?.[1]), cl: 'r' },
-    { cle: 'x10', t: 'x10', v: x => fmtK(x.lots?.[10]), cl: 'r' },
-    { cle: 'x100', t: 'x100', v: x => fmtK(x.lots?.[100]), cl: 'r' },
-    { cle: 'date', t: 'Relevé', v: x => age(x.date) },
-    { cle: 'score', t: 'Priorité', v: x => tagHtml(x.tag) },
-  ],
+  volumes: { t: 'Vendus', v: x => fmt(x.volume), tri: x => x.volume },
+  prixItems: { t: 'Prix min', v: x => fmtK(x.prixMin), tri: x => x.prixMin },
+  ressources: { t: 'Prix x1', v: x => fmtK(valeurRessource(x)) + lotRessource(x), tri: valeurRessource },
 };
-const valeurTri = (x, cle) => cle === 'x1' ? x.lots?.[1] : cle === 'x10' ? x.lots?.[10] : cle === 'x100' ? x.lots?.[100] : x[cle];
+const ageCourt = d => {
+  if (!d) return '–';
+  const j = (Date.now() - d) / JOUR;
+  return j < 1 / 24 ? 'now' : j < 1 ? `${Math.round(j * 24)} h` : `${Math.round(j)} j`;
+};
+const TAG_COURT = { urgent: 'urgent', 'à faire': 'à faire', 'plus tard': 'tard' };
+const tagCourt = t => `<span class="tag ${t === 'urgent' ? 'urgent' : t === 'à faire' ? 'faire' : 'tard'}">${TAG_COURT[t]}</span>`;
+const valeurTri = (x, cle, nom) => cle === 'valeur' ? COLONNES[nom].tri(x) : x[cle];
 
 function renderListe(listes) {
   const nom = S.etat.liste;
@@ -186,17 +177,21 @@ function renderListe(listes) {
   const { cle, sens } = S.etat.tri;
   const f = S.etat.filtre.toLowerCase();
   let rows = listes[nom].filter(x => (!S.etat.tag || x.tag === S.etat.tag) && (!f || x.nom.toLowerCase().includes(f)));
-  if (cols.some(c => c.cle === cle)) {
+  if (['nom', 'valeur', 'date', 'score'].includes(cle)) {
     rows = [...rows].sort((a, b) => {
-      const va = valeurTri(a, cle), vb = valeurTri(b, cle);
+      const va = valeurTri(a, cle, nom), vb = valeurTri(b, cle, nom);
       if (va == null && vb == null) return 0; if (va == null) return 1; if (vb == null) return -1;
       return (typeof va === 'string' ? va.localeCompare(vb, 'fr') : va - vb) * sens;
     });
   }
   const vides = { volumes: 'Aucun item dans le focus.', prixItems: 'Aucun item au-dessus du seuil de volume pour l\'instant : commence par les volumes.', ressources: 'Les ressources apparaissent une fois des items au-dessus du seuil de volume.' };
   if (!rows.length) { $('#liste').innerHTML = `<p class="muted small">${listes[nom].length ? 'Aucune ligne ne correspond au filtre.' : vides[nom]}</p>`; return; }
-  $('#liste').innerHTML = `<table class="rt"><thead><tr>${cols.map(c => `<th class="sort ${c.cl ?? ''} ${c.cle === cle ? 'on' : ''}" data-cle="${c.cle}">${c.t}${c.cle === cle ? (sens > 0 ? ' ▴' : ' ▾') : ''}</th>`).join('')}<th></th></tr></thead>
-    <tbody>${rows.slice(0, S.plusLignes).map(x => `<tr class="click" data-id="${x.id}">${cols.map(c => `<td class="${c.cl ?? ''}">${c.v(x)}</td>`).join('')}<td class="r">${boutonCopier(x.nom, x.type)}</td></tr>`).join('')}</tbody></table>
+  const th = (k, t, cl = '') => `<th class="sort ${cl} ${k === cle ? 'on' : ''}" data-cle="${k}">${t}${k === cle ? (sens > 0 ? ' ▴' : ' ▾') : ''}</th>`;
+  $('#liste').innerHTML = `<table class="rt compact"><colgroup><col class="c-copie"><col><col class="c-val"><col class="c-date"><col class="c-prio"></colgroup>
+    <thead><tr><th></th>${th('nom', 'Nom')}${th('valeur', cols.t, 'r')}${th('date', 'Date', 'r')}${th('score', 'Prio', 'r')}</tr></thead>
+    <tbody>${rows.slice(0, S.plusLignes).map(x => `<tr class="click" data-id="${x.id}">
+      <td>${boutonCopier(x.nom, x.type)}</td><td class="nom" title="${esc(x.nom)}">${esc(x.nom)}</td>
+      <td class="r">${cols.v(x)}</td><td class="r muted">${ageCourt(x.date)}</td><td class="r">${tagCourt(x.tag)}</td></tr>`).join('')}</tbody></table>
     <p class="muted small">${rows.length} lignes${rows.length > S.plusLignes ? ` · <button class="link small" id="plus">afficher plus</button>` : ''}</p>`;
   $$('#liste th.sort').forEach(th => th.onclick = () => {
     const k = th.dataset.cle;
