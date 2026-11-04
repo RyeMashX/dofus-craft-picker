@@ -175,5 +175,12 @@ label.numl input.big { width: 120px; }
 .case .val { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .case.douteux { border-color: var(--ec); } .case.douteux .lib { background: var(--ec); color: #fff; }
 .nb span + span { margin-left: .28em; }
-.case .val.t2 { font-size: 14.5px; } .case .val.t3 { font-size: 12.5px; }
-.cases.c3 .case .val.t3 { font-size: 14px; }
+
+.case .val small { font-size: .72em; font-weight: 600; color: var(--muted); }
+/* Mode modifier : une ligne par valeur */
+.edl { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 8px 0; }
+.edl-l { display: flex; align-items: center; gap: 8px; background: var(--card2); border: 1px solid var(--line); border-radius: 8px; padding: 4px 6px 4px 8px; }
+.edl-l .lib { flex: 0 0 auto; min-width: 46px; text-align: center; font-size: 11px; font-weight: 700; color: var(--accent-text); background: var(--accent); border-radius: 4px; padding: 2px 6px; }
+.edl-l input { flex: 1; min-width: 0; width: 100%; text-align: right; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; background: transparent; border: 1px solid transparent; padding: 4px 6px; }
+.edl-l input:focus { outline: none; border-color: var(--accent); background: #15171b; }
+.edl-l.douteux { border-color: var(--ec); } .edl-l.douteux .lib { background: var(--ec); color: #fff; }

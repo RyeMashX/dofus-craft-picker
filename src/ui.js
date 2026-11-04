@@ -166,15 +166,26 @@ function resume(L) {
 }
 
 // Valeur en grand, groupes de 3 chiffres bien séparés
+// Valeur compacte, 3 chiffres significatifs : exact sous 10 000, puis k, puis M (le montant exact au survol)
+function compact(n) {
+  const a = Math.abs(n), sig3 = (v, u) => `${v.toLocaleString('fr-FR', { maximumSignificantDigits: 3, minimumSignificantDigits: 3 })}<small>${u}</small>`;
+  if (a < 10000) return milliers(n);
+  if (a < 999500) return sig3(n / 1e3, ' k');
+  return sig3(n / 1e6, ' M');
+}
 const nombreHtml = n => `<span class="nb">${milliers(n).split('\u00a0').map(g => `<span>${g}</span>`).join('')}</span>`;
-// Grille de cases : cartouche (libellé) au-dessus, valeur alignée à droite. Case vide si pas de valeur.
+
+// Grille de cases : cartouche (libellé) au-dessus, valeur compacte alignée à droite. Case vide si pas de valeur.
 function cases(liste, colonnes, sansVides = false) {
-  // taille de la valeur selon sa longueur, pour qu'un grand prix tienne dans une case étroite
-  const taille = v => { const n = String(Math.round(v)).length; return n >= 8 ? ' t3' : n >= 6 ? ' t2' : ''; };
   return `<div class="cases c${colonnes}">${liste.map(([lib, v, douteux]) => v == null
     ? (sansVides ? '<div></div>' : '<div class="case vide"></div>')
-    : `<div class="case${douteux ? ' douteux' : ''}"${douteux ? ' title="à vérifier"' : ''}><span class="lib">${lib}</span><span class="val${taille(v)}">${nombreHtml(v)}</span></div>`).join('')}</div>`;
+    : `<div class="case${douteux ? ' douteux' : ''}" title="${milliers(v)}${douteux ? ' · à vérifier' : ''}"><span class="lib">${lib}</span><span class="val">${compact(v)}</span></div>`).join('')}</div>`;
 }
+
+// Mode modifier : une ligne par valeur, cartouche à gauche, champ large à droite avec tous les chiffres
+// lignes = [[libellé, attributs, valeur, douteux]]
+const lignesEdition = lignes => `<div class="edl">${lignes.map(([lib, attr, v, douteux]) =>
+  `<label class="edl-l${douteux ? ' douteux' : ''}"><span class="lib">${lib}</span><input class="milliers" inputmode="numeric" ${attr} value="${fmtSaisie(v)}"${douteux ? ' title="à vérifier"' : ''}></label>`).join('')}</div>`;
 
 function formulaire(L) {
   const r = L.identifie;
@@ -184,13 +195,13 @@ function formulaire(L) {
       <td class="r"><input class="num big milliers" inputmode="numeric" data-i="${i}" data-champ="prixMoyen" value="${fmtSaisie(x.prixMoyen)}"></td>
       <td class="r"><button class="retirer" data-i="${i}" title="Retirer cette ligne (mauvais objet reconnu)">✕</button></td></tr>`).join('')}</tbody></table>`;
   }
-  if (L.type === 'courbe') return `<div class="row small">Vendus sur 30 jours <input class="num milliers" inputmode="numeric" data-champ="vendus" value="${fmtSaisie(r.vendus)}"></div>`;
+  if (L.type === 'courbe') return lignesEdition([['Vendus 30 j', 'data-champ="vendus"', r.vendus]]);
   if (r.objet.genre === 'ressource') {
-    const lot = t => r.annonces.find(a => a.lot === t)?.prix ?? '';
-    return `<div class="prix3">${[1, 10, 100, 1000].map(t => `<label class="numl"><span>x${t}</span><input class="num big milliers" inputmode="numeric" data-champ="x${t}" value="${fmtSaisie(lot(t))}"></label>`).join('')}</div>`;
+    const lot = t => r.annonces.find(a => a.lot === t)?.prix ?? null;
+    return lignesEdition([1, 10, 100, 1000].map(t => [`x${t}`, `data-champ="x${t}"`, lot(t)]));
   }
   const tries = [...r.annonces].filter(a => a.prix).sort((a, b) => a.prix - b.prix);
-  return champsPrix(tries.map(a => a.prix), i => `data-i="${i}" data-champ="prix"${tries[i] && !tries[i].sur ? ' title="à vérifier" style="border-color:var(--ec)"' : ''}`);
+  return lignesEdition(Array.from({ length: NB_PRIX }, (_, i) => [`${i + 1}.`, `data-i="${i}" data-champ="prix"`, tries[i]?.prix ?? null, tries[i] && !tries[i].sur]));
 }
 
 const TITRES = { courbe: 'Courbe 30 j', liste: 'Liste HDV' };
@@ -226,7 +237,7 @@ function renderLecture() {
 
 // ---------- saisie manuelle (quand la lecture échoue, ou bouton « Saisir ») ----------
 const CHAMPS_SAISIE = {
-  courbe: [['vendus', 'Vendus sur 30 j', '']],
+  courbe: [['vendus', 'Vendus 30 j', '']],
   annonces: [], // trois champs numérotés (voir champsPrix)
   lots: [['x1', 'x1', ''], ['x10', 'x10', ''], ['x100', 'x100', ''], ['x1000', 'x1000', '']],
   liste: [['prixMoyen', 'Prix moyen', '']],
@@ -308,8 +319,9 @@ function renderSaisie() {
       <button id="saisie-fermer" class="link small">fermer</button></div>
     <div class="ac"><input id="saisie-nom" placeholder="${mode === 'lots' ? 'Nom de la ressource' : mode === 'liste' ? "Nom de l'item ou de la ressource" : "Nom de l'item"}" value="${esc(sz.nom)}" autocomplete="off" spellcheck="false">
       <div id="ac-liste" class="ac-liste hidden"></div></div>
-    ${mode === 'annonces' ? `<p class="small muted">Prix les plus bas, du moins cher au plus cher :</p>${champsPrix([0, 1, 2].map(i => sz.valeurs['p' + i]), i => `data-saisie="p${i}"`)}`
-      : `<div class="prix3">${CHAMPS_SAISIE[mode].map(([k, l]) => `<label class="numl"><span>${l}</span><input class="num big milliers" data-saisie="${k}" inputmode="numeric" value="${fmtSaisie(nombreSaisi(sz.valeurs[k] ?? ''))}"></label>`).join('')}</div>`}
+    ${mode === 'annonces'
+      ? lignesEdition([0, 1, 2].map(i => [`${i + 1}.`, `data-saisie="p${i}"`, sz.valeurs['p' + i] ?? null]))
+      : lignesEdition(CHAMPS_SAISIE[mode].map(([k, l]) => [l, `data-saisie="${k}"`, sz.valeurs[k] ?? null]))}
     ${sz.erreur ? `<p class="small bad">${esc(sz.erreur)}</p>` : ''}
     <div class="row"><button id="saisie-ok" class="primary small">Enregistrer</button></div></div>`;
   $('#saisie-fermer').onclick = () => { S.saisie = null; renderSaisie(); };
