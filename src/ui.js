@@ -626,6 +626,15 @@ function brancher() {
 
 // ---------- fenêtre flottante (Document Picture-in-Picture, Chrome / Edge) ----------
 const pipBtn = document.querySelector('#pip');
+// Icônes : fenêtre avec une petite fenêtre détachée (ouvrir) / flèche vers la fenêtre principale (ramener)
+const ICONE_PIP = '<svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="8" width="5" height="4" rx=".8" fill="currentColor"/></svg>';
+const ICONE_RAMENER = '<svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11.5 5.5 6.5 10.5M6.5 6.5v4h4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const iconePip = flottant => {
+  pipBtn.innerHTML = flottant ? ICONE_RAMENER : ICONE_PIP;
+  pipBtn.title = flottant ? 'Ramener l\'outil dans la page' : 'Fenêtre flottante : l\'outil reste au-dessus du jeu (Chrome, Edge)';
+  pipBtn.classList.toggle('on', flottant);
+};
+iconePip(false);
 if ('documentPictureInPicture' in window) pipBtn.classList.remove('hidden');
 pipBtn.onclick = async () => {
   if (root !== document) { window.documentPictureInPicture.window?.close(); return; }
@@ -644,13 +653,13 @@ pipBtn.onclick = async () => {
   document.body.insertBefore(ph, document.querySelector('footer'));
   parts.forEach(el => pip.document.body.appendChild(el));
   root = pip.document;
-  pipBtn.textContent = 'Ramener';
+  iconePip(true);
   renderTout();
   pip.addEventListener('pagehide', () => {
     parts.forEach(el => document.body.insertBefore(el, ph));
     ph.remove();
     root = document;
-    pipBtn.textContent = 'Flottant';
+    iconePip(false);
     renderTout();
   });
 };

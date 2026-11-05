@@ -15,7 +15,7 @@ Aucune lecture réseau du client, aucun clic automatisé : uniquement des captur
 
 ## Utilisation
 
-1. Ouvre la page dans **Chrome**, clique **Flottant** : l'outil passe dans une petite fenêtre qui reste au-dessus du jeu.
+1. Ouvre la page dans **Chrome**, clique l'icône de fenêtre flottante (à côté de ⚙) : l'outil passe dans une petite fenêtre qui reste au-dessus du jeu.
 2. **Capturer le jeu** : choisis la fenêtre Dofus dans la boîte de partage.
 3. Choisis ce que tu scannes dans **Je scanne** (courbe 30 j, annonces d'un item, lots d'une ressource, liste HDV). Copier un nom depuis le plan règle ce choix tout seul.
 4. Ouvre l'écran en jeu puis **Scanner** : la lecture est enregistrée tout de suite et reste affichée. **Modifier** pour corriger, **annuler** pour revenir à l'état d'avant. Sinon, passe directement au suivant.
