@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { creerBase } from '../src/base.js';
-import { ajouterVente, majLigne, changerPrix, prixInitial, historiquePrix, ecartPrix, prixParItem, marge, actives, lotsEnVente, marquerVendu, remettreEnVente, importerCapture, fusionner, nouvelleLigne, migrerVentes, bilan } from '../src/ventes.js';
+import { coutFmEstime, ajouterVente, majLigne, changerPrix, prixInitial, historiquePrix, ecartPrix, prixParItem, marge, actives, lotsEnVente, marquerVendu, remettreEnVente, importerCapture, fusionner, nouvelleLigne, migrerVentes, bilan } from '../src/ventes.js';
 
 const cout = () => 1_000_000;
 
@@ -123,4 +123,17 @@ test('historique des prix : prix initial, changements, écart final, stats par i
   assert.ok(Math.abs(p.ecartMoyen - ((8.5 - 9.8) / 9.8) / 2) < 1e-9);
   const bl = bilan(b);
   assert.equal(bl.changementsMoyens, 1); assert.equal(bl.sansChangement, 0.5);
+});
+
+test('coût de FM estimé : moyenne des ventes de l\'item, sinon de tous les items ; 0 = non renseigné', () => {
+  const b = creerBase();
+  assert.equal(coutFmEstime(b, 1), null);
+  const v = (id, fm) => { const l = ajouterVente(b, { id, statut: 'valide', prix: 5e6, coutCraft: 3e6, coutFm: fm }); marquerVendu(b, l.uid); };
+  v(1, 400_000); v(1, 600_000); v(1, 0); v(2, 1_000_000);
+  ajouterVente(b, { id: 1, statut: 'valide', prix: 5e6, coutFm: 9e6 });   // pas vendue : ignorée
+  assert.deepEqual(coutFmEstime(b, 1), { valeur: 500_000, source: 'item', n: 2 });
+  assert.deepEqual(coutFmEstime(b, 3), { valeur: 666_667, source: 'global', n: 3 });
+  // une ligne relevée par OCR reprend l'estimation
+  const r = importerCapture(b, { lignes: [{ id: 3, nom: 'X', prix: 4e6 }] }, () => 2e6);
+  assert.equal(r.ajoutees[0].coutFm, 666_667);
 });

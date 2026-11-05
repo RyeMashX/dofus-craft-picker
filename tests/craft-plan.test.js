@@ -89,3 +89,21 @@ test('détail du craft : quantités, prix unitaires et coût par ressource, prix
   delete b.ressources[101];
   assert.equal(detailCraft(cat.items[0], cat, b, p, 1, T).total, null);
 });
+
+test('ressource introuvable à l\'HDV : orange, plus de prix, ses crafts ne sont plus viables ; un relevé la rétablit', async () => {
+  const { majIndispo, majRessource } = await import('../src/base.js');
+  const { niveauRessource } = await import('../src/fraicheur.js');
+  const { ficheItem, offresToutes, coutEstime } = await import('../src/craft-plan.js');
+  const b = base();
+  assert.ok(viables(cat, b, p, T).liste.some(v => v.id === cat.items[0].id));
+  majIndispo(b, 101, T);
+  assert.equal(niveauRessource(b.ressources[101], T), 'orange');
+  assert.ok(!viables(cat, b, p, T).liste.some(v => v.id === cat.items[0].id));
+  assert.match(ficheItem(cat.items[0], cat, b, p, offresUtilisables(b, T), T).raison, /introuvable/);
+  assert.ok(!('101' in offresToutes(b)));
+  assert.equal(coutEstime(cat, b, p, cat.items[0].id), null);
+  assert.equal(detailCraft(cat.items[0], cat, b, p, 1, T).total, null);
+  majRessource(b, 101, { 1: 400_000 }, T + 1);
+  assert.equal(niveauRessource(b.ressources[101], T + 1), 'vert');
+  assert.ok(viables(cat, b, p, T + 1).liste.some(v => v.id === cat.items[0].id));
+});

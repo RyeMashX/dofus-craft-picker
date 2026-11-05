@@ -8,11 +8,16 @@
 // Puis présentation : HDV Équipements, puis HDV Ressources ; groupes de catégories (filtres HDV) ; tri Dofus.
 
 import { itemsFocus, estimerItem } from './entonnoir.js';
-import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus } from './fraicheur.js';
+import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus, FRAICHEUR } from './fraicheur.js';
+import { estIndispo, JOUR } from './base.js';
 import { estExclu, estEnVente } from './statut.js';
 
 const POIDS_NIVEAU = { noir: 3, orange: 2, jaune: 1, vert: 0 };
 export const cleTache = t => `${t.kind}:${t.id}`;
+
+// Ressource constatée introuvable à l'HDV il y a moins de 3 jours : inutile de la rescanner tout de suite,
+// et les items qui en ont besoin ne peuvent pas devenir prêts
+const indispoRecente = (r, maintenant) => estIndispo(r) && maintenant - r.indispo.date < FRAICHEUR.ressource.jaune * JOUR;
 
 // Tâches nécessaires pour qu'un item devienne prêt (sans celles déjà prévues)
 function tachesPourPret(it, etat, base) {
@@ -72,7 +77,8 @@ export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(
   const candidats = focus
     .map(it => ({ it, valeur: valeurItem(it, base, p), taches: tachesPourPret(it, etats.get(it.id), base) }))
     // un item déjà en vente ne sera pas recrafté : inutile de préparer son dossier
-    .filter(c => c.valeur > 0 && c.taches.length && !etats.get(c.it.id).pret && !estEnVente(base, c.it.id));
+    .filter(c => c.valeur > 0 && c.taches.length && !etats.get(c.it.id).pret && !estEnVente(base, c.it.id))
+    .filter(c => !c.it.recette.some(r => indispoRecente(base.ressources[r.id], maintenant)));
   const budgetCraft = budget * partCraft;
   const vises = [];
   for (;;) {
@@ -108,6 +114,7 @@ export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(
   for (const id of idsRes) {
     if (!imp.demande.has(id)) continue; // ressource d'aucun item vendable
     const nr = niveauRessource(base.ressources[id], maintenant);
+    if (indispoRecente(base.ressources[id], maintenant)) continue;
     if (nr !== 'vert') ent.push({ kind: 'ressource', id, score: POIDS_NIVEAU[nr] * imp.ressource(id) });
   }
   ent.sort((a, b) => b.score - a.score);
@@ -212,5 +219,6 @@ export function organiser(plan, catalogue, { minGroupe = 3, maxGroupe = 12 } = {
 export function tacheFaite(kind, id, base, depuis) {
   if (kind === 'volume') return (base.items[id]?.volume?.date ?? 0) >= depuis;
   if (kind === 'prixItem') return (base.items[id]?.prix?.date ?? 0) >= depuis;
-  return (base.ressources[id]?.lots?.date ?? 0) >= depuis;
+  const r = base.ressources[id];
+  return Math.max(r?.lots?.date ?? 0, r?.indispo?.date ?? 0) >= depuis;
 }

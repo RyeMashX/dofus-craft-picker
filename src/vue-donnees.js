@@ -3,7 +3,7 @@
 
 import { itemsFocus, estimerItem } from './entonnoir.js';
 import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus, NIVEAUX } from './fraicheur.js';
-import { majVolume, majPrixItem, majPrixMoyenItem, majRessource, majPrixMoyenRessource } from './base.js';
+import { majVolume, majPrixItem, majPrixMoyenItem, majRessource, majPrixMoyenRessource, estIndispo } from './base.js';
 import { planAchat } from './lots.js';
 import { icone } from './vue-plan.js';
 import { exclusion, exclure, reintegrer, finDeJournee, lotsEnVente } from './statut.js';
@@ -47,7 +47,7 @@ function lignesRessources(S, p) {
     return {
       id: Number(id), nom: res.nom, categorie: res.type ?? '?', niveau: res.niveau ?? 0, iconId: res.iconId,
       x1: lots[1] ?? null, x10: lots[10] ?? null, x100: lots[100] ?? null, x1000: lots[1000] ?? null, nRes: niveauRessource(b),
-      prixMoyen: b.prixMoyen?.valeur ?? null, date: b.lots?.date ?? null,
+      prixMoyen: b.prixMoyen?.valeur ?? null, date: estIndispo(b) ? b.indispo.date : b.lots?.date ?? null, indispo: estIndispo(b),
       utilisations: u.items.length, vendables: u.vendables, usages: u.items,
     };
   });
@@ -131,7 +131,7 @@ export function renderDonnees(ctx) {
     return `<span class="editable" data-champ="${c.edit}" data-id="${x.id}" title="Cliquer pour modifier">${contenu}</span>`;
   };
   const rendEq = x => ({
-    nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>`, categorie: esc(x.categorie), niveau: x.niveau,
+    nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>${x.indispo ? ' <span class="tag urgent" title="Aucun lot en vente au dernier passage : ses crafts ne sont pas proposés">introuvable</span>' : ''}`, categorie: esc(x.categorie), niveau: x.niveau,
     vendus: `${fmt(x.vendus)} ${pastille(x.nVol)}`, prixMin: `${fmtK(x.prixMin)} ${pastille(x.nPrix)}`, prixMoyen: fmtK(x.prixMoyen),
     cout: fmtK(x.cout), rendement: x.rendement == null ? '–' : `<span class="${x.rendement >= p.margeMin ? 'ok' : x.rendement < 0 ? 'bad' : ''}">${pct(x.rendement)}</span>`,
     resVertes: `<span title="${x.compte.vert} vertes, ${x.compte.jaune} jaunes, ${x.compte.orange} orange, ${x.compte.noir} sans info">${x.resVertes}/${x.resTotal}</span> ${pastille(x.compte.noir ? 'noir' : x.compte.orange ? 'orange' : x.compte.jaune ? 'jaune' : 'vert')}`,

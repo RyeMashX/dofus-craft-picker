@@ -15,6 +15,8 @@ import { prixVenteEstime, evaluerItem, maxCrafts } from './marge.js';
 import { allouer } from './allocation.js';
 import { planAchat } from './lots.js';
 import { estExclu, lotsEnVente } from './statut.js';
+import { coutFmEstime } from './ventes.js';
+import { estIndispo } from './base.js';
 
 const POINTS = { vert: 1, jaune: 0.6, orange: 0.2, noir: 0 };
 
@@ -43,7 +45,7 @@ export const niveauConfiance = c => c >= 0.9 ? 'haute' : c >= 0.75 ? 'moyenne' :
 
 // Lots de toutes les ressources relevées, quelle que soit leur fraîcheur (items du plan devenus non viables)
 export function offresToutes(base) {
-  return Object.fromEntries(Object.entries(base.ressources).filter(([, r]) => r.lots).map(([id, r]) => [id, r.lots.valeurs]));
+  return Object.fromEntries(Object.entries(base.ressources).filter(([, r]) => r.lots && !estIndispo(r)).map(([id, r]) => [id, r.lots.valeurs]));
 }
 
 // Fiche d'un item pour le Craft (1 craft). raison = pourquoi il n'est pas viable (null s'il l'est).
@@ -51,16 +53,19 @@ export function ficheItem(it, catalogue, base, p, offres, maintenant = Date.now(
   const b = base.items[it.id] ?? {};
   const etat = etatItem(it, base, maintenant);
   const prixVente = b.prix ? prixVenteEstime(b.prix.valeurs, p).estime : b.prixMoyen?.valeur ?? null;
-  const m = versMoteur(it, catalogue, { volumeMois: b.volume?.valeur ?? 0, prixVente });
+  const fm = coutFmEstime(base, it.id);
+  const m = { ...versMoteur(it, catalogue, { volumeMois: b.volume?.valeur ?? 0, prixVente }), coutFm: fm?.valeur ?? 0 };
   const ev = evaluerItem(m, offres, p, 1);
+  const indispo = it.recette.filter(r => estIndispo(base.ressources[r.id])).map(r => catalogue.ressources[r.id]?.nom ?? `#${r.id}`);
   const raison = estExclu(base, it.id, maintenant) ? 'exclu'
+    : indispo.length ? `ressource introuvable à l'HDV (${indispo.join(', ')})`
     : !etat.utilisable ? 'données périmées'
     : (b.volume?.valeur ?? 0) < p.volumeMin ? 'volume trop faible'
     : ev.rendement == null || ev.craft.manquantes.length ? 'prix manquant'
     : ev.rendement < p.margeAcceptable ? 'marge trop faible' : null;
   return {
     id: it.id, nom: it.nom, type: it.type, iconId: it.iconId, item: m,
-    volume: b.volume?.valeur ?? 0, prixVente, cout: ev.coutCraft, marge: ev.marge, rendement: ev.rendement,
+    volume: b.volume?.valeur ?? 0, prixVente, cout: ev.coutCraft, fm: ev.coutFm, fmSource: fm, marge: ev.marge, rendement: ev.rendement,
     niveau: ev.rendement != null && ev.rendement >= p.margeMin ? 'cible' : 'acceptable',
     confiance: confiance(it, base, offres, p, maintenant),
     pret: etat.pret, maxCrafts: maxCrafts(b.volume?.valeur ?? 0, p),
@@ -91,6 +96,7 @@ function estimerCout(it, base, p) {
   let cout = 0;
   for (const r of it.recette) {
     const res = base.ressources[r.id] ?? {};
+    if (estIndispo(res)) return null;
     if (res.lots) cout += planAchat(r.qte, res.lots.valeurs, p)?.cout ?? 0;
     else if (res.prixMoyen) cout += r.qte * res.prixMoyen.valeur;
     else return null;
@@ -105,6 +111,7 @@ export function detailCraft(it, catalogue, base, p, n = 1, maintenant = Date.now
   const lignes = it.recette.map(r => {
     const res = base.ressources[r.id] ?? {}, cat = catalogue.ressources[r.id] ?? { nom: `#${r.id}` };
     const q = r.qte * n;
+    if (estIndispo(res)) return { id: r.id, nom: cat.nom, iconId: cat.iconId, q, cout: null, prixUnitaire: null, source: 'indispo', niveau: 'orange' };
     const achat = res.lots ? planAchat(q, res.lots.valeurs, p) : null;
     const cout = achat ? achat.cout : res.prixMoyen ? q * res.prixMoyen.valeur : null;
     return {
@@ -139,16 +146,17 @@ export function evaluerPlan(plan, liste, offres, catalogue, p, base = null) {
     }
     if (!v) continue;
     const ev = evaluerItem(v.item, toutes, p, n);
-    lignes.push({ ...v, n, coutN: ev.capital, revenuN: ev.revenu ?? 0, margeN: ev.marge ?? 0, rendementN: ev.rendement, depasse: n > v.maxCrafts });
+    lignes.push({ ...v, n, coutN: ev.capital, craftN: ev.coutCraft, fmN: ev.coutFm, revenuN: ev.revenu ?? 0, margeN: ev.marge ?? 0, rendementN: ev.rendement, depasse: n > v.maxCrafts });
   }
   lignes.sort((a, b) => b.margeN - a.margeN);
   const achats = achatsConsolides(lignes, toutes, catalogue, p);
-  const capital = achats.reduce((s, a) => s + (a.plan?.cout ?? 0), 0);
+  const fm = lignes.reduce((s, l) => s + l.fmN, 0);
+  const capital = achats.reduce((s, a) => s + (a.plan?.cout ?? 0), 0) + fm;
   const revenu = lignes.reduce((s, l) => s + l.revenuN, 0);
   const marge = revenu - capital;
   const conf = capital ? lignes.reduce((s, l) => s + l.confiance * l.coutN, 0) / lignes.reduce((s, l) => s + l.coutN, 0) : null;
   return {
-    lignes, achats, capital, revenu, marge,
+    lignes, achats, capital, fm, revenu, marge,
     rendement: capital ? marge / capital : null,
     crafts: lignes.reduce((s, l) => s + l.n, 0),
     confiance: conf,

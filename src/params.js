@@ -38,8 +38,8 @@ export const PARAMS = {
   demandeRef: 3,            // une ressource utile à ~3 items prometteurs a le poids maximal
 
   // FM et effort
-  inclureFm: false,         // phase initiale : marge / coût du craft, sans la FM
-  coutFmDefaut: 0,          // coût de FM forfaitaire par item si inclureFm
+  inclureFm: true,          // la marge déduit la FM estimée (moyenne des ventes : voir coutFmEstime dans ventes.js)
+  coutFmDefaut: 0,          // sans vente renseignée, pas de coût de FM
   coutEffortParCraft: 300000, // "prix" d'un craft+FM en plus, en kamas (arbitrage effort)
   pasBudget: 100000,        // granularité du calcul d'allocation
 };

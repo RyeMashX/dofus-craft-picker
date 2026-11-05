@@ -65,7 +65,7 @@ KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources), 
 
 - **Crafts viables** : données sans orange ni noir, au moins 60 ventes / mois, rendement d'au moins 15 %. « Cible » à partir de 25 %, « acceptable » entre 15 et 25 %. Les items exclus n'apparaissent pas ; ceux en vente sont marqués.
 - **Plan de craft** : « Générer le plan de craft » calcule une recommandation à partir du budget (items cibles, ni en vente ni exclus, au plus un jour de vente par item), puis le plan est **figé** : ses chiffres suivent les prix, mais ses items ne changent que si tu le modifies (+ / − / ✕, ajout depuis les viables) ou le régénères. Un item du plan devenu non viable reste, signalé avec la raison.
-- **Mise en vente** : « 🏷 vente » sur une ligne met 1 exemplaire en vente (ligne « draft » dans Ventes, prix = prix de vente estimé, coût = coût du craft, FM = 0) et le retire du plan ; « Tout mettre en vente » fait de même pour tout le plan.
+- **Mise en vente** : « 🏷 vente » sur une ligne met 1 exemplaire en vente (ligne « draft » dans Ventes, prix = prix de vente estimé, coût = coût du craft, FM = FM estimée) et le retire du plan ; « Tout mettre en vente » fait de même pour tout le plan.
 - **Marge affichée = marge réelle** (taxe de 2 % déduite). L'effort (coût fictif par craft, réglable) ne sert qu'à départager dans la recommandation. La **confiance** (volume 15 %, prix de vente 35 %, ressources 50 % pondérées par leur part du coût ; vert = 1, jaune = 0,6) est affichée seulement.
 - **Infobulle** au survol du nom d'un craft (plan ou viables) : la recette avec, pour chaque ressource, la quantité (× nombre de crafts dans le plan), le prix unitaire, le coût et la fraîcheur ; puis coût du craft, prix de vente, taxe et marge. Lots relevés sinon prix moyen (marqué « m »).
 - Le coût total du plan est calculé avec les **achats regroupés** : une ressource partagée entre plusieurs crafts est achetée en une fois.
@@ -117,7 +117,9 @@ rendement = marge / coût du craft     (seuil : 25 %)
 
 Prix de vente visé = annonce la moins chère − 1 kama (option : moyenne des 3 moins chères − 1).
 On ne se fie ni au prix moyen ni au médian : un item à 2 M peut se vendre 10 M avec un exo, ce qui fausse les moyennes.
-La FM n'est pas comptée en phase initiale (`inclureFm`). V2 : forfait par item, puis estimation par le solveur de fm-dofus.
+**Coût de FM estimé** : moyenne des coûts de FM renseignés sur tes exemplaires vendus de l'item, sinon de tous tes items vendus (un coût à 0 compte comme non renseigné). Il est déduit de la marge du Craft (viabilité, recommandation, plan, budget), détaillé dans l'infobulle, et prérempli sur les lignes de Ventes (mise en vente depuis le Craft, relevé OCR). Sans aucune vente renseignée, pas de FM déduite. `inclureFm: false` dans les paramètres revient à une marge sans FM.
+
+**Ressource introuvable** : quand l'HDV n'a aucun lot d'une ressource (légendes…), le scan échoue ; « Aucun lot disponible » (bouton de la carte de lecture en modification, ou de la saisie manuelle en mode lots) la marque introuvable. Elle compte comme orange, n'a plus de prix, et aucun craft qui en a besoin n'est proposé (raison affichée dans le plan). Le plan de scan ne la reprogramme qu'après 3 jours ; le prochain relevé de lots la rétablit. Étiquette « introuvable » dans Données.
 
 ### Règle des lots (achat des ressources)
 
@@ -149,7 +151,7 @@ Ces paramètres sont des hypothèses de départ : le journal servira à les cali
 
 - Deux items qui partagent une ressource sont calculés comme s'ils l'achetaient séparément (la profondeur n'est pas partagée).
 - Vendre 2 exemplaires du même item suppose qu'ils partent au même prix.
-- Le coût de FM n'est pas compté en phase initiale.
+- Le coût de FM est une moyenne de tes ventes passées : il ne tient pas compte des jets visés.
 - Le prix de vente ne tient pas encore compte du jet (V2).
 
 ## Structure

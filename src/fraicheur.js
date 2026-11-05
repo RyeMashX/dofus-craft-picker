@@ -34,6 +34,7 @@ export function niveauPrixItem(b, maintenant = Date.now()) {
 }
 
 export function niveauRessource(r, maintenant = Date.now()) {
+  if (r?.indispo && (!r.lots || r.indispo.date >= r.lots.date)) return 'orange'; // aucun lot en vente
   if (r?.lots) return parAge(r.lots.date, FRAICHEUR.ressource, maintenant);
   return r?.prixMoyen ? 'orange' : 'noir';
 }

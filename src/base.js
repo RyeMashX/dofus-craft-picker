@@ -39,9 +39,20 @@ export function majPrixMoyenItem(base, itemId, prixMoyen, date = Date.now()) {
 
 // offre = { 1: prix x1, 10: prix x10, 100: prix x100, 1000: prix x1000 } (tailles absentes = pas de lot)
 export function majRessource(base, resId, offre, date = Date.now()) {
-  ressource(base, resId).lots = { valeurs: { ...offre }, date };
+  const r = ressource(base, resId);
+  r.lots = { valeurs: { ...offre }, date };
+  delete r.indispo; // des lots relevés : la ressource est de nouveau disponible
   return base;
 }
+
+// Aucun lot en vente à l'HDV (fréquent pour les ressources rares, légendes…) : donnée orange,
+// la ressource n'a pas de prix utilisable et les crafts qui en ont besoin ne sont pas craftables.
+export function majIndispo(base, resId, date = Date.now()) {
+  ressource(base, resId).indispo = { date };
+  return base;
+}
+// Indisponible si le constat est plus récent que le dernier relevé de lots
+export const estIndispo = r => !!r?.indispo && (!r.lots || r.indispo.date >= r.lots.date);
 
 export function majPrixMoyenRessource(base, resId, prixMoyen, date = Date.now()) {
   ressource(base, resId).prixMoyen = { valeur: prixMoyen, date };

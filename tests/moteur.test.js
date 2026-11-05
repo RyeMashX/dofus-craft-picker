@@ -69,13 +69,13 @@ test('max crafts = 1 jour de vente (60/mois → 2)', () => {
   assert.equal(maxCrafts(90, p), 3);
 });
 
-test('marge : taxe de 2 %, FM ignorée en phase initiale, comptée si inclureFm', () => {
+test('marge : taxe de 2 %, FM estimée déduite (sans FM si inclureFm est coupé)', () => {
   const item = { nom: 'Test', volumeMois: 90, prixVente: 1000000, coutFm: 100000, recette: [{ id: 'r', nom: 'R', qte: 1 }] };
   const ev = evaluerItem(item, { r: { 1: 600000 } }, p, 1);
-  assert.equal(ev.marge, 980000 - 600000);
+  assert.equal(ev.marge, 980000 - 600000 - 100000);
   assert.ok(ev.eligible);
-  const avecFm = evaluerItem(item, { r: { 1: 600000 } }, { ...p, inclureFm: true }, 1);
-  assert.equal(avecFm.marge, 980000 - 600000 - 100000);
+  const sansFm = evaluerItem(item, { r: { 1: 600000 } }, { ...p, inclureFm: false }, 1);
+  assert.equal(sansFm.marge, 980000 - 600000);
 });
 
 // Ton exemple : 30 M, soit 6 items à 25 %, soit 12 items à 30 %.

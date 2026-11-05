@@ -84,7 +84,7 @@ export function importerCapture(base, identifie, coutDe, maintenant = Date.now()
     const existantes = avant.filter(l => l.id === a.id);
     if (existantes.some(l => l.prix === a.prix)) { res.connues++; continue; }
     if (!existantes.length) {
-      res.ajoutees.push(ajouterVente(base, { id: a.id, statut: 'valide', prix: a.prix, coutCraft: coutDe(a.id), coutFm: 0, date: maintenant }));
+      res.ajoutees.push(ajouterVente(base, { id: a.id, statut: 'valide', prix: a.prix, coutCraft: coutDe(a.id), coutFm: fmDe(base, a.id), date: maintenant }));
       continue;
     }
     res.aTrancher.push({ id: a.id, nom: a.nom, prix: a.prix });
@@ -95,7 +95,7 @@ export function importerCapture(base, identifie, coutDe, maintenant = Date.now()
 // Résolution : fusion = l'annonce suivie a changé de prix à l'HDV (+ 1 % du nouveau prix si la ligne est validée)
 export const fusionner = (base, u, prix, maintenant = Date.now()) => changerPrix(base, u, prix, maintenant);
 export const nouvelleLigne = (base, id, prix, coutDe, maintenant = Date.now()) =>
-  ajouterVente(base, { id, statut: 'valide', prix, coutCraft: coutDe(id), coutFm: 0, date: maintenant });
+  ajouterVente(base, { id, statut: 'valide', prix, coutCraft: coutDe(id), coutFm: fmDe(base, id), date: maintenant });
 
 // Ancienne liste « en vente » (simples compteurs) → lignes validées sans prix
 export function migrerVentes(base, coutDe = () => null) {
@@ -106,6 +106,19 @@ export function migrerVentes(base, coutDe = () => null) {
   delete base.enVente;
   return base;
 }
+
+// ---------- coût de FM estimé ----------
+// Moyenne des coûts de FM renseignés sur les exemplaires vendus de l'item ; à défaut, de tous les items vendus.
+// Un coût de FM à 0 est traité comme non renseigné (c'est la valeur par défaut d'une ligne).
+export function coutFmEstime(base, id) {
+  const v = vendues(base).filter(l => (l.coutFm ?? 0) > 0);
+  const moy = t => Math.round(t.reduce((s, l) => s + l.coutFm, 0) / t.length);
+  const it = v.filter(l => l.id === Number(id));
+  if (it.length) return { valeur: moy(it), source: 'item', n: it.length };
+  if (v.length) return { valeur: moy(v), source: 'global', n: v.length };
+  return null;
+}
+const fmDe = (base, id) => coutFmEstime(base, id)?.valeur ?? 0;
 
 // ---------- historique des prix ----------
 // Prix initial = prix d'avant le premier changement à l'HDV (les corrections ne comptent pas).
