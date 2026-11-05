@@ -132,7 +132,7 @@ export function renderDonnees(ctx) {
     return `<span class="editable" data-champ="${c.edit}" data-id="${x.id}" title="Cliquer pour modifier">${contenu}</span>`;
   };
   const rendEq = x => ({
-    nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>${x.indispo ? ' <span class="tag urgent" title="Aucun lot en vente au dernier passage : ses crafts ne sont pas proposés">introuvable</span>' : ''}`, categorie: esc(x.categorie), niveau: x.niveau,
+    nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>`, categorie: esc(x.categorie), niveau: x.niveau,
     vendus: `${fmt(x.vendus)} ${pastille(x.nVol)}`, prixMin: `${fmtK(x.prixMin)} ${pastille(x.nPrix)}`, prixMoyen: fmtK(x.prixMoyen),
     cout: fmtK(x.cout), rendement: x.rendement == null ? '–' : `<span class="${x.rendement >= p.margeMin ? 'ok' : x.rendement < 0 ? 'bad' : ''}">${pct(x.rendement)}</span>`,
     resVertes: `<span title="${x.compte.vert} vertes, ${x.compte.jaune} jaunes, ${x.compte.orange} orange, ${x.compte.rouge} introuvables, ${x.compte.noir} sans info">${x.resVertes}/${x.resTotal}</span> ${pastille(x.compte.noir ? 'noir' : x.compte.rouge ? 'rouge' : x.compte.orange ? 'orange' : x.compte.jaune ? 'jaune' : 'vert')}`,
@@ -143,7 +143,7 @@ export function renderDonnees(ctx) {
   const rendRs = x => ({
     nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>`, categorie: esc(x.categorie), niveau: x.niveau,
     x1: fmt(x.x1), x10: fmt(x.x10), x100: fmt(x.x100), x1000: fmt(x.x1000), prixMoyen: fmt(x.prixMoyen),
-    vendables: `${x.vendables} <span class="muted">/ ${x.utilisations}</span>`, date: `${ctx.age(x.date)} ${pastille(x.nRes)}`,
+    vendables: `${x.vendables} <span class="muted">/ ${x.utilisations}</span>`, date: `${x.indispo ? '<span class="tag urgent" title="Aucun lot en vente au dernier passage : ses crafts ne sont pas proposés">introuvable</span> ' : ''}${ctx.age(x.date)} ${pastille(x.nRes)}`,
   });
   const rend = onglet === 'equipements' ? rendEq : rendRs;
   const cols = COLS[onglet];
