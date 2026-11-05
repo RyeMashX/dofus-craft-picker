@@ -80,6 +80,7 @@ export const MODES = {
   annonces: { ecran: 'detail', zone: 'detail', libelle: "Annonces d'un item (prix)" },
   lots: { ecran: 'detail', zone: 'detail', libelle: "Lots d'une ressource" },
   liste: { ecran: 'liste', zone: 'liste', libelle: 'Liste HDV (prix moyens)' },
+  ventes: { ecran: 'ventes', zone: 'ventes', libelle: 'Mes ventes (onglet Vente)' },
 };
 
 // Lit, dans l'image courante, le seul écran correspondant au mode choisi.
@@ -96,6 +97,7 @@ export async function scanner(zones, mode, onProgres) {
   dernier = { canvas, zone: px, texte: textes.join('\n---\n'), mode };
   const utile = ecran === 'courbe' ? lecture.vendus != null
     : ecran === 'detail' ? !!(lecture.titre && lecture.annonces.length)
+    : ecran === 'ventes' ? lecture.lignes.length > 0
     : lecture.length > 0;
   return { type: ecran, lecture, utile };
 }

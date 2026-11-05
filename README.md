@@ -11,7 +11,7 @@ Aucune lecture réseau du client, aucun clic automatisé : uniquement des captur
 Étape 2 : catalogue DofusDB (`data/catalogue.json`, régénéré par `node scripts/catalogue.mjs`) : 642 équipements craftables 190-200, 538 ressources ; 554 craftables avec les métiers actuels (Forgeron 190).
 Étape 3 : base de prix horodatée, base d'évaluation, listes de scan priorisées et plan de scan. Focus actuel : items niveau 200 (364 craftables).
 Étape 4 : lecture OCR des quatre écrans HDV (liste, annonces d'un équipement, lots d'une ressource, courbe 30 jours), validée sur de vraies captures (`npm run test:ocr`).
-Étape 5 : interface (onglets Scan, Données, Craft ; réglages via ⚙), fenêtre flottante, capture du jeu et scan en un clic.
+Étape 5 : interface (onglets Scan, Données, Craft, Achats, Ventes ; réglages via ⚙), fenêtre flottante, capture du jeu et scan en un clic.
 
 ## Utilisation
 
@@ -60,6 +60,22 @@ Pour le volume, la courbe doit être sur l'onglet **30 jours** (détecté à sa 
 ## Onglet Données
 
 KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources), puis deux tables (Équipements, Ressources) : recherche, filtres (catégorie, état ou fraîcheur, vendables), tri par colonne, modification directe des valeurs (clic sur une valeur soulignée), et détail au clic sur le nom (recette d'un équipement, items qui utilisent une ressource).
+
+## Onglet Craft
+
+- **Crafts viables** : données sans orange ni noir, au moins 60 ventes / mois, rendement d'au moins 15 %. « Cible » à partir de 25 %, « acceptable » entre 15 et 25 %. Les items exclus n'apparaissent pas ; ceux en vente sont marqués.
+- **Plan de craft** : recommandé à partir du budget (items cibles, ni en vente ni exclus, au plus un jour de vente par item). Modifiable à la main (+ / − / ✕, ajout depuis les viables) ; les KPIs suivent. « Revenir à la recommandation » annule les modifications.
+- **Marge affichée = marge réelle** (taxe de 2 % déduite). L'effort (coût fictif par craft, réglable) ne sert qu'à départager dans la recommandation. La **confiance** (volume 15 %, prix de vente 35 %, ressources 50 % pondérées par leur part du coût ; vert = 1, jaune = 0,6) est affichée seulement.
+- Le coût total du plan est calculé avec les **achats regroupés** : une ressource partagée entre plusieurs crafts est achetée en une fois.
+
+## Onglet Achats
+
+Toutes les ressources du plan, quantités additionnées, lots conseillés (x1 / x10 / x100 / x1000) et coût attendu, classées par HDV puis catégorie. Cases à cocher pour suivre les achats ; « à revérifier » quand le prix risque de remonter.
+
+## Onglet Ventes et liste noire
+
+- **Ventes** : relevé par OCR (mode « Mes ventes », une capture par écran de la liste ; les captures s'additionnent sans doublon jusqu'au total « 55/570 lots en vente ») ou saisie manuelle. Tant qu'un item a au moins 1 lot en vente, il n'est pas proposé dans le plan de craft ni préparé par le plan de scan.
+- **Liste noire** (onglet Données, clic sur le nom d'un équipement) : exclusion définitive ou jusqu'à une date. Un item exclu sort du plan de scan, du Craft et des recommandations. Filtre « exclus » dans Données.
 
 ## Processus cible
 
@@ -134,6 +150,11 @@ src/fraicheur.js   niveaux de fraîcheur, état prêt / utilisable, ordre alphab
 src/plan.js        plan de scan : choix des scans, groupes HDV / filtres
 src/vue-plan.js    onglet Scan
 src/vue-donnees.js onglet Données
+src/craft-plan.js  crafts viables, confiance, recommandation, plan modifiable, achats regroupés
+src/statut.js      liste noire, ventes en cours, relevé multi-captures
+src/vue-craft.js   onglet Craft
+src/vue-achats.js  onglet Achats
+src/vue-ventes.js  onglet Ventes
 scripts/catalogue.mjs  génération du catalogue depuis DofusDB
 data/catalogue.json    catalogue généré
 src/ocr/           prétraitement, lecteurs d'écrans, rapprochement des noms

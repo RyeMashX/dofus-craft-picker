@@ -9,7 +9,8 @@ export const PARAMS = {
 
   // Filtres
   volumeMin: 60,            // ventes / mois minimum
-  margeMin: 0.25,           // rendement minimum = marge / coût du craft
+  margeMin: 0.25,           // rendement « cible » = marge / coût du craft
+  margeAcceptable: 0.15,    // rendement « acceptable » : listé dans les crafts viables, ajout manuel possible
   joursParMois: 30,         // max de crafts d'un même item = volume / 30 (1 jour de vente)
 
   // Achat des ressources par lots (voir README, "Règle des lots")

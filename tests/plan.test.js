@@ -78,3 +78,23 @@ test('tâche faite : relevé postérieur à la création du plan', () => {
   majRessource(b, 100, { 1: 5 }, T + 1000);
   assert.equal(tacheFaite('ressource', 100, b, T), true);
 });
+
+test('plan : un item exclu disparaît, un item en vente n\'est plus préparé pour le craft', async () => {
+  const { exclure, majVente } = await import('../src/statut.js');
+  const b = baseExemple();
+  exclure(b, 1, null, T);
+  let plan = calculerPlan(cat, b, p, 10, T, 1);
+  assert.ok(!plan.taches.some(t => t.kind !== 'ressource' && t.id === 1));
+  const b2 = baseExemple();
+  majVente(b2, 1, 2, T);
+  plan = calculerPlan(cat, b2, p, 0.5, T, 1); // 3 scans de craft : A (en vente) ne doit pas être visé
+  assert.ok(!plan.taches.some(t => t.kind === 'prixItem' && t.id === 1));
+});
+
+test('statut : exclusion datée qui expire', async () => {
+  const { exclure, estExclu } = await import('../src/statut.js');
+  const b = creerBase();
+  exclure(b, 5, T + 2 * JOUR, T);
+  assert.equal(estExclu(b, 5, T + JOUR), true);
+  assert.equal(estExclu(b, 5, T + 3 * JOUR), false);
+});

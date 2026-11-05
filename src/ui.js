@@ -2,11 +2,14 @@
 
 import { PARAMS } from './params.js';
 import { creerBase, majVolume, majPrixItem, majRessource, exporter, importer, JOUR, NB_PRIX } from './base.js';
-import { itemsFocus, baseEvaluation } from './entonnoir.js';
+import { itemsFocus } from './entonnoir.js';
 import { renderPlanScan, tempsMesures } from './vue-plan.js';
 import { renderDonnees } from './vue-donnees.js';
 import { etatItem } from './fraicheur.js';
-import { allouer } from './allocation.js';
+import { renderCraft } from './vue-craft.js';
+import { renderAchats } from './vue-achats.js';
+import { renderVentes, ajouterCaptureVentes, carteReleve, brancherReleve } from './vue-ventes.js';
+import { majVente } from './statut.js';
 import { identifier, appliquer } from './ocr/identification.js';
 import { trouver, normaliser } from './ocr/correspondance.js';
 import * as Cap from './capture.js';
@@ -24,9 +27,10 @@ const ZONES_DEFAUT = {
   liste: { x: 0.16, y: 0.30, w: 0.245, h: 0.57 },
   detail: { x: 0, y: 0.07, w: 0.215, h: 0.76 },
   courbe: { x: 0.224, y: 0.173, w: 0.545, h: 0.705 },
+  ventes: { x: 0.16, y: 0.30, w: 0.245, h: 0.605 },
 };
 const REGLAGES_DEFAUT = {
-  volumeMin: PARAMS.volumeMin, margeMin: PARAMS.margeMin * 100, modePrixVente: PARAMS.modePrixVente,
+  volumeMin: PARAMS.volumeMin, margeMin: PARAMS.margeMin * 100, margeAcceptable: PARAMS.margeAcceptable * 100, modePrixVente: PARAMS.modePrixVente,
   forgeron: PARAMS.metiers.Forgeron, effort: PARAMS.coutEffortParCraft / 1000, partCraft: 70,
 };
 
@@ -40,15 +44,17 @@ const S = {
 };
 S.etat.reglages = { ...REGLAGES_DEFAUT, ...(S.etat.reglages ?? {}) };
 if (S.base.version !== 2) S.base = creerBase();
+S.etat.zones = { ...ZONES_DEFAUT, ...S.etat.zones }; // zones ajoutées depuis (ex. « Mes ventes »)
+S.versionBase = 0;
 
-const sauverBase = () => ecrireLS(KB, S.base);
+const sauverBase = () => { S.versionBase++; ecrireLS(KB, S.base); };
 const sauverEtat = () => ecrireLS(KE, S.etat);
 
 function params() {
   const r = S.etat.reglages;
   return {
     ...PARAMS,
-    volumeMin: +r.volumeMin, margeMin: +r.margeMin / 100, modePrixVente: r.modePrixVente,
+    volumeMin: +r.volumeMin, margeMin: +r.margeMin / 100, margeAcceptable: +r.margeAcceptable / 100, modePrixVente: r.modePrixVente,
     coutEffortParCraft: +r.effort * 1000,
     metiers: { ...PARAMS.metiers, Forgeron: +r.forgeron },
     partCraft: (+r.partCraft || 70) / 100,
@@ -99,7 +105,7 @@ function renderVue() {
   root.body.className = 'view-' + v + (root !== document ? ' pip' : '');
   $$('#view-switch button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
   $('#settings-btn').classList.toggle('on', v === 'base');
-  for (const nom of ['scan', 'donnees', 'resultats', 'base']) $$(`.view-${nom}`).forEach(el => el.classList.toggle('hidden', nom !== v));
+  for (const nom of ['scan', 'donnees', 'resultats', 'achats', 'ventes', 'base']) $$(`.view-${nom}`).forEach(el => el.classList.toggle('hidden', nom !== v));
 }
 
 function renderCapture() {
@@ -217,6 +223,7 @@ function renderLecture() {
   renderSaisie();
   const L = S.derniere;
   if (!L) { $('#lecture').innerHTML = S.diagSeul ? `<div class="lect">${diagHtml(true)}</div>` : ''; brancherDiag(); return; }
+  if (L.type === 'ventes') { $('#lecture').innerHTML = carteReleve(ctx, L); brancherReleve(ctx); return; }
   const etat = L.enregistre ? '<span class="tag ok-tag">enregistré</span>' : '<span class="tag faire">non enregistré</span>';
   const boutons = L.edition
     ? `<button id="lect-valider" class="primary small">Valider</button><button id="lect-fermer" class="secondary small">Fermer</button>`
@@ -242,6 +249,7 @@ const CHAMPS_SAISIE = {
   annonces: [], // trois champs numérotés (voir champsPrix)
   lots: [['x1', 'x1', ''], ['x10', 'x10', ''], ['x100', 'x100', ''], ['x1000', 'x1000', '']],
   liste: [['prixMoyen', 'Prix moyen', '']],
+  ventes: [['nb', 'Lots en vente', '']],
 };
 
 function candidatsSaisie(mode) {
@@ -292,7 +300,7 @@ function suggestions(texte, mode, max = 8) {
   return res.sort((a, b) => a.rang - b.rang || a.nom.localeCompare(b.nom, 'fr')).slice(0, max);
 }
 
-function brancherAutocompletion(input, liste, mode, onChoix) {
+function brancherAutocompletion(input, liste, mode, onChoix, onEntreeVide = enregistrerSaisie) {
   let items = [], actif = -1;
   const afficher = () => {
     if (!items.length) { liste.classList.add('hidden'); return; }
@@ -301,11 +309,11 @@ function brancherAutocompletion(input, liste, mode, onChoix) {
     liste.querySelectorAll('.ac-item').forEach(el => el.onmousedown = e => { e.preventDefault(); choisir(+el.dataset.i); });
   };
   const choisir = i => { const c = items[i]; if (!c) return; input.value = c.nom; items = []; afficher(); onChoix(c.nom); };
-  input.oninput = () => { items = suggestions(input.value, mode); actif = items.length ? 0 : -1; afficher(); S.saisie.nom = input.value; };
+  input.oninput = () => { items = suggestions(input.value, mode); actif = items.length ? 0 : -1; afficher(); if (S.saisie) S.saisie.nom = input.value; };
   input.onkeydown = e => {
     if (e.key === 'ArrowDown' && items.length) { actif = (actif + 1) % items.length; afficher(); e.preventDefault(); }
     else if (e.key === 'ArrowUp' && items.length) { actif = (actif - 1 + items.length) % items.length; afficher(); e.preventDefault(); }
-    else if (e.key === 'Enter') { e.preventDefault(); if (items.length) choisir(actif); else enregistrerSaisie(); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (items.length) choisir(actif); else onEntreeVide?.(); }
     else if (e.key === 'Escape') { items = []; afficher(); }
   };
   input.onblur = () => { items = []; afficher(); };
@@ -354,6 +362,10 @@ function enregistrerSaisie() {
     const annonces = [1, 10, 100, 1000].map(t => ({ lot: t, prix: n('x' + t), sur: true })).filter(a => a.prix);
     if (!annonces.length) return erreur('Indique au moins un prix de lot.');
     L = { type: 'detail', identifie: { objet: o, annonces } };
+  } else if (mode === 'ventes') {
+    if (n('nb') == null) return erreur('Indique le nombre de lots en vente (0 si plus rien).');
+    majVente(S.base, o.id, n('nb')); sauverBase();
+    S.saisie = null; statut(`${o.nom} : ${n('nb')} lot${n('nb') > 1 ? 's' : ''} en vente.`); renderTout(); return;
   } else {
     if (n('prixMoyen') == null) return erreur('Indique le prix moyen.');
     L = { type: 'liste', identifie: [{ ...o, prixMoyen: n('prixMoyen') }] };
@@ -436,42 +448,6 @@ function toast(msg) {
 function statut(msg) { const el = $('#scan-status'); if (el) el.textContent = msg; }
 
 // ---------- résultats ----------
-function renderResultats(cat, p) {
-  const ev = baseEvaluation(cat, S.base, p);
-  const budget = S.etat.budget * 1e6;
-  const avert = id => { const a = ev.items.find(i => i.id === id)?.avertissement; return a ? ` <span class="tag faire" title="${esc(a)}">⚠ ${esc(a)}</span>` : ''; };
-  $('#eval-sub').textContent = `${ev.eligibles.length} rentables sur ${ev.eligibles.length + ev.ecartes.length} utilisables`;
-
-  if (!ev.items.length) {
-    $('#allocation').innerHTML = '<p class="muted small">Aucun item utilisable pour l\'instant : il faut un volume et un prix de vente récents, et les lots de toutes les ressources relevés depuis moins d\'une semaine. Lance un plan de scan.</p>';
-  } else {
-    const a = allouer(ev.items, ev.offres, budget, p);
-    const lots = l => [[1000, 'x1000'], [100, 'x100'], [10, 'x10'], [1, 'x1']].filter(([t]) => l.plan.lots[t]).map(([t, n]) => `${l.plan.lots[t]} × ${n}`).join(' + ');
-    $('#allocation').innerHTML = a.choix.length ? `
-      <div class="kpis">
-        <div class="kpi"><div class="v ok">${fmtK(a.marge)}</div><div class="l">marge, ${pct(a.rendement)}</div></div>
-        <div class="kpi"><div class="v">${fmtK(a.capital)}</div><div class="l">investis sur ${fmtK(budget)}</div></div>
-        <div class="kpi"><div class="v">${a.crafts}</div><div class="l">crafts à faire</div></div>
-      </div>
-      <table class="rt"><thead><tr><th>Item</th><th class="r">Crafts</th><th class="r">Coût</th><th class="r">Marge</th><th class="r">Rend.</th></tr></thead><tbody>
-      ${a.choix.map(o => `<tr><td class="cn">${esc(o.nom)}${avert(o.id)}${o.alertes.length ? ` <span class="tag faire" title="${esc(o.alertes.join(', '))}">à revérifier</span>` : ''}</td><td class="r">${o.n}</td><td class="r">${fmtK(o.capital)}</td><td class="r">${fmtK(o.marge)}</td><td class="r">${pct(o.rendement)}</td></tr>
-        <tr><td colspan="5"><details class="more"><summary>liste de courses</summary><table class="rt courses"><tbody>
-        ${o.craft.lignes.map(l => `<tr><td class="cn">${esc(l.nom)}</td><td class="r">${l.q}</td><td>${lots(l)}</td><td class="r">${fmtK(l.plan.cout)}</td><td>${l.plan.alerte ? '<span class="tag faire">à revérifier</span>' : ''}</td></tr>`).join('')}
-        </tbody></table></details></td></tr>`).join('')}
-      </tbody></table>
-      <p class="muted small">Effort compté ${fmtK(p.coutEffortParCraft)} par craft. Les ressources marquées « à revérifier » risquent de remonter : regarde l'HDV ressources avant d'acheter.</p>`
-      : '<p class="muted small">Aucune combinaison rentable dans ce budget.</p>';
-  }
-
-  $('#evalues').innerHTML = ev.eligibles.length + ev.ecartes.length ? `
-    <table class="rt"><thead><tr><th>Item</th><th class="r">Vol.</th><th class="r">Vente</th><th class="r">Craft</th><th class="r">Rend.</th></tr></thead><tbody>
-    ${ev.eligibles.map(e => { const it = ev.items.find(i => i.id === e.id); return `<tr><td class="cn">${esc(e.nom)}${avert(e.id)}</td><td class="r">${it.volumeMois}</td><td class="r">${fmtK(it.prixVente)}</td><td class="r">${fmtK(e.coutCraft)}</td><td class="r ok">${pct(e.rendement)}</td></tr>`; }).join('')}
-    </tbody></table>
-    ${ev.ecartes.length ? `<details class="more"><summary>${ev.ecartes.length} écartés</summary><table class="rt"><tbody>
-      ${ev.ecartes.map(e => `<tr><td class="cn">${esc(e.nom)}</td><td class="small muted">${esc(e.raisons.join(' ; '))}</td></tr>`).join('')}</tbody></table></details>` : ''}`
-    : '';
-}
-
 // ---------- base et réglages ----------
 function renderBase(cat, p) {
   const items = Object.values(S.base.items), res = Object.values(S.base.ressources);
@@ -484,7 +460,8 @@ function renderBase(cat, p) {
   const r = S.etat.reglages;
   $('#reglages').innerHTML = `
     <span>Volume minimum (ventes / 30 j)</span><input class="num" data-reg="volumeMin" value="${r.volumeMin}">
-    <span>Rendement minimum (%)</span><input class="num" data-reg="margeMin" value="${r.margeMin}">
+    <span>Rendement cible (%)</span><input class="num" data-reg="margeMin" value="${r.margeMin}">
+    <span>Rendement acceptable (%)</span><input class="num" data-reg="margeAcceptable" value="${r.margeAcceptable}">
     <span>Prix de vente visé</span><select data-reg="modePrixVente"><option value="min" ${r.modePrixVente === 'min' ? 'selected' : ''}>annonce la moins chère</option><option value="moy3" ${r.modePrixVente === 'moy3' ? 'selected' : ''}>moyenne des 3 moins chères</option></select>
     <span>Effort par craft (k kamas)</span><input class="num" data-reg="effort" value="${r.effort}">
     <span>Niveau Forgeron</span><input class="num" data-reg="forgeron" value="${r.forgeron}">
@@ -496,6 +473,7 @@ function renderBase(cat, p) {
 const ctx = {
   S, $: s => $(s), $$: s => $$(s), params, sauverBase, sauverEtat, renderTout: () => renderTout(), toast,
   esc, fmt, fmtK, pct, age, nombreSaisi, normaliser, fmtSaisie, champsPrix,
+  versionBase: () => S.versionBase, autocompletion: (i, l, m, f) => brancherAutocompletion(i, l, m, f, null),
   boutonCopier: (n, t) => boutonCopier(n, t), brancherCopier: s => brancherCopier(s), choisirMode: m => choisirMode(m),
 };
 
@@ -511,7 +489,9 @@ function renderTout_() {
   const p = params();
   if (S.etat.vue === 'scan') renderPlanScan(ctx);
   else if (S.etat.vue === 'donnees') renderDonnees(ctx);
-  else if (S.etat.vue === 'resultats') { $('#budget').value = S.etat.budget; renderResultats(S.catalogue, p); }
+  else if (S.etat.vue === 'resultats') renderCraft(ctx);
+  else if (S.etat.vue === 'achats') renderAchats(ctx);
+  else if (S.etat.vue === 'ventes') renderVentes(ctx);
   else renderBase(S.catalogue, p);
 }
 
@@ -538,6 +518,11 @@ async function scanner() {
       statut(`Lecture impossible (${Cap.MODES[mode].libelle}). Saisis le nom et la valeur ci-dessous, ou vérifie la zone dans le diagnostic.`);
       S.diagSeul = true;
       ouvrirSaisie(preremplir(brut.type, brut.lecture));
+    } else if (brut.type === 'ventes') {
+      // liste « Mes ventes » : la capture s'ajoute au relevé en cours
+      const res = ajouterCaptureVentes(ctx, identifier('ventes', brut.lecture, S.catalogue));
+      S.derniere = { type: 'ventes', ...res };
+      statut(res.termine ? 'Relevé des ventes terminé.' : 'Capture ajoutée au relevé. Fais défiler ta liste et scanne la suite.');
     } else {
       const L = { type: brut.type, identifie: identifier(brut.type, brut.lecture, S.catalogue), avant: exporter(S.base), date: Date.now(), edition: false };
       const o = L.identifie.objet;
@@ -565,6 +550,7 @@ const ZONES = {
   liste: ['Liste HDV', 'Encadre la liste des objets (colonnes Nom, Niveau, Prix moyen).'],
   detail: ['Panneau détail', 'Encadre le panneau de gauche qui s\'ouvre quand tu cliques un objet (nom, prix moyen, lots ou annonces). Prends toute sa hauteur, annonces comprises.'],
   courbe: ['Cours du marché', 'Encadre la fenêtre « Cours du marché » (titre, onglets, nombre d\'articles vendus).'],
+  ventes: ['Mes ventes', 'Encadre la liste de tes annonces (onglet Vente de l\'HDV), en-tête et pied « lots en vente » compris.'],
 };
 function ouvrirZones() {
   let frame;
@@ -620,7 +606,6 @@ function brancher() {
   $('#mode').onchange = e => { S.etat.mode = e.target.value; sauverEtat(); renderSaisie(); };
   $('#saisir').onclick = () => { ouvrirSaisie(); renderSaisie(); };
   $('#zones-btn').onclick = ouvrirZones;
-  $('#budget').onchange = e => { S.etat.budget = Math.max(0, Number(String(e.target.value).replace(',', '.')) || 0); sauverEtat(); renderTout(); };
   $('#base-export').onclick = () => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([exporter(S.base)], { type: 'application/json' }));

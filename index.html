@@ -13,6 +13,8 @@
     <button data-view="scan">Scan</button>
     <button data-view="donnees">Données</button>
     <button data-view="resultats">Craft</button>
+    <button data-view="achats">Achats</button>
+    <button data-view="ventes">Ventes</button>
   </div>
   <div class="spacer"></div>
   <div class="actions">
@@ -45,17 +47,19 @@
   </section>
 
   <!-- ===== Craft ===== -->
-  <section class="card view-resultats hidden">
-    <div class="row">
-      <h2>Budget</h2>
-      <div class="spacer"></div>
-      <label class="small muted sel">Investir <input id="budget" type="text" inputmode="numeric" class="num"> M</label>
-    </div>
-    <div id="allocation"></div>
+  <section class="card view-resultats hidden"><div id="craft-plan"></div></section>
+  <section class="card view-resultats hidden"><div id="craft-viables"></div></section>
+
+  <!-- ===== Achats ===== -->
+  <section class="card view-achats hidden">
+    <div class="row"><h2>Liste d'achat</h2></div>
+    <div id="achats"></div>
   </section>
-  <section class="card view-resultats hidden">
-    <div class="row"><h2>Items évalués</h2><span id="eval-sub" class="muted small"></span></div>
-    <div id="evalues"></div>
+
+  <!-- ===== Ventes ===== -->
+  <section class="card view-ventes hidden">
+    <div class="row"><h2>En vente</h2></div>
+    <div id="ventes"></div>
   </section>
 
   <!-- ===== Réglages (⚙) ===== -->

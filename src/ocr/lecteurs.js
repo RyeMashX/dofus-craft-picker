@@ -242,7 +242,42 @@ export async function lireCourbe(pre, reconnaitre, orig = null, echelle = 2) {
   };
 }
 
-const LECTEURS = { liste: lireListe, detail: lireDetail, courbe: lireCourbe };
+// ---------- mes ventes (onglet Vente de l'HDV) ----------
+// Colonnes : [icône] Nom (1 ou 2 lignes) · durée · Lot · Prix · case à cocher ; pied « 55/570 lots en vente ».
+// Une annonce = une rangée avec un prix dans la colonne Prix. Les noms sont relus seuls dans leur colonne.
+export async function lireVentes(pre, reconnaitre) {
+  const W = pre.width;
+  const lignes = rangees(await reconnaitre(pre, {}));
+  const texte = lignes.map(l => l.texte).join('\n');
+  const tot = texte.match(/(\d{1,4})\s*\/\s*\d{1,4}\s*lots?/i);
+  const pied = lignes.find(l => /lots?\s+en\s+vente|valeur\s+estim/i.test(l.texte));
+  const bas = pied ? pied.bbox.y0 - 4 : pre.height;
+  const haut = Math.max(0, (lignes.find(l => /\bNom\b|Prix/i.test(l.texte))?.bbox.y1 ?? 0) + 4);
+  if (bas - haut < 20) return { lignes: [], total: tot ? Number(tot[1]) : null };
+
+  // prix : colonne de droite, chiffres seuls
+  const prixZ = { x: Math.round(0.66 * W), y: haut, w: Math.round(0.27 * W), h: bas - haut };
+  const prix = (await passeChiffres(pre, prixZ, reconnaitre))
+    .map(r => ({ r, n: nombre(r.texte) }))
+    .filter(x => x.n && x.n.valeur >= 100);
+  // noms : colonne de gauche, sans les icônes
+  const nomZ = { x: Math.round(0.075 * W), y: haut, w: Math.round(0.345 * W), h: bas - haut };
+  const noms = rangees(await reconnaitre(recadrer(pre, nomZ), {}))
+    .map(l => ({ ...l, cy: centre(l.bbox) + nomZ.y, t: lettres(l.texte) }))
+    .filter(l => l.t.replace(/[^A-Za-zÀ-ÿ]/g, '').length >= 2);
+
+  const ys = prix.map(x => centre(x.r.bbox));
+  const pas = ys.length > 1 ? (ys.at(-1) - ys[0]) / (ys.length - 1) : pre.height;
+  return {
+    total: tot ? Number(tot[1]) : null,
+    lignes: prix.map(({ r, n }, i) => ({
+      prix: n.valeur, sur: n.valide,
+      textes: noms.filter(l => Math.abs(l.cy - ys[i]) < pas * 0.48).sort((a, b) => a.cy - b.cy).map(l => l.t),
+    })),
+  };
+}
+
+const LECTEURS = { liste: lireListe, detail: lireDetail, courbe: lireCourbe, ventes: lireVentes };
 
 // Agrandissement : ×2 sur une capture Retina pleine résolution (~2 880 px de large), ×4 sur une capture réduite.
 export const echelleAuto = largeurImage => (largeurImage >= 2400 ? 2 : largeurImage >= 1600 ? 3 : 4);

@@ -102,6 +102,17 @@ for (const [f, echelle] of [['detail-lots-pepite.png', 2], ['detail-lots-pepite-
   verifier(`pépite (${echelle === 2 ? 'pleine' : 'demi'}) : lots`, [r.objet?.nom, ...r.annonces.map(a => [a.lot, a.prix])], ['Pépite', [1, 400], [10, 2498], [100, 22221], [1000, 210940]]);
 }
 
+// 3 septies. Mes ventes : noms sur 1 ou 2 lignes, total « 55/570 lots en vente »
+for (const [f, echelle] of [['ventes.png', 2], ['ventes-demi.png', 4]]) {
+  const img = lire(f);
+  const r = identifier('ventes', await lireEcran('ventes', img, plein(img), reconnaitre, { echelle }), catalogue);
+  const connues = r.lignes.filter(l => l.id != null).map(l => [l.nom, l.prix]);
+  verifier(`ventes (${echelle === 2 ? 'pleine' : 'demi'})`, [r.total, ...connues], [55,
+    ['Anneau du Comte Harebourg', 1299998], ['Anneau du Katcheur', 5498997], ['Anneau du Katcheur', 5498998],
+    ['Anneau en Grithril', 4974999], ['Arc Volkorne', 5399998], ['Bottes du Roi Joueur', 3399999], ['Bottes du Roi Joueur', 3399998],
+    ['Bottes du Strigide', 2999995], ['Bottes du Strigide', 2999994]]);
+}
+
 // 4. Liste HDV ressources
 {
   const img = lire('liste-ressources.png');

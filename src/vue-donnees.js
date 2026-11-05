@@ -6,6 +6,7 @@ import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus, 
 import { majVolume, majPrixItem, majPrixMoyenItem, majRessource, majPrixMoyenRessource } from './base.js';
 import { planAchat } from './lots.js';
 import { icone } from './vue-plan.js';
+import { exclusion, exclure, reintegrer, finDeJournee, lotsEnVente } from './statut.js';
 
 const NOM_NIV = { noir: 'aucune info', orange: 'périmé', jaune: 'à risque', vert: 'à jour' };
 export const pastille = n => `<i class="pt pt-${n}" title="${NOM_NIV[n]}"></i>`;
@@ -24,6 +25,8 @@ function lignesEquipements(S, p) {
       cout: est.cout, rendement: est.rendement, precision: est.precision,
       resVertes: e.compte.vert, resTotal: it.recette.length, compte: e.compte,
       etat: e.pret ? 'prêt' : e.utilisable ? 'utilisable' : '',
+      exclu: exclusion(S.base, it.id), enVente: lotsEnVente(S.base, it.id),
+      statut: exclusion(S.base, it.id) ? 2 : lotsEnVente(S.base, it.id) ? 1 : 0,
     };
   });
 }
@@ -65,7 +68,7 @@ const COLS = {
     { cle: 'nom', t: 'Nom' }, { cle: 'categorie', t: 'Catégorie' }, { cle: 'niveau', t: 'Niv.', r: 1 },
     { cle: 'vendus', t: 'Vendus 30 j', r: 1, edit: 'vendus' }, { cle: 'prixMin', t: 'Prix min', r: 1, edit: 'prix' },
     { cle: 'prixMoyen', t: 'Prix moyen', r: 1, edit: 'prixMoyen' }, { cle: 'cout', t: 'Coût craft', r: 1 },
-    { cle: 'rendement', t: 'Rend.', r: 1 }, { cle: 'resVertes', t: 'Ress.', r: 1 }, { cle: 'etat', t: 'État' },
+    { cle: 'rendement', t: 'Rend.', r: 1 }, { cle: 'resVertes', t: 'Ress.', r: 1 }, { cle: 'etat', t: 'État' }, { cle: 'statut', t: 'Statut' },
   ],
   ressources: [
     { cle: 'nom', t: 'Nom' }, { cle: 'categorie', t: 'Catégorie' }, { cle: 'niveau', t: 'Niv.', r: 1 },
@@ -104,6 +107,8 @@ export function renderDonnees(ctx) {
     if (D.vendables) rows = rows.filter(x => (x.vendus ?? -1) >= p.volumeMin);
     if (D.etat === 'prêt') rows = rows.filter(x => x.etat === 'prêt');
     else if (D.etat === 'utilisable') rows = rows.filter(x => x.etat);
+    else if (D.etat === 'exclus') rows = rows.filter(x => x.exclu);
+    else if (D.etat === 'enVente') rows = rows.filter(x => x.enVente);
     else if (D.etat) rows = rows.filter(x => x.nVol === D.etat || x.nPrix === D.etat);
   } else {
     if (D.vendables) rows = rows.filter(x => x.vendables > 0);
@@ -131,6 +136,8 @@ export function renderDonnees(ctx) {
     cout: fmtK(x.cout), rendement: x.rendement == null ? '–' : `<span class="${x.rendement >= p.margeMin ? 'ok' : x.rendement < 0 ? 'bad' : ''}">${pct(x.rendement)}</span>`,
     resVertes: `<span title="${x.compte.vert} vertes, ${x.compte.jaune} jaunes, ${x.compte.orange} orange, ${x.compte.noir} sans info">${x.resVertes}/${x.resTotal}</span> ${pastille(x.compte.noir ? 'noir' : x.compte.orange ? 'orange' : x.compte.jaune ? 'jaune' : 'vert')}`,
     etat: x.etat === 'prêt' ? '<span class="tag ok-tag">prêt</span>' : x.etat ? '<span class="tag faire">utilisable</span>' : '',
+    statut: [x.exclu ? `<span class="tag urgent" title="Exclu des plans">⛔ ${x.exclu.jusquau ? `jusqu'au ${new Date(x.exclu.jusquau).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}` : 'exclu'}</span>` : '',
+      x.enVente ? `<span class="tag tard" title="Lots en vente">en vente ${x.enVente}</span>` : ''].join(' '),
   });
   const rendRs = x => ({
     nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>`, categorie: esc(x.categorie), niveau: x.niveau,
@@ -140,9 +147,16 @@ export function renderDonnees(ctx) {
   const rend = onglet === 'equipements' ? rendEq : rendRs;
   const cols = COLS[onglet];
 
+  const barreExclusion = x => x.exclu
+    ? `<div class="row small excl"><span class="tag urgent">⛔ exclu ${x.exclu.jusquau ? `jusqu'au ${new Date(x.exclu.jusquau).toLocaleDateString('fr-FR')}` : 'définitivement'}</span>
+        <button class="secondary small" data-reint="${x.id}">Réintégrer</button></div>`
+    : `<div class="row small excl"><span class="muted">Exclure des plans :</span>
+        <button class="secondary small" data-excl="${x.id}">définitivement</button>
+        <span class="muted">ou jusqu'au</span> <input type="date" class="small" data-exdate="${x.id}" value="${new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10)}">
+        <button class="secondary small" data-exclj="${x.id}">exclure</button></div>`;
   const detail = x => {
     if (onglet === 'equipements') {
-      return `<table class="rt sous"><thead><tr><th>Ressource</th><th class="r">Qté</th><th class="r">Prix unit.</th><th class="r">Coût</th><th>Relevé</th></tr></thead><tbody>
+      return `${barreExclusion(x)}<table class="rt sous"><thead><tr><th>Ressource</th><th class="r">Qté</th><th class="r">Prix unit.</th><th class="r">Coût</th><th>Relevé</th></tr></thead><tbody>
         ${x.it.recette.map(r => {
           const res = S.catalogue.ressources[r.id] ?? { nom: `#${r.id}` }, b = S.base.ressources[r.id] ?? {};
           const plan = b.lots ? planAchat(r.qte, b.lots.valeurs, p) : null;
@@ -157,7 +171,7 @@ export function renderDonnees(ctx) {
   };
 
   const optEtat = onglet === 'equipements'
-    ? [['', 'tous états'], ['prêt', 'prêts'], ['utilisable', 'utilisables'], ['vert', 'au moins un vert'], ['jaune', 'à risque (jaune)'], ['orange', 'périmé (orange)'], ['noir', 'sans info']]
+    ? [['', 'tous états'], ['prêt', 'prêts'], ['utilisable', 'utilisables'], ['vert', 'au moins un vert'], ['jaune', 'à risque (jaune)'], ['orange', 'périmé (orange)'], ['noir', 'sans info'], ['exclus', 'exclus (liste noire)'], ['enVente', 'en vente']]
     : [['', 'toutes fraîcheurs'], ['vert', 'à jour'], ['jaune', 'à risque'], ['orange', 'périmé'], ['noir', 'sans info']];
 
   $('#donnees').innerHTML = `${kpis}
@@ -174,7 +188,7 @@ export function renderDonnees(ctx) {
     <div class="table-large"><table class="rt don"><thead><tr>${cols.map(c => `<th class="sort${c.r ? ' r' : ''}${c.cle === cle ? ' on' : ''}" data-cle="${c.cle}">${c.t} <span class="fl">${c.cle === cle ? (sens > 0 ? '▴' : '▾') : '↕'}</span></th>`).join('')}</tr></thead>
     <tbody>${rows.slice(0, D.n).map(x => {
       const r = rend(x), ouvert = S.ligneOuverte === `${onglet}:${x.id}`;
-      return `<tr class="${ouvert ? 'ouverte' : ''}" data-id="${x.id}">${cols.map(c => `<td class="${c.r ? 'r' : ''}${c.cle === 'nom' ? ' nom dep' : ''}">${cellule(x, c, r[c.cle])}</td>`).join('')}</tr>
+      return `<tr class="${ouvert ? 'ouverte' : ''}${x.exclu ? ' off' : ''}" data-id="${x.id}">${cols.map(c => `<td class="${c.r ? 'r' : ''}${c.cle === 'nom' ? ' nom dep' : ''}">${cellule(x, c, r[c.cle])}</td>`).join('')}</tr>
         ${ouvert ? `<tr class="detail"><td colspan="${cols.length}">${detail(x)}</td></tr>` : ''}`;
     }).join('')}</tbody></table></div>
     ${rows.length > D.n ? `<p class="small"><button id="don-plus" class="link small">afficher 100 de plus</button></p>` : ''}
@@ -194,6 +208,14 @@ export function renderDonnees(ctx) {
     D.tri = { cle: k, sens: D.tri.cle === k ? -D.tri.sens : (['nom', 'categorie', 'etat'].includes(k) ? 1 : -1) };
     ctx.sauverEtat(); ctx.renderTout();
   });
+  // liste noire
+  const majExcl = f => { f(); ctx.sauverBase(); ctx.renderTout(); };
+  ctx.$$('#donnees [data-excl]').forEach(b => b.onclick = () => majExcl(() => exclure(S.base, +b.dataset.excl, null)));
+  ctx.$$('#donnees [data-exclj]').forEach(b => b.onclick = () => {
+    const d = $(`#donnees input[data-exdate="${b.dataset.exclj}"]`)?.value;
+    if (d) majExcl(() => exclure(S.base, +b.dataset.exclj, finDeJournee(d)));
+  });
+  ctx.$$('#donnees [data-reint]').forEach(b => b.onclick = () => majExcl(() => reintegrer(S.base, +b.dataset.reint)));
   ctx.$$('#donnees td.dep .lien').forEach(el => el.onclick = () => {
     const id = el.closest('tr').dataset.id, k = `${onglet}:${id}`;
     S.ligneOuverte = S.ligneOuverte === k ? null : k; ctx.renderTout();

@@ -9,6 +9,7 @@
 
 import { itemsFocus, estimerItem } from './entonnoir.js';
 import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus } from './fraicheur.js';
+import { estExclu, estEnVente } from './statut.js';
 
 const POIDS_NIVEAU = { noir: 3, orange: 2, jaune: 1, vert: 0 };
 export const cleTache = t => `${t.kind}:${t.id}`;
@@ -58,7 +59,8 @@ function importances(focus, base, p) {
 }
 
 export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(), partCraft = p.partCraft ?? 0.7) {
-  const focus = itemsFocus(catalogue, p);
+  // un item exclu (liste noire) sort complètement du plan de scan
+  const focus = itemsFocus(catalogue, p).filter(it => !estExclu(base, it.id, maintenant));
   const temps = t => p.tempsScan[t.kind === 'ressource' ? 'ressource' : t.kind];
   const budget = minutes * 60;
   const choisies = new Map(); // clé → tâche
@@ -69,7 +71,8 @@ export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(
   const etats = new Map(focus.map(it => [it.id, etatItem(it, base, maintenant)]));
   const candidats = focus
     .map(it => ({ it, valeur: valeurItem(it, base, p), taches: tachesPourPret(it, etats.get(it.id), base) }))
-    .filter(c => c.valeur > 0 && c.taches.length && !etats.get(c.it.id).pret);
+    // un item déjà en vente ne sera pas recrafté : inutile de préparer son dossier
+    .filter(c => c.valeur > 0 && c.taches.length && !etats.get(c.it.id).pret && !estEnVente(base, c.it.id));
   const budgetCraft = budget * partCraft;
   const vises = [];
   for (;;) {

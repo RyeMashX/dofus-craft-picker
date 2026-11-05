@@ -189,3 +189,39 @@ label.numl input.big { width: 120px; }
 .gear { padding: 3px 8px; font-size: 15px; line-height: 1; }
 #settings-btn.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
 .actions { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+
+/* ===== Craft ===== */
+.cp { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 6px 0; }
+.cp-l, .cv-l, .vt-l { background: var(--card2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; min-width: 0; }
+.cp-l.alerte { border-color: var(--accent); }
+.cv-l.dans { border-color: var(--sc); }
+.cp-nom { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; }
+.cp-nom .n, .ac-nom .n, .vt-l .n { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.cp-chiffres, .ac-chiffres { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin-top: 4px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.cp-chiffres .retirer { margin-left: auto; }
+.cv-l .cp-chiffres button { margin-left: auto; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.stepper button { border: none; border-radius: 0; padding: 1px 9px; background: transparent; font-weight: 700; }
+.stepper button:hover { background: #2a2d35; }
+.stepper b { min-width: 22px; text-align: center; }
+.conf { font-size: 10px; font-weight: 700; border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+.conf-haute { color: var(--sc); border: 1px solid var(--sc); } .conf-moyenne { color: var(--f-jaune); border: 1px solid var(--f-jaune); } .conf-faible { color: var(--f-orange); border: 1px solid var(--f-orange); }
+.kpi .v.bad { color: var(--ec); }
+
+/* ===== Achats ===== */
+.ac-l { display: flex; align-items: flex-start; gap: 6px; padding: 6px 8px; border-top: 1px solid #22252c; }
+.ac-l:first-child { border-top: none; }
+.ac-l.fini { opacity: .45; }
+.ac-corps { flex: 1; min-width: 0; }
+.ac-nom { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; }
+.chk-l input { width: 16px; height: 16px; margin: 4px 0 0; accent-color: var(--sc); }
+.lotc { display: inline-flex; gap: 3px; font-size: 11px; border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; padding: 0 5px; }
+.ac-chiffres .spacer { flex: 1; }
+
+/* ===== Ventes ===== */
+.vt-l { display: flex; align-items: center; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+.chip { font-size: 11px; border: 1px solid var(--line); border-radius: 10px; padding: 1px 8px; background: var(--card2); }
+#vt-nom { width: 100%; margin: 6px 0; }
+.excl { margin: 4px 0 8px; } .excl input[type=date] { padding: 2px 6px; }
+#view-switch button { padding: 4px 10px; }

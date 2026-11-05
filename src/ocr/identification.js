@@ -24,6 +24,18 @@ function meilleur(textes, liste, niveau) {
 
 export function identifier(type, lecture, catalogue) {
   const liste = candidats(catalogue);
+  if (type === 'ventes') {
+    // seuls les équipements du catalogue comptent ; les autres annonces sont gardées « inconnues »
+    const items = liste.filter(c => c.genre === 'item');
+    return {
+      total: lecture.total,
+      lignes: lecture.lignes.map(l => {
+        const m = meilleur(l.textes, items, null);
+        return m ? { id: m.candidat.id, nom: m.candidat.nom, prix: l.prix, sur: l.sur, confiance: m.confiance }
+          : { id: null, nom: l.textes.join(' ') || '?', prix: l.prix, sur: l.sur };
+      }),
+    };
+  }
   if (type === 'liste') {
     return lecture.map(r => {
       const m = meilleur(r.textes, liste, r.niveau);
