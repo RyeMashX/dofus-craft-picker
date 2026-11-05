@@ -68,17 +68,27 @@ export function renderAchats(ctx) {
       return `<span class="lotc" title="${a.plan.lots[t]} lot${a.plan.lots[t] > 1 ? 's' : ''} de ${t}${p ? ` à ${fmt(p)} le lot` : ''}"><i>x${t}</i><b>× ${a.plan.lots[t]}</b>${p ? `<span>${fmtK(p / t)}/u</span>` : ''}</span>`;
     }).join('');
   const pour = a => a.pour.map(x => `<span class="pour" title="${esc(x.nom)} : ${fmt(x.q)}">${icone(x.iconId)}<b>${fmt(x.q)}</b></span>`).join('');
-  const ligne = a => `<div class="ac-l${fait(a) ? ' fini' : ''}">
-      ${ctx.boutonCopier(a.nom, 'ressource')}
-      <div class="ac-corps">
-        <div class="ac-nom">${icone(a.iconId)} <span class="n" title="${esc(a.nom)}">${esc(a.nom)}</span>
-          ${pastille(niveauRessource(S.base.ressources[a.id]))}${a.plan?.alerte ? ' <span class="tag faire" title="Le prix risque de remonter en vidant les lots affichés : regarde l\'HDV avant d\'acheter">à revérifier</span>' : ''}</div>
-        <div class="ac-q"><b class="qte">${fmt(a.q)}</b>${a.plan?.surplus ? `<span class="muted small">+${a.plan.surplus} en trop</span>` : ''}
-          <span class="spacer"></span>${a.plan ? `<span class="pu" title="Prix unitaire attendu">≈ <b>${fmtK(a.plan.prixUnitaire)}</b> /u</span>` : ''}</div>
-        <div class="ac-lots">${lots(a)}<span class="spacer"></span><span class="muted small">total</span> ${fmtK(a.plan?.cout)}</div>
-        <div class="ac-pour">${pour(a)}</div>
+  // Ligne légère : copier, icône, nom, quantité, total, prix unitaire attendu, case. Clic sur la ligne : détail.
+  const ouverts = (S.achatsOuverts ??= new Set());
+  const ligne = a => {
+    const r = S.base.ressources[a.id], ouvert = ouverts.has(a.id);
+    return `<div class="ac-l${fait(a) ? ' fini' : ''}${ouvert ? ' ouvert' : ''}">
+      <div class="ac-ligne" data-ouvrir="${a.id}" title="${esc(a.nom)} : clique pour le détail">
+        ${ctx.boutonCopier(a.nom, 'ressource')}
+        ${icone(a.iconId)}
+        <span class="n">${esc(a.nom)}${a.plan?.alerte ? ' <span class="warn" title="À revérifier à l\'HDV">⚠</span>' : ''}</span>
+        <span class="c-q">${fmt(a.q)}</span>
+        <span class="c-t">${a.plan ? fmtK(a.plan.cout) : '<span class="bad">?</span>'}</span>
+        <span class="c-pu">${a.plan ? fmtK(a.plan.prixUnitaire) : '–'}</span>
+        <label class="coche" title="Acheté"><input type="checkbox" data-achat="${a.id}"${fait(a) ? ' checked' : ''}><span></span></label>
       </div>
-      <label class="coche" title="Acheté"><input type="checkbox" data-achat="${a.id}"${fait(a) ? ' checked' : ''}><span></span></label></div>`;
+      ${ouvert ? `<div class="ac-det">
+        <div class="ac-det-l"><span class="muted">Lots</span><span class="ac-lots">${lots(a)}</span></div>
+        ${a.plan?.surplus ? `<div class="ac-det-l"><span class="muted">Surplus</span><span>${fmt(a.plan.surplus)} en trop, revendu ~80 %</span></div>` : ''}
+        <div class="ac-det-l"><span class="muted">Relevé</span><span>${pastille(niveauRessource(r))} ${ctx.age(r?.lots?.date ?? r?.prixMoyen?.date)}${a.plan?.alerte ? ' · <span class="warn">le prix risque de remonter en vidant les lots affichés : regarde l\'HDV avant d\'acheter</span>' : ''}</span></div>
+        <div class="ac-det-l"><span class="muted">Pour</span><span class="ac-pour">${pour(a)}</span></div>
+      </div>` : ''}</div>`;
+  };
 
   const groupes = [];
   for (const a of achats) {
@@ -88,7 +98,8 @@ export function renderAchats(ctx) {
   }
   let hdvCourant = null;
   const corps = groupes.map(g => {
-    const tete = g.hdv !== hdvCourant ? `<h3>${HDV[g.hdv]}</h3>` : '';
+    const nouveau = g.hdv !== hdvCourant;
+    const tete = nouveau ? `<h3>${HDV[g.hdv]}</h3><div class="ac-tete"><span></span><span class="c-q">qté</span><span class="c-t">total</span><span class="c-pu">prix/u</span><span></span></div>` : '';
     hdvCourant = g.hdv;
     const n = g.lignes.filter(fait).length;
     return `${tete}<div class="grp${n === g.lignes.length ? ' fini' : ''}"><div class="grp-tete"><span class="grp-filtres"><b>${esc(g.type)}</b></span><span class="muted small">${n}/${g.lignes.length}</span></div>
@@ -106,11 +117,17 @@ export function renderAchats(ctx) {
       <div class="kpi"><div class="v">${achats.reduce((s, a) => s + (a.plan?.nbLots ?? 0), 0)}</div><div class="l">lots</div></div>
     </div>
     <div class="crafts-l">${L.crafts.map(c => `<span class="craft-c" title="${esc(c.nom)}">${icone(c.iconId)}<span class="n">${esc(c.nom)}</span><b>×${c.n}</b></span>`).join('')}</div>
-    <p class="muted small">Quantités additionnées sur tous les crafts, lots les moins chers au moment de la génération. Sous chaque ressource : pour quels crafts, et combien.</p>
+    <p class="muted small">Quantités additionnées sur tous les crafts, lots les moins chers au moment de la génération. Clique une ressource pour voir ses lots, son relevé et les crafts qui l'utilisent.</p>
     ${corps}
     <div class="row"><button id="ac-raz" class="link small">tout décocher</button></div>`;
 
   $$('#achats input[data-achat]').forEach(c => c.onchange = () => { if (c.checked) coches[c.dataset.achat] = true; else delete coches[c.dataset.achat]; ctx.sauverEtat(); ctx.renderTout(); });
+  $$('#achats [data-ouvrir]').forEach(el => el.onclick = e => {
+    if (e.target.closest('button, label, input')) return;
+    const id = +el.dataset.ouvrir;
+    if (ouverts.has(id)) ouverts.delete(id); else ouverts.add(id);
+    ctx.renderTout();
+  });
   $('#ac-raz').onclick = () => { S.etat.achetes = {}; ctx.sauverEtat(); ctx.renderTout(); };
   $('#ac-gen').onclick = generer;
   ctx.brancherCopier('#achats');

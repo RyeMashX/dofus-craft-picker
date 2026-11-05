@@ -72,7 +72,7 @@ KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources), 
 
 ## Onglet Achats
 
-« Générer la liste d'achat » prend une photo du plan : ressources, quantités additionnées, lots conseillés (x1 / x10 / x100 / x1000) avec leur prix unitaire, prix unitaire attendu et coût, classées par HDV puis catégorie. La liste ne bouge plus jusqu'à la prochaine génération ; un avertissement s'affiche si le plan a changé depuis. Sous chaque ressource : pour quels crafts et combien. Case à cocher à droite pour suivre les achats ; « à revérifier » quand le prix risque de remonter.
+« Générer la liste d'achat » prend une photo du plan : ressources, quantités additionnées, lots conseillés (x1 / x10 / x100 / x1000) avec leur prix unitaire, prix unitaire attendu et coût, classées par HDV puis catégorie. La liste ne bouge plus jusqu'à la prochaine génération ; un avertissement s'affiche si le plan a changé depuis. Vue compacte, une ligne par ressource : copier le nom, icône, nom, quantité, total, prix unitaire attendu, case « acheté » ; ⚠ quand le prix risque de remonter. Un clic sur la ligne déplie le détail : lots conseillés avec leur prix unitaire, surplus, fraîcheur du relevé, crafts qui utilisent la ressource.
 
 ## Onglet Ventes
 
