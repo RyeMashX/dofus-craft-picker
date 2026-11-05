@@ -4,6 +4,7 @@
 
 import { etatCraft, signaturePlan } from './vue-craft.js';
 import { niveauRessource } from './fraicheur.js';
+import { estIndispo } from './base.js';
 import { pastille } from './vue-donnees.js';
 import { icone } from './vue-plan.js';
 
@@ -85,7 +86,7 @@ export function renderAchats(ctx) {
       ${ouvert ? `<div class="ac-det">
         <div class="ac-det-l"><span class="muted">Lots</span><span class="ac-lots">${lots(a)}</span></div>
         ${a.plan?.surplus ? `<div class="ac-det-l"><span class="muted">Surplus</span><span>${fmt(a.plan.surplus)} en trop, revendu ~80 %</span></div>` : ''}
-        <div class="ac-det-l"><span class="muted">Relevé</span><span>${pastille(niveauRessource(r))} ${ctx.age(r?.lots?.date ?? r?.prixMoyen?.date)}${a.plan?.alerte ? ' · <span class="warn">le prix risque de remonter en vidant les lots affichés : regarde l\'HDV avant d\'acheter</span>' : ''}</span></div>
+        <div class="ac-det-l"><span class="muted">Relevé</span><span>${pastille(niveauRessource(r))} ${ctx.age(estIndispo(r) ? r.indispo.date : r?.lots?.date ?? r?.prixMoyen?.date)}${a.plan?.alerte ? ' · <span class="warn">le prix risque de remonter en vidant les lots affichés : regarde l\'HDV avant d\'acheter</span>' : ''}</span></div>
         <div class="ac-det-l"><span class="muted">Pour</span><span class="ac-pour">${pour(a)}</span></div>
       </div>` : ''}</div>`;
   };

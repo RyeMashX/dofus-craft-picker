@@ -143,7 +143,7 @@ export function renderDonnees(ctx) {
   const rendRs = x => ({
     nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>`, categorie: esc(x.categorie), niveau: x.niveau,
     x1: fmt(x.x1), x10: fmt(x.x10), x100: fmt(x.x100), x1000: fmt(x.x1000), prixMoyen: fmt(x.prixMoyen),
-    vendables: `${x.vendables} <span class="muted">/ ${x.utilisations}</span>`, date: `${x.indispo ? '<span class="tag urgent" title="Aucun lot en vente au dernier passage : ses crafts ne sont pas proposés">introuvable</span> ' : ''}${ctx.age(x.date)} ${pastille(x.nRes)}`,
+    vendables: `${x.vendables} <span class="muted">/ ${x.utilisations}</span>`, date: `${ctx.age(x.date)} ${pastille(x.nRes)}`,
   });
   const rend = onglet === 'equipements' ? rendEq : rendRs;
   const cols = COLS[onglet];
@@ -163,7 +163,7 @@ export function renderDonnees(ctx) {
           const plan = b.lots ? planAchat(r.qte, b.lots.valeurs, p) : null;
           const cout = plan ? plan.cout : b.prixMoyen ? r.qte * b.prixMoyen.valeur : null;
           return `<tr><td class="nom">${icone(res.iconId)} ${esc(res.nom)}</td><td class="r">${fmt(r.qte)}</td><td class="r">${fmt(cout != null ? cout / r.qte : null)}${plan ? '' : b.prixMoyen ? ' <span class="muted small">moy.</span>' : ''}</td>
-            <td class="r">${fmtK(cout)}</td><td>${pastille(niveauRessource(b))} <span class="muted small">${ctx.age(b.lots?.date)}</span></td></tr>`;
+            <td class="r">${fmtK(cout)}</td><td>${pastille(niveauRessource(b))} <span class="muted small">${ctx.age(estIndispo(b) ? b.indispo.date : b.lots?.date)}</span></td></tr>`;
         }).join('')}</tbody></table>`;
     }
     return `<table class="rt sous"><thead><tr><th>Utilisée par</th><th class="r">Qté</th><th class="r">Vendus 30 j</th></tr></thead><tbody>
