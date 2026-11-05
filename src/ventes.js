@@ -107,6 +107,29 @@ export function migrerVentes(base, coutDe = () => null) {
   return base;
 }
 
+// ---------- historique des prix ----------
+// Prix initial = prix d'avant le premier changement à l'HDV (les corrections ne comptent pas).
+export const prixInitial = l => l.changements?.length ? l.changements[0].ancien : l.prix;
+export const nbChangements = l => l.changements?.length ?? 0;
+export const historiquePrix = l => l.prix == null ? [] : [{ date: l.dateMiseEnVente, prix: prixInitial(l) }, ...(l.changements ?? []).map(c => ({ date: c.date, prix: c.prix }))];
+// Écart du prix actuel (ou de vente) au prix initial, en fraction (−0,12 = 12 % plus bas)
+export const ecartPrix = l => { const i = prixInitial(l); return i && l.prix != null ? (l.prix - i) / i : null; };
+
+// Par item vendu : nombre de ventes, changements de prix moyens, écart moyen final / initial, délai moyen
+export function prixParItem(base) {
+  const m = new Map();
+  for (const l of vendues(base).filter(x => x.prix != null)) {
+    const a = m.get(l.id) ?? { id: l.id, ventes: 0, changements: 0, ecarts: [], delais: [] };
+    a.ventes++; a.changements += nbChangements(l);
+    const e = ecartPrix(l); if (e != null) a.ecarts.push(e);
+    if (l.dateVente && l.dateMiseEnVente) a.delais.push((l.dateVente - l.dateMiseEnVente) / 864e5);
+    m.set(l.id, a);
+  }
+  const moy = t => t.length ? t.reduce((s, x) => s + x, 0) / t.length : null;
+  return [...m.values()].map(a => ({ id: a.id, ventes: a.ventes, changementsMoyens: a.changements / a.ventes, ecartMoyen: moy(a.ecarts), delaiMoyen: moy(a.delais) }))
+    .sort((x, y) => y.changementsMoyens - x.changementsMoyens || (x.ecartMoyen ?? 0) - (y.ecartMoyen ?? 0));
+}
+
 // ---------- bilan ----------
 export function bilan(base) {
   const v = vendues(base).filter(l => l.prix != null);
@@ -123,6 +146,10 @@ export function bilan(base) {
   return {
     ventes: v.length, ca, marge: mg, rendement: couts ? mg / couts : null,
     delaiMoyen: delais.length ? delais.reduce((s, x) => s + x, 0) / delais.length : null,
+    // prix : combien de fois il a fallu le changer, et de combien le prix final s'écarte du prix initial
+    changementsMoyens: v.length ? v.reduce((s, l) => s + nbChangements(l), 0) / v.length : null,
+    sansChangement: v.length ? v.filter(l => !nbChangements(l)).length / v.length : null,
+    ecartMoyen: (() => { const e = v.map(ecartPrix).filter(x => x != null); return e.length ? e.reduce((s, x) => s + x, 0) / e.length : null; })(),
     parMois: [...parMois.values()].sort((a, b) => b.mois.localeCompare(a.mois)),
   };
 }

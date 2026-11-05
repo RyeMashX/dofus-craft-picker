@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { creerBase } from '../src/base.js';
-import { ajouterVente, majLigne, changerPrix, marge, actives, lotsEnVente, marquerVendu, remettreEnVente, importerCapture, fusionner, nouvelleLigne, migrerVentes, bilan } from '../src/ventes.js';
+import { ajouterVente, majLigne, changerPrix, prixInitial, historiquePrix, ecartPrix, prixParItem, marge, actives, lotsEnVente, marquerVendu, remettreEnVente, importerCapture, fusionner, nouvelleLigne, migrerVentes, bilan } from '../src/ventes.js';
 
 const cout = () => 1_000_000;
 
@@ -105,4 +105,22 @@ test('bilan : CA, marge, délai moyen, par mois', () => {
   assert.equal(r.marge, 8e6 - 5e6 - 160_000);
   assert.equal(r.delaiMoyen, 3);
   assert.equal(r.parMois[0].mois, '2026-11');
+});
+
+test('historique des prix : prix initial, changements, écart final, stats par item', () => {
+  const b = creerBase();
+  const l = ajouterVente(b, { id: 3, statut: 'valide', prix: 10_000_000, coutCraft: 5e6, date: 1 });
+  majLigne(b, l.uid, 'prix', 9_800_000);                 // correction : pas d'historique
+  changerPrix(b, l.uid, 9_000_000, 2);
+  changerPrix(b, l.uid, 8_500_000, 3);
+  assert.equal(prixInitial(l), 9_800_000);
+  assert.deepEqual(historiquePrix(l).map(x => x.prix), [9_800_000, 9_000_000, 8_500_000]);
+  assert.ok(Math.abs(ecartPrix(l) - (8.5 - 9.8) / 9.8) < 1e-9);
+  const m = ajouterVente(b, { id: 3, statut: 'valide', prix: 9_000_000, coutCraft: 5e6, date: 1 });
+  marquerVendu(b, l.uid, 1 + 2 * 864e5); marquerVendu(b, m.uid, 1 + 864e5);
+  const [p] = prixParItem(b);
+  assert.equal(p.ventes, 2); assert.equal(p.changementsMoyens, 1);
+  assert.ok(Math.abs(p.ecartMoyen - ((8.5 - 9.8) / 9.8) / 2) < 1e-9);
+  const bl = bilan(b);
+  assert.equal(bl.changementsMoyens, 1); assert.equal(bl.sansChangement, 0.5);
 });

@@ -5,7 +5,7 @@
 // - même item à un autre prix → tu choisis : fusionner avec une ligne existante ou créer une ligne.
 // « Vendu » sort la ligne de la liste : elle passe dans l'onglet Bilan.
 
-import { actives, marge, rendement, majLigne, changerPrix, supprimerLigne, marquerVendu, importerCapture, fusionner, nouvelleLigne, trouverLigne } from './ventes.js';
+import { historiquePrix, ecartPrix, actives, marge, rendement, majLigne, changerPrix, supprimerLigne, marquerVendu, importerCapture, fusionner, nouvelleLigne, trouverLigne } from './ventes.js';
 import { coutEstime } from './craft-plan.js';
 import { compareDofus } from './fraicheur.js';
 import { icone } from './vue-plan.js';
@@ -14,6 +14,15 @@ const jourIso = t => { const d = new Date(t); return `${d.getFullYear()}-${Strin
 const depuisIso = s => s ? new Date(`${s}T12:00:00`).getTime() : null;
 const dateCourte = t => t ? new Date(t).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) : '–';
 export { jourIso, depuisIso, dateCourte };
+
+// Historique des prix d'une ligne (rien si le prix n'a jamais changé à l'HDV)
+export function histPrix(ctx, l) {
+  const h = historiquePrix(l);
+  if (h.length < 2) return '';
+  const e = ecartPrix(l);
+  return `<div class="vt-hist"><span class="muted">prix</span>${h.map((x, k) => `<span class="${k === h.length - 1 ? 'pfin' : ''}" title="${dateCourte(x.date)}">${ctx.fmtK(x.prix)}</span>`).join('<span class="muted">→</span>')}
+    <span class="${e < 0 ? 'bad' : 'ok'}" title="Écart au prix initial">${e > 0 ? '+' : ''}${ctx.pct(e)}</span><span class="muted">· ${h.length - 1} changement${h.length > 2 ? 's' : ''}</span></div>`;
+}
 
 const CHAMPS = [['prix', 'Prix'], ['coutCraft', 'Craft'], ['frais', 'Mise en vente'], ['coutFm', 'FM']];
 
@@ -107,6 +116,7 @@ export function renderVentes(ctx) {
         <button class="statut st-${l.statut}" data-statut="${l.uid}" title="${l.statut === 'draft' ? 'Chiffres à vérifier. Clique quand ils sont bons.' : 'Vérifié. Clique pour repasser en draft.'}">${l.statut === 'draft' ? 'draft' : 'validé ✓'}</button></div>
       <div class="vt-meta"><label class="vf-date"><span>en vente le</span><input type="date" data-uid="${l.uid}" data-date="dateMiseEnVente" value="${jourIso(l.dateMiseEnVente)}"></label>
         <span class="spacer"></span><span class="muted small">marge</span> <b class="${m == null ? 'muted' : m >= 0 ? 'ok' : 'bad'}">${fmtK(m)}</b> <span class="muted small">${pct(rendement(l))}</span></div>
+      ${histPrix(ctx, l)}
       <div class="vt-champs">${CHAMPS.map(([k, lib]) => champ(ctx, l, k, lib)).join('')}</div>
       ${S.chgPrix === l.uid ? `<div class="vt-chg"><label class="vf"><span>Nouveau prix à l'HDV</span><input id="chg-prix" class="num milliers" inputmode="numeric" value="${ctx.fmtSaisie(l.prix)}"></label>
         <button id="chg-ok" class="primary small">OK, + 1 % de frais</button><button id="chg-annuler" class="link small">annuler</button></div>` : ''}
