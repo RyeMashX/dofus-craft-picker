@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PARAMS } from '../src/params.js';
 import { JOUR, creerBase, majVolume, majPrixItem, majRessource } from '../src/base.js';
-import { viables, recommander, evaluerPlan, confiance, offresUtilisables } from '../src/craft-plan.js';
+import { viables, recommander, evaluerPlan, confiance, offresUtilisables, detailCraft } from '../src/craft-plan.js';
 import { exclure } from '../src/statut.js';
 import { ajouterVente } from '../src/ventes.js';
 
@@ -75,4 +75,17 @@ test('plan figé : un item devenu non viable reste dans le plan, signalé', () =
   assert.equal(r.lignes.length, 1);
   assert.equal(r.lignes[0].raison, 'données périmées');
   assert.ok(r.marge > 0);
+});
+
+test('détail du craft : quantités, prix unitaires et coût par ressource, prix moyen en secours', () => {
+  const b = base();
+  const d = detailCraft(cat.items[0], cat, b, p, 2, T);
+  assert.deepEqual(d.lignes.map(l => [l.nom, l.q, l.prixUnitaire, l.cout, l.source]), [['Étoffe', 12, 100_000, 1_200_000, 'lots'], ['Aile', 2, 400_000, 800_000, 'lots']]);
+  assert.equal(d.total, 2_000_000);
+  b.ressources[101] = { prixMoyen: { valeur: 350_000, date: T } };
+  const d2 = detailCraft(cat.items[0], cat, b, p, 1, T);
+  assert.equal(d2.lignes[1].source, 'moyen');
+  assert.equal(d2.lignes[1].cout, 350_000);
+  delete b.ressources[101];
+  assert.equal(detailCraft(cat.items[0], cat, b, p, 1, T).total, null);
 });

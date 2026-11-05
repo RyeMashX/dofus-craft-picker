@@ -264,3 +264,19 @@ label.numl input.big { width: 120px; }
 .excl { margin: 4px 0 8px; } .excl input[type=date] { padding: 2px 6px; }
 #view-switch button { padding: 4px 9px; }
 body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
+
+/* ===== Infobulle recette (Craft) ===== */
+.cp-nom { cursor: help; }
+.tip { position: fixed; z-index: 90; width: min(400px, calc(100vw - 16px)); background: #121418; border: 1px solid var(--accent); border-radius: 8px; padding: 8px 10px; box-shadow: 0 8px 24px #000a; font-size: 12px; pointer-events: none; }
+.tip-t { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 13px; }
+.tip table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; table-layout: fixed; }
+.tip th { font-size: 10px; color: var(--muted); font-weight: 600; text-align: left; }
+.tip th:not(:first-child), .tip td:not(:first-child) { width: 17%; }
+.tip td { padding: 2px 0; border-top: 1px solid #22252c; }
+.tip td.tn { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.tip td.tn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.tip td.tn .ico { width: 18px; height: 18px; flex: none; }
+.tip tfoot td { border-top: 1px solid var(--line); white-space: nowrap; }
+.tip .r { text-align: right; }
+.tip sup { color: var(--accent); font-size: 9px; }
+.tip-note { margin-top: 6px; font-size: 10px; }

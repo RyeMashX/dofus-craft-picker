@@ -98,6 +98,25 @@ function estimerCout(it, base, p) {
   return Math.round(cout);
 }
 
+// Détail d'une recette pour n crafts : quantité, prix unitaire et coût de chaque ressource.
+// Lots relevés (quelle que soit leur fraîcheur) sinon prix moyen ; source null = prix inconnu.
+// Chaque ressource est chiffrée seule (le plan, lui, regroupe les ressources partagées).
+export function detailCraft(it, catalogue, base, p, n = 1, maintenant = Date.now()) {
+  const lignes = it.recette.map(r => {
+    const res = base.ressources[r.id] ?? {}, cat = catalogue.ressources[r.id] ?? { nom: `#${r.id}` };
+    const q = r.qte * n;
+    const achat = res.lots ? planAchat(q, res.lots.valeurs, p) : null;
+    const cout = achat ? achat.cout : res.prixMoyen ? q * res.prixMoyen.valeur : null;
+    return {
+      id: r.id, nom: cat.nom, iconId: cat.iconId, q, cout,
+      prixUnitaire: cout == null ? null : cout / q,
+      source: achat ? 'lots' : res.prixMoyen ? 'moyen' : null,
+      niveau: niveauRessource(res, maintenant),
+    };
+  });
+  return { lignes, total: lignes.some(l => l.cout == null) ? null : lignes.reduce((s, l) => s + l.cout, 0) };
+}
+
 // Recommandation : items cibles, ni en vente ni exclus. Retourne { [id]: n }.
 export function recommander(liste, offres, budget, p) {
   const items = liste.filter(v => v.niveau === 'cible' && !v.enVente).map(v => v.item);

@@ -2,7 +2,8 @@
 // crafts viables en dessous (toujours visibles). La marge affichée est la marge réelle :
 // ni la confiance ni l'effort ne la modifient.
 
-import { viables, recommander, evaluerPlan, niveauConfiance } from './craft-plan.js';
+import { viables, recommander, evaluerPlan, niveauConfiance, detailCraft } from './craft-plan.js';
+import { pastille } from './vue-donnees.js';
 import { ajouterVente } from './ventes.js';
 import { icone } from './vue-plan.js';
 
@@ -52,8 +53,8 @@ export function renderCraft(ctx) {
 
   // ---- plan ----
   const depasseBudget = ev.capital > budget;
-  const lignePlan = l => `<div class="cp-l${l.raison || l.enVente ? ' alerte' : ''}">
-      <div class="cp-nom">${icone(l.iconId)} <span class="n" title="${esc(l.nom)}">${esc(l.nom)}</span> ${l.raison ? '' : tagNiveau(l.niveau)} ${confHtml(l.confiance)}</div>
+  const lignePlan = l => `<div class="cp-l${l.raison || l.enVente ? ' alerte' : ''}" data-tip="${l.id}" data-n="${l.n}">
+      <div class="cp-nom">${icone(l.iconId)} <span class="n">${esc(l.nom)}</span> ${l.raison ? '' : tagNiveau(l.niveau)} ${confHtml(l.confiance)}</div>
       <div class="cp-chiffres">
         <span class="stepper"><button data-moins="${l.id}" title="Un craft de moins">−</button><b>${l.n}</b><button data-plus="${l.id}" title="Un craft de plus">+</button></span>
         <span class="muted small">coût</span> ${fmtK(l.coutN)}
@@ -99,8 +100,8 @@ export function renderCraft(ctx) {
   if (C.filtre === 'acceptable') rows = rows.filter(v => v.niveau === 'acceptable');
   const ligneViable = v => {
     const dans = plan[v.id] ?? 0;
-    return `<div class="cv-l${dans ? ' dans' : ''}">
-      <div class="cp-nom">${icone(v.iconId)} <span class="n" title="${esc(v.nom)}">${esc(v.nom)}</span> ${tagNiveau(v.niveau)} ${confHtml(v.confiance)}
+    return `<div class="cv-l${dans ? ' dans' : ''}" data-tip="${v.id}" data-n="1">
+      <div class="cp-nom">${icone(v.iconId)} <span class="n">${esc(v.nom)}</span> ${tagNiveau(v.niveau)} ${confHtml(v.confiance)}
         ${v.enVente ? `<span class="tag tard" title="Déjà en vente : pas recommandé">en vente ${v.enVente}</span>` : ''}${v.pret ? '' : ' <span class="tag tard" title="Données jaunes : vérifie avant d\'acheter">⚠</span>'}</div>
       <div class="cp-chiffres">
         <span class="muted small">vente</span> ${fmtK(v.prixVente)} <span class="muted small">craft</span> ${fmtK(v.cout)}
@@ -135,4 +136,52 @@ export function renderCraft(ctx) {
   $$('#craft-viables [data-ajout]').forEach(b => b.onclick = () => modifier(b.dataset.ajout, +1));
   $$('#cv-filtre button').forEach(b => b.onclick = () => { C.filtre = b.dataset.f; C.n = 50; ctx.sauverEtat(); ctx.renderTout(); });
   const plus = $('#cv-plus'); if (plus) plus.onclick = () => { C.n = n + 50; ctx.renderTout(); };
+  const fiche = id => ev.lignes.find(l => l.id === id) ?? liste.find(v => v.id === id);
+  brancherInfobulle(ctx, '#craft-plan, #craft-viables', (id, nb) => contenuInfobulle(ctx, fiche(id), nb, p));
+}
+
+// ---------- infobulle : la recette avec quantités et prix ----------
+function contenuInfobulle(ctx, f, n, p) {
+  const { S, esc, fmt, fmtK, pct } = ctx;
+  const it = f && S.catalogue.items.find(i => i.id === f.id);
+  if (!it) return '';
+  const d = detailCraft(it, S.catalogue, S.base, p, n);
+  const revenu = f.prixVente == null ? null : f.prixVente * n * (1 - p.taxeVente);
+  const marge = revenu == null || d.total == null ? null : revenu - d.total;
+  const prix = l => l.prixUnitaire == null ? '<span class="bad">?</span>' : `${fmtK(l.prixUnitaire)}${l.source === 'moyen' ? '<sup title="prix moyen HDV">m</sup>' : ''}`;
+  return `<div class="tip-t">${icone(it.iconId)} <b>${esc(it.nom)}</b>${n > 1 ? ` <span class="muted">× ${n} crafts</span>` : ''}</div>
+    <table><thead><tr><th></th><th class="r">qté</th><th class="r">prix/u</th><th class="r">coût</th></tr></thead><tbody>
+    ${d.lignes.sort((a, b) => (b.cout ?? Infinity) - (a.cout ?? Infinity)).map(l => `<tr><td class="tn">${icone(l.iconId)}<span>${esc(l.nom)}</span>${pastille(l.niveau)}</td><td class="r">${fmt(l.q)}</td><td class="r">${prix(l)}</td><td class="r">${l.cout == null ? '–' : fmtK(l.cout)}</td></tr>`).join('')}
+    </tbody><tfoot>
+      <tr><td colspan="3">Coût du craft</td><td class="r"><b>${fmtK(d.total)}</b></td></tr>
+      <tr><td colspan="3">Vente${n > 1 ? ` (${n} × ${fmtK(f.prixVente)})` : ''}, taxe déduite</td><td class="r">${fmtK(revenu)}</td></tr>
+      <tr><td colspan="3">Marge</td><td class="r"><b class="${marge == null ? '' : marge >= 0 ? 'ok' : 'bad'}">${fmtK(marge)}</b> <span class="muted">${pct(marge != null && d.total ? marge / d.total : null)}</span></td></tr>
+    </tfoot></table>
+    <div class="muted tip-note">Chaque ressource chiffrée seule, lots les moins chers${d.lignes.some(l => l.source === 'moyen') ? ' ; <sup>m</sup> = prix moyen HDV, lots non relevés' : ''}.${n > 1 ? ' Le total du plan regroupe les ressources partagées.' : ''}</div>`;
+}
+
+function brancherInfobulle(ctx, sel, contenu) {
+  const { $, $$ } = ctx;
+  const doc = $('body').ownerDocument, win = doc.defaultView;
+  let tip = doc.querySelector('#tip');
+  if (!tip) { tip = doc.createElement('div'); tip.id = 'tip'; tip.className = 'tip hidden'; doc.body.appendChild(tip); }
+  let minuterie = null;
+  const cacher = () => { clearTimeout(minuterie); tip.classList.add('hidden'); };
+  const montrer = el => {
+    const html = contenu(+el.dataset.tip, +el.dataset.n || 1);
+    if (!html) return;
+    tip.innerHTML = html; tip.classList.remove('hidden');
+    const r = el.querySelector('.cp-nom').getBoundingClientRect(), t = tip.getBoundingClientRect();
+    const w = win.innerWidth, h = win.innerHeight;
+    let x = Math.min(Math.max(8, r.left), w - t.width - 8), y = r.bottom + 6;
+    if (y + t.height > h - 8) y = Math.max(8, r.top - t.height - 6); // pas la place dessous : au-dessus
+    tip.style.left = `${x}px`; tip.style.top = `${y}px`;
+  };
+  $$(sel).forEach(zone => zone.querySelectorAll('[data-tip] .cp-nom').forEach(nom => {
+    const el = nom.closest('[data-tip]');
+    nom.onmouseenter = () => { clearTimeout(minuterie); minuterie = setTimeout(() => montrer(el), 250); };
+    nom.onmouseleave = cacher;
+  }));
+  if (!tip.dataset.branche) { tip.dataset.branche = '1'; win.addEventListener('scroll', () => tip.classList.add('hidden'), { passive: true }); }
+  cacher();
 }
