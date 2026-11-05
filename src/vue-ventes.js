@@ -71,10 +71,33 @@ export function renderVentes(ctx) {
   const { S, $, $$, esc, fmtK, pct } = ctx;
   if (!S.catalogue) return;
   const items = new Map(S.catalogue.items.map(i => [i.id, i]));
-  const lignes = actives(S.base).filter(l => items.has(l.id))
-    .sort((a, b) => compareDofus(items.get(a.id).nom, items.get(b.id).nom) || a.dateMiseEnVente - b.dateMiseEnVente);
+  const toutes = actives(S.base).filter(l => items.has(l.id));
+  // filtres et tri (mémorisés)
+  const F = (S.etat.ventesVue ??= { statut: 'tous', autre: 'tous', tri: 'nom', q: '' });
+  const maintenant = Date.now(), jours = l => (maintenant - l.dateMiseEnVente) / 864e5;
+  const AUTRES = { tous: () => true, sansPrix: l => l.prix == null, negative: l => (marge(l) ?? 0) < 0, j7: l => jours(l) > 7, j14: l => jours(l) > 14 };
+  const nomDe = l => items.get(l.id).nom, q = ctx.normaliser(F.q ?? '');
+  const parNom = (a, b) => compareDofus(nomDe(a), nomDe(b)) || a.dateMiseEnVente - b.dateMiseEnVente;
+  const desc = f => (a, b) => (f(b) ?? -Infinity) - (f(a) ?? -Infinity) || parNom(a, b);
+  const TRIS = {
+    nom: parNom,
+    ancien: (a, b) => a.dateMiseEnVente - b.dateMiseEnVente || parNom(a, b),
+    recent: (a, b) => b.dateMiseEnVente - a.dateMiseEnVente || parNom(a, b),
+    prix: desc(l => l.prix), marge: desc(marge), rendement: desc(rendement),
+    rendementAsc: (a, b) => (rendement(a) ?? Infinity) - (rendement(b) ?? Infinity) || parNom(a, b),
+  };
+  const lignes = toutes
+    .filter(l => F.statut === 'tous' || l.statut === F.statut)
+    .filter(AUTRES[F.autre] ?? AUTRES.tous)
+    .filter(l => !q || ctx.normaliser(nomDe(l)).includes(q))
+    .sort(TRIS[F.tri] ?? TRIS.nom);
+  const filtre = lignes.length !== toutes.length;
   const somme = f => lignes.reduce((s, l) => s + (f(l) ?? 0), 0);
   const drafts = lignes.filter(l => l.statut === 'draft').length;
+  // rendement attendu : marge des lignes qui ont un prix, rapportée à leurs coûts
+  const avecPrix = lignes.filter(l => l.prix != null);
+  const coutAvecPrix = avecPrix.reduce((s, l) => s + (l.coutCraft ?? 0) + (l.coutFm ?? 0), 0);
+  const rdtGlobal = coutAvecPrix ? avecPrix.reduce((s, l) => s + marge(l), 0) / coutAvecPrix : null;
   const cap = ctx.capture;
 
   const ligne = l => {
@@ -94,9 +117,9 @@ export function renderVentes(ctx) {
 
   $('#ventes').innerHTML = `
     <div class="kpis kpis4">
-      <div class="kpi"><div class="v">${lignes.length}</div><div class="l">en vente${drafts ? `, ${drafts} draft` : ''}</div></div>
+      <div class="kpi"><div class="v">${lignes.length}${filtre ? `<span class="muted small"> / ${toutes.length}</span>` : ''}</div><div class="l">en vente${drafts ? `, ${drafts} draft` : ''}</div></div>
       <div class="kpi"><div class="v">${fmtK(somme(l => l.prix))}</div><div class="l">valeur affichée</div></div>
-      <div class="kpi"><div class="v ok">${fmtK(somme(marge))}</div><div class="l">marge attendue</div></div>
+      <div class="kpi"><div class="v ok">${fmtK(somme(marge))} <span class="kpi-pct">${pct(rdtGlobal)}</span></div><div class="l" title="Marge rapportée au coût (craft + FM) des lignes qui ont un prix">marge attendue</div></div>
       <div class="kpi"><div class="v">${fmtK(somme(l => (l.coutCraft ?? 0) + (l.coutFm ?? 0)))}</div><div class="l">immobilisé</div></div>
     </div>
     <div class="row">
@@ -105,7 +128,14 @@ export function renderVentes(ctx) {
       <button id="vt-zone" class="link small"${cap.enCours() ? '' : ' disabled'}>zone</button></div>
     ${carteReleve(ctx)}
     <div class="ac"><input id="vt-nom" placeholder="Ajouter un exemplaire en vente…" autocomplete="off" spellcheck="false"><div id="vt-ac" class="ac-liste hidden"></div></div>
-    ${lignes.length ? `<div class="cp">${lignes.map(ligne).join('')}</div>` : '<p class="muted small">Rien en vente. Mets des crafts en vente depuis l\'onglet Craft, scanne ta liste à l\'HDV ou ajoute-les à la main.</p>'}
+    ${toutes.length ? `<div class="vt-filtres">
+      <input id="vt-q" type="search" placeholder="Filtrer par nom…" value="${esc(F.q ?? '')}" autocomplete="off" spellcheck="false">
+      <div id="vt-statut" class="seg small">${[['tous', 'tous'], ['draft', 'draft'], ['valide', 'validé']].map(([k, l]) => `<button data-st="${k}" class="${F.statut === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+      <select id="vt-autre" title="Filtre">${[['tous', 'toutes les lignes'], ['sansPrix', 'sans prix'], ['negative', 'marge négative'], ['j7', 'en vente depuis + 7 j'], ['j14', 'en vente depuis + 14 j']].map(([k, l]) => `<option value="${k}"${F.autre === k ? ' selected' : ''}>${l}</option>`).join('')}</select>
+      <select id="vt-tri" title="Tri">${[['nom', 'tri : nom'], ['ancien', 'tri : plus anciennes'], ['recent', 'tri : plus récentes'], ['prix', 'tri : prix ↓'], ['marge', 'tri : marge ↓'], ['rendement', 'tri : rendement ↓'], ['rendementAsc', 'tri : rendement ↑']].map(([k, l]) => `<option value="${k}"${F.tri === k ? ' selected' : ''}>${l}</option>`).join('')}</select>
+      ${filtre ? '<button id="vt-raz" class="link small">tout afficher</button>' : ''}
+    </div>` : ''}
+    ${lignes.length ? `<div class="cp">${lignes.map(ligne).join('')}</div>` : toutes.length ? '<p class="muted small">Aucune ligne pour ces filtres.</p>' : '<p class="muted small">Rien en vente. Mets des crafts en vente depuis l\'onglet Craft, scanne ta liste à l\'HDV ou ajoute-les à la main.</p>'}
     <p class="muted small">Marge = prix − craft − mise en vente − FM. Mise en vente : 2 % du prix, recalculés tant que la ligne est en draft, figés une fois validée ; « Prix modifié » ajoute 1 % du nouveau prix. Les lignes venues du Craft sont en « draft » : vérifie leurs chiffres puis passe-les en « validé ». Un item en vente n'est pas proposé dans le plan de craft.</p>`;
 
   const p = ctx.params(), coutDe = id => coutEstime(S.catalogue, S.base, p, id);
@@ -124,6 +154,15 @@ export function renderVentes(ctx) {
   $$('#ventes [data-suppr]').forEach(b => b.onclick = () => { if (!confirm('Supprimer cette ligne ? (pour un exemplaire vendu, utilise plutôt « Vendu »)')) return; supprimerLigne(S.base, b.dataset.suppr); ctx.sauverBase(); ctx.renderTout(); });
   brancherChamps(ctx, '#ventes');
 
+  const majF = (k, v) => { F[k] = v; ctx.sauverEtat(); ctx.renderTout(); };
+  if ($('#vt-q')) {
+    $('#vt-q').oninput = e => { F.q = e.target.value; S.vtFocus = e.target.selectionStart; ctx.sauverEtat(); ctx.renderTout(); };
+    if (S.vtFocus != null) { const i = $('#vt-q'); i.focus(); i.setSelectionRange(S.vtFocus, S.vtFocus); S.vtFocus = null; }
+    $$('#vt-statut [data-st]').forEach(b => b.onclick = () => majF('statut', b.dataset.st));
+    $('#vt-autre').onchange = e => majF('autre', e.target.value);
+    $('#vt-tri').onchange = e => majF('tri', e.target.value);
+    const raz = $('#vt-raz'); if (raz) raz.onclick = () => { Object.assign(F, { statut: 'tous', autre: 'tous', q: '' }); ctx.sauverEtat(); ctx.renderTout(); };
+  }
   $('#vt-cap').onclick = async () => { await cap.basculer(); ctx.renderTout(); };
   $('#vt-scan').onclick = async e => { e.target.classList.add('busy'); e.target.disabled = true; try { await releverVentes(ctx); } finally { ctx.renderTout(); } };
   $('#vt-zone').onclick = () => cap.zone();

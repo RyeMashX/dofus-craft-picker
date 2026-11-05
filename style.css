@@ -295,3 +295,10 @@ body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
   body:not(.pip) header.top #view-switch { order: 2; }
   body:not(.pip) header.top > .spacer { display: none; }
 }
+
+/* Ventes : filtres et tri */
+.vt-filtres { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0 6px; }
+.vt-filtres #vt-q { flex: 1 1 140px; min-width: 0; }
+.vt-filtres select { font-size: 12px; padding: 3px 6px; }
+.seg.small button { padding: 3px 9px; font-size: 12px; }
+.kpi-pct { font-size: 13px; font-weight: 600; opacity: .85; }
