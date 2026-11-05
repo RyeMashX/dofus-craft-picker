@@ -146,7 +146,9 @@ function contenuInfobulle(ctx, f, n, p) {
   const it = f && S.catalogue.items.find(i => i.id === f.id);
   if (!it) return '';
   const d = detailCraft(it, S.catalogue, S.base, p, n);
-  const revenu = f.prixVente == null ? null : f.prixVente * n * (1 - p.taxeVente);
+  const vente = f.prixVente == null ? null : f.prixVente * n;
+  const taxe = vente == null ? null : vente * p.taxeVente;
+  const revenu = vente == null ? null : vente - taxe;
   const marge = revenu == null || d.total == null ? null : revenu - d.total;
   const prix = l => l.prixUnitaire == null ? '<span class="bad">?</span>' : `${fmtK(l.prixUnitaire)}${l.source === 'moyen' ? '<sup title="prix moyen HDV">m</sup>' : ''}`;
   return `<div class="tip-t">${icone(it.iconId)} <b>${esc(it.nom)}</b>${n > 1 ? ` <span class="muted">× ${n} crafts</span>` : ''}</div>
@@ -154,7 +156,8 @@ function contenuInfobulle(ctx, f, n, p) {
     ${d.lignes.sort((a, b) => (b.cout ?? Infinity) - (a.cout ?? Infinity)).map(l => `<tr><td class="tn">${icone(l.iconId)}<span>${esc(l.nom)}</span>${pastille(l.niveau)}</td><td class="r">${fmt(l.q)}</td><td class="r">${prix(l)}</td><td class="r">${l.cout == null ? '–' : fmtK(l.cout)}</td></tr>`).join('')}
     </tbody><tfoot>
       <tr><td colspan="3">Coût du craft</td><td class="r"><b>${fmtK(d.total)}</b></td></tr>
-      <tr><td colspan="3">Vente${n > 1 ? ` (${n} × ${fmtK(f.prixVente)})` : ''}, taxe déduite</td><td class="r">${fmtK(revenu)}</td></tr>
+      <tr><td colspan="3">Prix de vente${n > 1 ? ` (${n} × ${fmtK(f.prixVente)})` : ''}</td><td class="r">${fmtK(vente)}</td></tr>
+      <tr><td colspan="3">Taxe ${pct(p.taxeVente)}</td><td class="r bad">${taxe == null ? '–' : `−${fmtK(taxe)}`}</td></tr>
       <tr><td colspan="3">Marge</td><td class="r"><b class="${marge == null ? '' : marge >= 0 ? 'ok' : 'bad'}">${fmtK(marge)}</b> <span class="muted">${pct(marge != null && d.total ? marge / d.total : null)}</span></td></tr>
     </tfoot></table>
     <div class="muted tip-note">Chaque ressource chiffrée seule, lots les moins chers${d.lignes.some(l => l.source === 'moyen') ? ' ; <sup>m</sup> = prix moyen HDV, lots non relevés' : ''}.${n > 1 ? ' Le total du plan regroupe les ressources partagées.' : ''}</div>`;
