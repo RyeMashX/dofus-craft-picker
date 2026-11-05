@@ -41,31 +41,61 @@ export function confiance(it, base, offres, p, maintenant = Date.now()) {
 }
 export const niveauConfiance = c => c >= 0.9 ? 'haute' : c >= 0.75 ? 'moyenne' : 'faible';
 
+// Lots de toutes les ressources relevées, quelle que soit leur fraîcheur (items du plan devenus non viables)
+export function offresToutes(base) {
+  return Object.fromEntries(Object.entries(base.ressources).filter(([, r]) => r.lots).map(([id, r]) => [id, r.lots.valeurs]));
+}
+
+// Fiche d'un item pour le Craft (1 craft). raison = pourquoi il n'est pas viable (null s'il l'est).
+export function ficheItem(it, catalogue, base, p, offres, maintenant = Date.now()) {
+  const b = base.items[it.id] ?? {};
+  const etat = etatItem(it, base, maintenant);
+  const prixVente = b.prix ? prixVenteEstime(b.prix.valeurs, p).estime : b.prixMoyen?.valeur ?? null;
+  const m = versMoteur(it, catalogue, { volumeMois: b.volume?.valeur ?? 0, prixVente });
+  const ev = evaluerItem(m, offres, p, 1);
+  const raison = estExclu(base, it.id, maintenant) ? 'exclu'
+    : !etat.utilisable ? 'données périmées'
+    : (b.volume?.valeur ?? 0) < p.volumeMin ? 'volume trop faible'
+    : ev.rendement == null || ev.craft.manquantes.length ? 'prix manquant'
+    : ev.rendement < p.margeAcceptable ? 'marge trop faible' : null;
+  return {
+    id: it.id, nom: it.nom, type: it.type, iconId: it.iconId, item: m,
+    volume: b.volume?.valeur ?? 0, prixVente, cout: ev.coutCraft, marge: ev.marge, rendement: ev.rendement,
+    niveau: ev.rendement != null && ev.rendement >= p.margeMin ? 'cible' : 'acceptable',
+    confiance: confiance(it, base, offres, p, maintenant),
+    pret: etat.pret, maxCrafts: maxCrafts(b.volume?.valeur ?? 0, p),
+    enVente: lotsEnVente(base, it.id), raison,
+  };
+}
+
 // Tous les crafts viables (1 craft), triés par rendement
 export function viables(catalogue, base, p, maintenant = Date.now()) {
   const offres = offresUtilisables(base, maintenant);
   const liste = [];
   for (const it of itemsFocus(catalogue, p)) {
-    if (estExclu(base, it.id, maintenant)) continue;
-    const etat = etatItem(it, base, maintenant);
-    if (!etat.utilisable) continue;
-    const b = base.items[it.id];
-    const prixVente = prixVenteEstime(b.prix.valeurs, p).estime;
-    const m = versMoteur(it, catalogue, { volumeMois: b.volume.valeur, prixVente });
-    const ev = evaluerItem(m, offres, p, 1);
-    if (ev.rendement == null || ev.rendement < p.margeAcceptable) continue;
-    if (b.volume.valeur < p.volumeMin) continue;
-    liste.push({
-      id: it.id, nom: it.nom, type: it.type, iconId: it.iconId, item: m,
-      volume: b.volume.valeur, prixVente, cout: ev.coutCraft, marge: ev.marge, rendement: ev.rendement,
-      niveau: ev.rendement >= p.margeMin ? 'cible' : 'acceptable',
-      confiance: confiance(it, base, offres, p, maintenant),
-      pret: etat.pret, maxCrafts: maxCrafts(b.volume.valeur, p),
-      enVente: lotsEnVente(base, it.id),
-    });
+    if (estExclu(base, it.id, maintenant) || !etatItem(it, base, maintenant).utilisable) continue;
+    const f = ficheItem(it, catalogue, base, p, offres, maintenant);
+    if (!f.raison) liste.push(f);
   }
   liste.sort((a, b) => b.rendement - a.rendement);
   return { liste, offres };
+}
+
+// Coût de craft estimé d'un item d'après la base (pour une vente ajoutée par OCR)
+export function coutEstime(catalogue, base, p, id) {
+  const it = catalogue.items.find(i => i.id === Number(id));
+  if (!it) return null;
+  return estimerCout(it, base, p);
+}
+function estimerCout(it, base, p) {
+  let cout = 0;
+  for (const r of it.recette) {
+    const res = base.ressources[r.id] ?? {};
+    if (res.lots) cout += planAchat(r.qte, res.lots.valeurs, p)?.cout ?? 0;
+    else if (res.prixMoyen) cout += r.qte * res.prixMoyen.valeur;
+    else return null;
+  }
+  return Math.round(cout);
 }
 
 // Recommandation : items cibles, ni en vente ni exclus. Retourne { [id]: n }.
@@ -76,17 +106,24 @@ export function recommander(liste, offres, budget, p) {
 }
 
 // Évaluation d'un plan { [id]: n } : lignes par item (chiffres réels) et totaux avec achats consolidés.
-export function evaluerPlan(plan, liste, offres, catalogue, p) {
+// Un item du plan qui n'est plus viable reste dans le plan, évalué avec les données disponibles, et signalé (raison).
+export function evaluerPlan(plan, liste, offres, catalogue, p, base = null) {
   const parId = new Map(liste.map(v => [v.id, v]));
+  const toutes = base ? { ...offresToutes(base), ...offres } : offres;
   const lignes = [];
   for (const [id, n] of Object.entries(plan)) {
-    const v = parId.get(Number(id));
-    if (!v || n <= 0) continue;
-    const ev = evaluerItem(v.item, offres, p, n);
-    lignes.push({ ...v, n, coutN: ev.capital, revenuN: ev.revenu, margeN: ev.marge, rendementN: ev.rendement, depasse: n > v.maxCrafts });
+    if (n <= 0) continue;
+    let v = parId.get(Number(id));
+    if (!v && base) {
+      const it = catalogue.items.find(i => i.id === Number(id));
+      if (it) v = ficheItem(it, catalogue, base, p, toutes);
+    }
+    if (!v) continue;
+    const ev = evaluerItem(v.item, toutes, p, n);
+    lignes.push({ ...v, n, coutN: ev.capital, revenuN: ev.revenu ?? 0, margeN: ev.marge ?? 0, rendementN: ev.rendement, depasse: n > v.maxCrafts });
   }
   lignes.sort((a, b) => b.margeN - a.margeN);
-  const achats = achatsConsolides(lignes, offres, catalogue, p);
+  const achats = achatsConsolides(lignes, toutes, catalogue, p);
   const capital = achats.reduce((s, a) => s + (a.plan?.cout ?? 0), 0);
   const revenu = lignes.reduce((s, l) => s + l.revenuN, 0);
   const marge = revenu - capital;

@@ -64,18 +64,30 @@ KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources), 
 ## Onglet Craft
 
 - **Crafts viables** : données sans orange ni noir, au moins 60 ventes / mois, rendement d'au moins 15 %. « Cible » à partir de 25 %, « acceptable » entre 15 et 25 %. Les items exclus n'apparaissent pas ; ceux en vente sont marqués.
-- **Plan de craft** : recommandé à partir du budget (items cibles, ni en vente ni exclus, au plus un jour de vente par item). Modifiable à la main (+ / − / ✕, ajout depuis les viables) ; les KPIs suivent. « Revenir à la recommandation » annule les modifications.
+- **Plan de craft** : « Générer le plan de craft » calcule une recommandation à partir du budget (items cibles, ni en vente ni exclus, au plus un jour de vente par item), puis le plan est **figé** : ses chiffres suivent les prix, mais ses items ne changent que si tu le modifies (+ / − / ✕, ajout depuis les viables) ou le régénères. Un item du plan devenu non viable reste, signalé avec la raison.
+- **Mise en vente** : « 🏷 vente » sur une ligne met 1 exemplaire en vente (ligne « draft » dans Ventes, prix = prix de vente estimé, coût = coût du craft, FM = 0) et le retire du plan ; « Tout mettre en vente » fait de même pour tout le plan.
 - **Marge affichée = marge réelle** (taxe de 2 % déduite). L'effort (coût fictif par craft, réglable) ne sert qu'à départager dans la recommandation. La **confiance** (volume 15 %, prix de vente 35 %, ressources 50 % pondérées par leur part du coût ; vert = 1, jaune = 0,6) est affichée seulement.
 - Le coût total du plan est calculé avec les **achats regroupés** : une ressource partagée entre plusieurs crafts est achetée en une fois.
 
 ## Onglet Achats
 
-Toutes les ressources du plan, quantités additionnées, lots conseillés (x1 / x10 / x100 / x1000) et coût attendu, classées par HDV puis catégorie. Cases à cocher pour suivre les achats ; « à revérifier » quand le prix risque de remonter.
+« Générer la liste d'achat » prend une photo du plan : ressources, quantités additionnées, lots conseillés (x1 / x10 / x100 / x1000) avec leur prix unitaire, prix unitaire attendu et coût, classées par HDV puis catégorie. La liste ne bouge plus jusqu'à la prochaine génération ; un avertissement s'affiche si le plan a changé depuis. Sous chaque ressource : pour quels crafts et combien. Case à cocher à droite pour suivre les achats ; « à revérifier » quand le prix risque de remonter.
 
-## Onglet Ventes et liste noire
+## Onglet Ventes
 
-- **Ventes** : relevé par OCR (mode « Mes ventes », une capture par écran de la liste ; les captures s'additionnent sans doublon jusqu'au total « 55/570 lots en vente ») ou saisie manuelle. Tant qu'un item a au moins 1 lot en vente, il n'est pas proposé dans le plan de craft ni préparé par le plan de scan.
-- **Liste noire** (onglet Données, clic sur le nom d'un équipement) : exclusion définitive ou jusqu'à une date. Un item exclu sort du plan de scan, du Craft et des recommandations. Filtre « exclus » dans Données.
+- Une ligne par exemplaire : date de mise en vente, prix, coût du craft, coût de mise en vente (2 % du prix, recalculé tant qu'il n'est pas saisi à la main), coût de FM, tous modifiables ; marge = prix − craft − mise en vente − FM.
+- Statut **draft** (ajouté depuis le Craft, à vérifier) ou **validé** (clic sur le statut pour basculer).
+- **Relevé OCR** depuis l'onglet (« Scanner mes ventes », zone propre) : item absent → ligne validée, coût estimé d'après la base ; même item au même prix → même annonce ; même item à un autre prix → tu choisis « Fusionner avec la ligne du … » ou « Nouvelle ligne ». Deux exemplaires lus sur le même écran font deux lignes.
+- Tant qu'un item a au moins une ligne en vente, il n'est pas proposé dans le plan de craft ni préparé par le plan de scan.
+- **✓ Vendu** : la ligne sort de la liste et passe dans le **Bilan** (date de vente modifiable).
+
+## Onglet Bilan
+
+Ventes, chiffre d'affaires, marge et rendement, délai moyen de vente, détail par mois, liste de tout ce qui a été vendu (chiffres modifiables, « remettre en vente » en cas d'erreur).
+
+## Liste noire
+
+Onglet Données, clic sur le nom d'un équipement : exclusion définitive ou jusqu'à une date. Un item exclu sort du plan de scan, du Craft et des recommandations. Filtre « exclus » dans Données.
 
 ## Processus cible
 
@@ -151,10 +163,12 @@ src/plan.js        plan de scan : choix des scans, groupes HDV / filtres
 src/vue-plan.js    onglet Scan
 src/vue-donnees.js onglet Données
 src/craft-plan.js  crafts viables, confiance, recommandation, plan modifiable, achats regroupés
-src/statut.js      liste noire, ventes en cours, relevé multi-captures
+src/statut.js      liste noire
+src/ventes.js      ventes (une ligne par exemplaire), import OCR, bilan
 src/vue-craft.js   onglet Craft
 src/vue-achats.js  onglet Achats
 src/vue-ventes.js  onglet Ventes
+src/vue-bilan.js   onglet Bilan
 scripts/catalogue.mjs  génération du catalogue depuis DofusDB
 data/catalogue.json    catalogue généré
 src/ocr/           prétraitement, lecteurs d'écrans, rapprochement des noms

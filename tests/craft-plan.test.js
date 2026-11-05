@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { PARAMS } from '../src/params.js';
 import { JOUR, creerBase, majVolume, majPrixItem, majRessource } from '../src/base.js';
 import { viables, recommander, evaluerPlan, confiance, offresUtilisables } from '../src/craft-plan.js';
-import { exclure, majVente } from '../src/statut.js';
+import { exclure } from '../src/statut.js';
+import { ajouterVente } from '../src/ventes.js';
 
 const T = Date.now();
 const p = { ...PARAMS, metiers: { Bijoutier: 200 }, profondeur: { 1: Infinity, 10: Infinity, 100: Infinity, 1000: Infinity } };
@@ -34,7 +35,7 @@ test('viables : cible, acceptable, et sous 15 % écarté', () => {
 test('viables : exclu absent ; en vente listé mais pas recommandé', () => {
   const b = base();
   exclure(b, 2, null, T);
-  majVente(b, 1, 1, T);
+  ajouterVente(b, { id: 1, prix: 2e6 });
   const { liste, offres } = viables(cat, b, p, T);
   assert.deepEqual(liste.map(v => v.id), [1]);
   assert.equal(liste[0].enVente, 1);
@@ -63,4 +64,15 @@ test('confiance : 1 si tout est vert, plus basse avec un prix jaune', () => {
   assert.equal(confiance(cat.items[0], b, offres, p, T), 1);
   majPrixItem(b, 1, [1_632_654], T - 10 * JOUR);
   assert.ok(Math.abs(confiance(cat.items[0], b, offres, p, T) - (1 - 0.35 * 0.4)) < 1e-9);
+});
+
+test('plan figé : un item devenu non viable reste dans le plan, signalé', () => {
+  const b = base();
+  majPrixItem(b, 1, [1_632_654], T - 20 * JOUR); // prix orange : A n'est plus viable
+  const { liste, offres } = viables(cat, b, p, T);
+  assert.ok(!liste.some(v => v.id === 1));
+  const r = evaluerPlan({ 1: 2 }, liste, offres, cat, p, b);
+  assert.equal(r.lignes.length, 1);
+  assert.equal(r.lignes[0].raison, 'données périmées');
+  assert.ok(r.marge > 0);
 });

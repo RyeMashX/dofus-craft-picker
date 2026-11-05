@@ -1,88 +1,127 @@
-// Onglet Ventes : ce que tu as en vente à l'HDV. Tant qu'un item a au moins 1 lot en vente,
-// il n'est pas proposé dans le plan de craft.
-//
-// Relevé par OCR : mode « Mes ventes », on fait défiler la liste et on scanne chaque écran ;
-// les captures s'additionnent (sans doublon) jusqu'au total affiché en bas (« 55/570 lots en vente »).
-// Saisie manuelle : ajout par nom, nombre de lots modifiable, retrait.
+// Onglet Ventes : une ligne par exemplaire en vente (draft ou validé), prix et coûts modifiables, marge calculée.
+// Relevé OCR de l'onglet « Vente » de l'HDV directement depuis cet onglet :
+// - item absent de la liste → ligne « validée » (prix lu, coût de craft estimé d'après la base) ;
+// - même item au même prix → même annonce, rien à faire ;
+// - même item à un autre prix → tu choisis : fusionner avec une ligne existante ou créer une ligne.
+// « Vendu » sort la ligne de la liste : elle passe dans l'onglet Bilan.
 
-import { majVente, remplacerVentes, nouveauReleve, ajouterAuReleve, comptesReleve, lotsLus } from './statut.js';
+import { actives, marge, rendement, majLigne, supprimerLigne, marquerVendu, importerCapture, fusionner, nouvelleLigne, trouverLigne } from './ventes.js';
+import { coutEstime } from './craft-plan.js';
 import { compareDofus } from './fraicheur.js';
 import { icone } from './vue-plan.js';
 
-// Ajoute une capture au relevé en cours. Termine automatiquement quand tous les lots sont lus.
-export function ajouterCaptureVentes(ctx, identifie) {
+const jourIso = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const depuisIso = s => s ? new Date(`${s}T12:00:00`).getTime() : null;
+const dateCourte = t => t ? new Date(t).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) : '–';
+export { jourIso, depuisIso, dateCourte };
+
+const CHAMPS = [['prix', 'Prix'], ['coutCraft', 'Craft'], ['frais', 'Mise en vente'], ['coutFm', 'FM']];
+
+// Champ montant modifiable d'une ligne
+export const champ = (ctx, l, k, lib) => `<label class="vf"><span>${lib}</span><input class="num milliers${k === 'frais' && !l.fraisManuel ? ' auto' : ''}" inputmode="numeric" data-uid="${l.uid}" data-champ="${k}" value="${ctx.fmtSaisie(l[k])}"${k === 'frais' && !l.fraisManuel ? ' title="2 % du prix, recalculé quand le prix change. Vide le champ pour revenir au calcul auto."' : ''}></label>`;
+export function brancherChamps(ctx, sel) {
+  const { S, $$ } = ctx;
+  $$(`${sel} input[data-champ]`).forEach(el => el.onchange = () => {
+    majLigne(S.base, el.dataset.uid, el.dataset.champ, ctx.nombreSaisi(el.value));
+    ctx.sauverBase(); ctx.renderTout();
+  });
+  $$(`${sel} input[data-date]`).forEach(el => el.onchange = () => {
+    const t = depuisIso(el.value); if (!t) return;
+    majLigne(S.base, el.dataset.uid, el.dataset.date, t);
+    ctx.sauverBase(); ctx.renderTout();
+  });
+}
+
+// Relevé OCR d'un écran « Mes ventes »
+async function releverVentes(ctx) {
   const { S } = ctx;
-  const r = (S.etat.releveVentes ??= { ...nouveauReleve(), debut: Date.now() });
-  const avant = lotsLus(r);
-  ajouterAuReleve(r, identifie);
-  const nouveaux = lotsLus(r) - avant;
-  let termine = false;
-  if (r.total != null && lotsLus(r) >= r.total) { terminerReleve(ctx); termine = true; }
-  ctx.sauverEtat();
-  return { nouveaux, termine, capture: identifie };
+  const identifie = await ctx.capture.lireVentes();
+  if (!identifie) return;
+  const p = ctx.params();
+  const res = importerCapture(S.base, identifie, id => coutEstime(S.catalogue, S.base, p, id));
+  ctx.sauverBase();
+  const R = (S.releveVentes ??= { ajoutees: 0, connues: 0, ignorees: 0, aTrancher: [], captures: 0 });
+  R.captures++; R.ajoutees += res.ajoutees.length; R.connues += res.connues; R.ignorees = Math.max(R.ignorees, res.ignorees);
+  for (const a of res.aTrancher) if (!R.aTrancher.some(x => x.id === a.id && x.prix === a.prix)) R.aTrancher.push(a);
+  R.total = identifie.total ?? R.total;
+  ctx.toast(`${res.ajoutees.length} ajoutée${res.ajoutees.length > 1 ? 's' : ''}, ${res.connues} déjà connue${res.connues > 1 ? 's' : ''}${res.aTrancher.length ? `, ${res.aTrancher.length} à trancher` : ''}`);
+  ctx.renderTout();
 }
 
-export function terminerReleve(ctx) {
-  const { S } = ctx, r = S.etat.releveVentes;
-  if (!r) return;
-  remplacerVentes(S.base, comptesReleve(r), r.total);
-  S.etat.releveVentes = null;
-  ctx.sauverBase(); ctx.sauverEtat();
-  ctx.toast('Relevé des ventes terminé ✓');
-}
-
-// Encart affiché sous le bouton Scanner après une capture de « Mes ventes »
-export function carteReleve(ctx, L) {
-  const { S, esc } = ctx, r = S.etat.releveVentes;
-  const c = L.capture;
-  const connues = c.lignes.filter(l => l.id != null);
-  const progres = r ? `<div class="bar"><i style="width:${r.total ? Math.min(100, 100 * lotsLus(r) / r.total) : 0}%"></i></div>
-      <p class="small">${lotsLus(r)}${r.total ? ` / ${r.total}` : ''} lots lus. Fais défiler la liste et scanne l'écran suivant.</p>` : '';
-  return `<div class="lect"><div class="row"><h3>Mes ventes · ${L.termine ? 'relevé terminé' : 'relevé en cours'}</h3><div class="spacer"></div>
-      <span class="tag ${L.termine ? 'ok-tag' : 'faire'}">${L.nouveaux} nouvelles</span></div>
-    ${L.termine ? `<p class="small ok">Liste des ventes mise à jour : ${Object.keys(S.base.enVente?.items ?? {}).length} équipements en vente.</p>` : progres}
-    <div class="chips">${connues.map(l => `<span class="chip">${esc(l.nom)}</span>`).join('')}${c.lignes.length > connues.length ? `<span class="chip muted">${c.lignes.length - connues.length} hors catalogue</span>` : ''}</div>
-    ${r ? '<div class="row"><button id="rv-fin" class="primary small">Terminer le relevé</button><button id="rv-stop" class="link small">abandonner</button></div>' : ''}
-  </div>`;
-}
-export function brancherReleve(ctx) {
-  const { $ } = ctx;
-  const fin = $('#rv-fin'); if (fin) fin.onclick = () => { terminerReleve(ctx); ctx.S.derniere = null; ctx.renderTout(); };
-  const stop = $('#rv-stop'); if (stop) stop.onclick = () => { ctx.S.etat.releveVentes = null; ctx.S.derniere = null; ctx.sauverEtat(); ctx.renderTout(); };
+function carteReleve(ctx) {
+  const { S, esc, fmt, fmtK } = ctx, R = S.releveVentes;
+  if (!R) return '';
+  const items = new Map(S.catalogue.items.map(i => [i.id, i]));
+  const trancher = R.aTrancher.map((a, i) => {
+    const ex = actives(S.base).filter(l => l.id === a.id);
+    return `<div class="tr-l"><div class="cp-nom">${icone(items.get(a.id)?.iconId)} <span class="n">${esc(a.nom)}</span> <span class="muted small">lu à</span> <b>${fmt(a.prix)}</b></div>
+      <div class="tr-choix">${ex.map(l => `<button class="secondary small" data-fus="${i}" data-uid="${l.uid}">Fusionner avec la ligne du ${dateCourte(l.dateMiseEnVente)} (${l.prix == null ? 'sans prix' : fmtK(l.prix)})</button>`).join('')}
+        <button class="primary small" data-nouv="${i}">Nouvelle ligne</button><button class="link small" data-ign="${i}">ignorer</button></div></div>`;
+  }).join('');
+  return `<div class="lect"><div class="row"><h3>Relevé de mes ventes</h3><span class="muted small">${R.captures} capture${R.captures > 1 ? 's' : ''}</span><div class="spacer"></div><button id="rv-fin" class="link small">fermer</button></div>
+    <p class="small"><b class="ok">${R.ajoutees}</b> ajoutées · ${R.connues} déjà connues${R.ignorees ? ` · ${R.ignorees} hors catalogue` : ''}${R.total ? ` · ${R.total} lots en vente au total à l'HDV` : ''}</p>
+    ${R.aTrancher.length ? `<p class="small warn">Même item, prix différent : c'est une annonce déjà suivie (prix modifié) ou un exemplaire de plus ?</p>${trancher}` : ''}
+    <p class="muted small">Fais défiler ta liste à l'HDV et scanne l'écran suivant : une annonce vue deux fois n'est comptée qu'une fois.</p></div>`;
 }
 
 export function renderVentes(ctx) {
-  const { S, $, $$, esc, age } = ctx;
+  const { S, $, $$, esc, fmtK, pct } = ctx;
   if (!S.catalogue) return;
-  const v = S.base.enVente ?? { items: {} };
   const items = new Map(S.catalogue.items.map(i => [i.id, i]));
-  const lignes = Object.entries(v.items).map(([id, n]) => ({ id: Number(id), n, it: items.get(Number(id)) }))
-    .filter(l => l.it).sort((a, b) => compareDofus(a.it.nom, b.it.nom));
-  const lots = lignes.reduce((s, l) => s + l.n, 0);
-  const r = S.etat.releveVentes;
+  const lignes = actives(S.base).filter(l => items.has(l.id))
+    .sort((a, b) => compareDofus(items.get(a.id).nom, items.get(b.id).nom) || a.dateMiseEnVente - b.dateMiseEnVente);
+  const somme = f => lignes.reduce((s, l) => s + (f(l) ?? 0), 0);
+  const drafts = lignes.filter(l => l.statut === 'draft').length;
+  const cap = ctx.capture;
+
+  const ligne = l => {
+    const it = items.get(l.id), m = marge(l);
+    return `<div class="vt-l ${l.statut}">
+      <div class="cp-nom">${icone(it.iconId)} <span class="n" title="${esc(it.nom)}">${esc(it.nom)}</span>
+        <button class="statut st-${l.statut}" data-statut="${l.uid}" title="${l.statut === 'draft' ? 'Chiffres à vérifier. Clique quand ils sont bons.' : 'Vérifié. Clique pour repasser en draft.'}">${l.statut === 'draft' ? 'draft' : 'validé ✓'}</button></div>
+      <div class="vt-meta"><label class="vf-date"><span>en vente le</span><input type="date" data-uid="${l.uid}" data-date="dateMiseEnVente" value="${jourIso(l.dateMiseEnVente)}"></label>
+        <span class="spacer"></span><span class="muted small">marge</span> <b class="${m == null ? 'muted' : m >= 0 ? 'ok' : 'bad'}">${fmtK(m)}</b> <span class="muted small">${pct(rendement(l))}</span></div>
+      <div class="vt-champs">${CHAMPS.map(([k, lib]) => champ(ctx, l, k, lib)).join('')}</div>
+      <div class="vt-actions"><button class="secondary small vendu-btn" data-vendu="${l.uid}" title="Vendu aujourd'hui (date modifiable dans Bilan)">✓ Vendu</button><span class="spacer"></span><button class="retirer" data-suppr="${l.uid}" title="Supprimer la ligne (pas vendu, retiré de l'HDV)">✕</button></div>
+    </div>`;
+  };
 
   $('#ventes').innerHTML = `
-    <div class="kpis">
-      <div class="kpi"><div class="v">${lignes.length}</div><div class="l">équipements en vente</div></div>
-      <div class="kpi"><div class="v">${lots}</div><div class="l">lots (catalogue)${v.total ? `, ${v.total} au total` : ''}</div></div>
-      <div class="kpi"><div class="v">${v.date ? age(v.date) : '–'}</div><div class="l">dernière mise à jour</div></div>
+    <div class="kpis kpis4">
+      <div class="kpi"><div class="v">${lignes.length}</div><div class="l">en vente${drafts ? `, ${drafts} draft` : ''}</div></div>
+      <div class="kpi"><div class="v">${fmtK(somme(l => l.prix))}</div><div class="l">valeur affichée</div></div>
+      <div class="kpi"><div class="v ok">${fmtK(somme(marge))}</div><div class="l">marge attendue</div></div>
+      <div class="kpi"><div class="v">${fmtK(somme(l => (l.coutCraft ?? 0) + (l.coutFm ?? 0)))}</div><div class="l">immobilisé</div></div>
     </div>
-    ${r ? `<p class="small warn">Relevé en cours : ${lotsLus(r)}${r.total ? ` / ${r.total}` : ''} lots lus. <button id="rv-fin2" class="link small">terminer</button></p>`
-      : `<p class="muted small">Pour tout relever : onglet Scan, « Je scanne » sur <b>Mes ventes</b>, puis scanne chaque écran de ta liste en la faisant défiler. Les items en vente ne sont pas proposés dans le plan de craft.</p>`}
-    <div class="ac"><input id="vt-nom" placeholder="Ajouter un équipement en vente…" autocomplete="off" spellcheck="false"><div id="vt-ac" class="ac-liste hidden"></div></div>
-    ${lignes.length ? `<div class="cp">${lignes.map(l => `<div class="vt-l">
-        ${icone(l.it.iconId)} <span class="n" title="${esc(l.it.nom)}">${esc(l.it.nom)}</span>
-        <span class="stepper"><button data-vm="${l.id}" title="Un lot de moins (vendu)">−</button><b>${l.n}</b><button data-vp="${l.id}" title="Un lot de plus">+</button></span>
-        <button class="retirer" data-vx="${l.id}" title="Plus rien en vente">✕</button></div>`).join('')}</div>`
-      : '<p class="muted small">Rien en vente pour l\'instant.</p>'}`;
+    <div class="row">
+      <button id="vt-cap" class="cta-cap small${cap.enCours() ? ' on' : ''}">${cap.enCours() ? 'Capture en cours' : 'Capturer le jeu'}</button>
+      <button id="vt-scan" class="primary small"${cap.enCours() ? '' : ' disabled'} title="Lit l'écran « Vente » de l'HDV (liste de tes annonces)">Scanner mes ventes</button>
+      <button id="vt-zone" class="link small"${cap.enCours() ? '' : ' disabled'}>zone</button></div>
+    ${carteReleve(ctx)}
+    <div class="ac"><input id="vt-nom" placeholder="Ajouter un exemplaire en vente…" autocomplete="off" spellcheck="false"><div id="vt-ac" class="ac-liste hidden"></div></div>
+    ${lignes.length ? `<div class="cp">${lignes.map(ligne).join('')}</div>` : '<p class="muted small">Rien en vente. Mets des crafts en vente depuis l\'onglet Craft, scanne ta liste à l\'HDV ou ajoute-les à la main.</p>'}
+    <p class="muted small">Marge = prix − craft − mise en vente (2 % du prix par défaut) − FM. Les lignes venues du Craft sont en « draft » : vérifie leurs chiffres puis passe-les en « validé ». Un item en vente n'est pas proposé dans le plan de craft.</p>`;
 
-  const maj = (id, n) => { majVente(S.base, id, n); ctx.sauverBase(); ctx.renderTout(); };
-  $$('#ventes [data-vm]').forEach(b => b.onclick = () => maj(+b.dataset.vm, (v.items[b.dataset.vm] ?? 1) - 1));
-  $$('#ventes [data-vp]').forEach(b => b.onclick = () => maj(+b.dataset.vp, (v.items[b.dataset.vp] ?? 0) + 1));
-  $$('#ventes [data-vx]').forEach(b => b.onclick = () => maj(+b.dataset.vx, 0));
-  const fin = $('#rv-fin2'); if (fin) fin.onclick = () => { terminerReleve(ctx); ctx.renderTout(); };
+  const p = ctx.params(), coutDe = id => coutEstime(S.catalogue, S.base, p, id);
+  const R = S.releveVentes;
+  const resolu = i => { R.aTrancher.splice(i, 1); ctx.sauverBase(); ctx.renderTout(); };
+  $$('#ventes [data-fus]').forEach(b => b.onclick = () => { fusionner(S.base, b.dataset.uid, R.aTrancher[+b.dataset.fus].prix); resolu(+b.dataset.fus); });
+  $$('#ventes [data-nouv]').forEach(b => b.onclick = () => { const a = R.aTrancher[+b.dataset.nouv]; nouvelleLigne(S.base, a.id, a.prix, coutDe); R.ajoutees++; resolu(+b.dataset.nouv); });
+  $$('#ventes [data-ign]').forEach(b => b.onclick = () => resolu(+b.dataset.ign));
+  const fin = $('#rv-fin'); if (fin) fin.onclick = () => { S.releveVentes = null; ctx.renderTout(); };
+
+  $$('#ventes [data-statut]').forEach(b => b.onclick = () => { const l = trouverLigne(S.base, b.dataset.statut); majLigne(S.base, l.uid, 'statut', l.statut === 'draft' ? 'valide' : 'draft'); ctx.sauverBase(); ctx.renderTout(); });
+  $$('#ventes [data-vendu]').forEach(b => b.onclick = () => { marquerVendu(S.base, b.dataset.vendu); ctx.sauverBase(); ctx.toast('Vendu ✓ (voir Bilan)'); ctx.renderTout(); });
+  $$('#ventes [data-suppr]').forEach(b => b.onclick = () => { if (!confirm('Supprimer cette ligne ? (pour un exemplaire vendu, utilise plutôt « Vendu »)')) return; supprimerLigne(S.base, b.dataset.suppr); ctx.sauverBase(); ctx.renderTout(); });
+  brancherChamps(ctx, '#ventes');
+
+  $('#vt-cap').onclick = async () => { await cap.basculer(); ctx.renderTout(); };
+  $('#vt-scan').onclick = async e => { e.target.classList.add('busy'); e.target.disabled = true; try { await releverVentes(ctx); } finally { ctx.renderTout(); } };
+  $('#vt-zone').onclick = () => cap.zone();
   ctx.autocompletion($('#vt-nom'), $('#vt-ac'), 'annonces', nom => {
     const it = S.catalogue.items.find(i => i.nom === nom);
-    if (it) maj(it.id, (v.items[it.id] ?? 0) + 1);
+    if (!it) return;
+    nouvelleLigne(S.base, it.id, null, coutDe);
+    ctx.sauverBase(); ctx.toast(`${it.nom} ajouté : indique son prix`); ctx.renderTout();
   });
 }

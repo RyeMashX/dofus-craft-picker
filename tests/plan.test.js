@@ -80,13 +80,14 @@ test('tâche faite : relevé postérieur à la création du plan', () => {
 });
 
 test('plan : un item exclu disparaît, un item en vente n\'est plus préparé pour le craft', async () => {
-  const { exclure, majVente } = await import('../src/statut.js');
+  const { exclure } = await import('../src/statut.js');
+  const { ajouterVente } = await import('../src/ventes.js');
   const b = baseExemple();
   exclure(b, 1, null, T);
   let plan = calculerPlan(cat, b, p, 10, T, 1);
   assert.ok(!plan.taches.some(t => t.kind !== 'ressource' && t.id === 1));
   const b2 = baseExemple();
-  majVente(b2, 1, 2, T);
+  ajouterVente(b2, { id: 1, statut: 'valide', prix: 3e6 });
   plan = calculerPlan(cat, b2, p, 0.5, T, 1); // 3 scans de craft : A (en vente) ne doit pas être visé
   assert.ok(!plan.taches.some(t => t.kind === 'prixItem' && t.id === 1));
 });

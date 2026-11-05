@@ -7,9 +7,11 @@ import { renderPlanScan, tempsMesures } from './vue-plan.js';
 import { renderDonnees } from './vue-donnees.js';
 import { etatItem } from './fraicheur.js';
 import { renderCraft } from './vue-craft.js';
-import { renderAchats } from './vue-achats.js';
-import { renderVentes, ajouterCaptureVentes, carteReleve, brancherReleve } from './vue-ventes.js';
-import { majVente } from './statut.js';
+import { renderAchats, genererListeAchat } from './vue-achats.js';
+import { renderVentes } from './vue-ventes.js';
+import { renderBilan } from './vue-bilan.js';
+import { migrerVentes } from './ventes.js';
+import { coutEstime } from './craft-plan.js';
 import { identifier, appliquer } from './ocr/identification.js';
 import { trouver, normaliser } from './ocr/correspondance.js';
 import * as Cap from './capture.js';
@@ -44,6 +46,7 @@ const S = {
 };
 S.etat.reglages = { ...REGLAGES_DEFAUT, ...(S.etat.reglages ?? {}) };
 if (S.base.version !== 2) S.base = creerBase();
+if (S.etat.mode === 'ventes') S.etat.mode = 'courbe'; // « Mes ventes » se scanne depuis l'onglet Ventes
 S.etat.zones = { ...ZONES_DEFAUT, ...S.etat.zones }; // zones ajoutées depuis (ex. « Mes ventes »)
 S.versionBase = 0;
 
@@ -105,7 +108,7 @@ function renderVue() {
   root.body.className = 'view-' + v + (root !== document ? ' pip' : '');
   $$('#view-switch button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
   $('#settings-btn').classList.toggle('on', v === 'base');
-  for (const nom of ['scan', 'donnees', 'resultats', 'achats', 'ventes', 'base']) $$(`.view-${nom}`).forEach(el => el.classList.toggle('hidden', nom !== v));
+  for (const nom of ['scan', 'donnees', 'resultats', 'achats', 'ventes', 'bilan', 'base']) $$(`.view-${nom}`).forEach(el => el.classList.toggle('hidden', nom !== v));
 }
 
 function renderCapture() {
@@ -223,7 +226,6 @@ function renderLecture() {
   renderSaisie();
   const L = S.derniere;
   if (!L) { $('#lecture').innerHTML = S.diagSeul ? `<div class="lect">${diagHtml(true)}</div>` : ''; brancherDiag(); return; }
-  if (L.type === 'ventes') { $('#lecture').innerHTML = carteReleve(ctx, L); brancherReleve(ctx); return; }
   const etat = L.enregistre ? '<span class="tag ok-tag">enregistré</span>' : '<span class="tag faire">non enregistré</span>';
   const boutons = L.edition
     ? `<button id="lect-valider" class="primary small">Valider</button><button id="lect-fermer" class="secondary small">Fermer</button>`
@@ -249,7 +251,6 @@ const CHAMPS_SAISIE = {
   annonces: [], // trois champs numérotés (voir champsPrix)
   lots: [['x1', 'x1', ''], ['x10', 'x10', ''], ['x100', 'x100', ''], ['x1000', 'x1000', '']],
   liste: [['prixMoyen', 'Prix moyen', '']],
-  ventes: [['nb', 'Lots en vente', '']],
 };
 
 function candidatsSaisie(mode) {
@@ -362,10 +363,6 @@ function enregistrerSaisie() {
     const annonces = [1, 10, 100, 1000].map(t => ({ lot: t, prix: n('x' + t), sur: true })).filter(a => a.prix);
     if (!annonces.length) return erreur('Indique au moins un prix de lot.');
     L = { type: 'detail', identifie: { objet: o, annonces } };
-  } else if (mode === 'ventes') {
-    if (n('nb') == null) return erreur('Indique le nombre de lots en vente (0 si plus rien).');
-    majVente(S.base, o.id, n('nb')); sauverBase();
-    S.saisie = null; statut(`${o.nom} : ${n('nb')} lot${n('nb') > 1 ? 's' : ''} en vente.`); renderTout(); return;
   } else {
     if (n('prixMoyen') == null) return erreur('Indique le prix moyen.');
     L = { type: 'liste', identifie: [{ ...o, prixMoyen: n('prixMoyen') }] };
@@ -475,7 +472,19 @@ const ctx = {
   esc, fmt, fmtK, pct, age, nombreSaisi, normaliser, fmtSaisie, champsPrix,
   versionBase: () => S.versionBase, autocompletion: (i, l, m, f) => brancherAutocompletion(i, l, m, f, null),
   boutonCopier: (n, t) => boutonCopier(n, t), brancherCopier: s => brancherCopier(s), choisirMode: m => choisirMode(m),
+  genererListeAchat: () => genererListeAchat(ctx),
+  // capture pour l'onglet Ventes (relevé « Mes ventes »)
+  capture: { enCours: () => Cap.enCours(), basculer: () => basculerCapture(), zone: () => ouvrirZones('ventes'), lireVentes },
 };
+
+// Lit l'écran « Mes ventes » : { lignes: [{ id, nom, prix }], total } ou null si rien de lisible
+async function lireVentes() {
+  try {
+    const brut = await Cap.scanner(S.etat.zones, 'ventes', m => m.status && statut(`Lecture : ${m.status}…`));
+    if (!brut.utile) { toast('Rien de lisible : vérifie que l\'onglet Vente de l\'HDV est affiché, et la zone.'); return null; }
+    return identifier('ventes', brut.lecture, S.catalogue);
+  } catch (e) { toast('Erreur de lecture : ' + e.message); return null; }
+}
 
 function renderTout() {
   renderTout_();
@@ -492,6 +501,7 @@ function renderTout_() {
   else if (S.etat.vue === 'resultats') renderCraft(ctx);
   else if (S.etat.vue === 'achats') renderAchats(ctx);
   else if (S.etat.vue === 'ventes') renderVentes(ctx);
+  else if (S.etat.vue === 'bilan') renderBilan(ctx);
   else renderBase(S.catalogue, p);
 }
 
@@ -518,11 +528,6 @@ async function scanner() {
       statut(`Lecture impossible (${Cap.MODES[mode].libelle}). Saisis le nom et la valeur ci-dessous, ou vérifie la zone dans le diagnostic.`);
       S.diagSeul = true;
       ouvrirSaisie(preremplir(brut.type, brut.lecture));
-    } else if (brut.type === 'ventes') {
-      // liste « Mes ventes » : la capture s'ajoute au relevé en cours
-      const res = ajouterCaptureVentes(ctx, identifier('ventes', brut.lecture, S.catalogue));
-      S.derniere = { type: 'ventes', ...res };
-      statut(res.termine ? 'Relevé des ventes terminé.' : 'Capture ajoutée au relevé. Fais défiler ta liste et scanne la suite.');
     } else {
       const L = { type: brut.type, identifie: identifier(brut.type, brut.lecture, S.catalogue), avant: exporter(S.base), date: Date.now(), edition: false };
       const o = L.identifie.objet;
@@ -552,10 +557,9 @@ const ZONES = {
   courbe: ['Cours du marché', 'Encadre la fenêtre « Cours du marché » (titre, onglets, nombre d\'articles vendus).'],
   ventes: ['Mes ventes', 'Encadre la liste de tes annonces (onglet Vente de l\'HDV), en-tête et pied « lots en vente » compris.'],
 };
-function ouvrirZones() {
+function ouvrirZones(cle = Cap.MODES[S.etat.mode].zone) {
   let frame;
-  try { frame = Cap.image().canvas; } catch (e) { statut(e.message); return; }
-  const cle = Cap.MODES[S.etat.mode].zone;
+  try { frame = Cap.image().canvas; } catch (e) { statut(e.message); toast(e.message); return; }
   const [titre, aide] = ZONES[cle];
   let zone = S.etat.zones[cle], drag = null;
   const modal = $('#zones-modal'), cv = $('#zones-canvas'), ctx = cv.getContext('2d');
@@ -601,11 +605,11 @@ function brancher() {
   $('#settings-back').onclick = () => { S.etat.vue = S.etat.vueAvantReglages ?? 'scan'; sauverEtat(); renderTout(); };
   $('#cap-start').onclick = basculerCapture;
   $('#scan').onclick = scanner;
-  $('#mode').innerHTML = Object.entries(Cap.MODES).map(([k, m]) => `<option value="${k}">${m.libelle}</option>`).join('');
+  $('#mode').innerHTML = Object.entries(Cap.MODES).filter(([k]) => k !== 'ventes').map(([k, m]) => `<option value="${k}">${m.libelle}</option>`).join('');
   $('#mode').value = S.etat.mode;
   $('#mode').onchange = e => { S.etat.mode = e.target.value; sauverEtat(); renderSaisie(); };
   $('#saisir').onclick = () => { ouvrirSaisie(); renderSaisie(); };
-  $('#zones-btn').onclick = ouvrirZones;
+  $('#zones-btn').onclick = () => ouvrirZones();
   $('#base-export').onclick = () => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([exporter(S.base)], { type: 'application/json' }));
@@ -680,5 +684,9 @@ setInterval(verifierVersion, 5 * 60 * 1000);
 window.__craft = { S, renderTout, verifierVersion }; // accès pour les tests automatisés
 brancher();
 renderTout();
-fetch('data/catalogue.json').then(r => r.json()).then(c => { S.catalogue = c; renderTout(); })
+fetch('data/catalogue.json').then(r => r.json()).then(c => {
+  S.catalogue = c;
+  if (S.base.enVente) { migrerVentes(S.base, id => coutEstime(c, S.base, params(), id)); sauverBase(); } // ancien format « en vente »
+  renderTout();
+})
   .catch(() => statut('Catalogue introuvable (data/catalogue.json).'));
