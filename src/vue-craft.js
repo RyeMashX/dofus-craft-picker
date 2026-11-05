@@ -46,7 +46,7 @@ export function renderCraft(ctx) {
   };
   // Mise en vente : chaque unité devient une ligne « draft » dans Ventes et sort du plan
   const mettreEnVente = (l, n) => {
-    for (let k = 0; k < n; k++) ajouterVente(S.base, { id: l.id, statut: 'draft', prix: l.prixVente, coutCraft: Math.round(l.craftN / l.n), coutFm: Math.round(l.fmN / l.n) });
+    for (let k = 0; k < n; k++) ajouterVente(S.base, { id: l.id, statut: 'draft', prix: l.prixVente, coutCraft: Math.round(l.craftN / l.n), coutFm: l.fmSource ? Math.round(l.fmN / l.n) : null });
     ctx.sauverBase();
     modifier(l.id, -n);
   };
@@ -91,7 +91,7 @@ export function renderCraft(ctx) {
         <button id="cp-achats" class="primary small">${achatsAJour ? 'Voir la liste d\'achat →' : 'Générer la liste d\'achat →'}</button>
         <button id="cp-tout-vendre" class="secondary small" title="Chaque exemplaire du plan devient une ligne « draft » dans Ventes">🏷 Tout mettre en vente</button></div>
       ${S.etat.listeAchat && !achatsAJour ? '<p class="small warn">Le plan a changé depuis la dernière liste d\'achat.</p>' : ''}
-      <p class="muted small">Marge réelle : taxe de 2 % et FM estimée déduites (coût moyen de FM de tes ventes de l\'item, sinon de toutes tes ventes ; détail au survol d\'un nom). Coût total calculé avec les achats regroupés : une ressource partagée entre plusieurs crafts est achetée en une fois.</p>`
+      <p class="muted small">Marge réelle : taxe de 2 % et FM estimée déduites (coût moyen de FM de tes ventes du même item, rien si n/a ; détail au survol d\'un nom). Coût total calculé avec les achats regroupés : une ressource partagée entre plusieurs crafts est achetée en une fois.</p>`
       : '<p class="muted small">Le plan est vide. Ajoute des crafts depuis la liste ci-dessous, ou régénère-le.</p>'}`;
 
   // ---- viables ----
@@ -126,7 +126,7 @@ export function renderCraft(ctx) {
   const tout = $('#cp-tout-vendre');
   if (tout) tout.onclick = () => {
     if (!confirm(`Mettre en vente les ${ev.crafts} exemplaires du plan ? Ils passeront dans Ventes (statut « draft ») et sortiront du plan.`)) return;
-    for (const l of ev.lignes) for (let k = 0; k < l.n; k++) ajouterVente(S.base, { id: l.id, statut: 'draft', prix: l.prixVente, coutCraft: Math.round(l.craftN / l.n), coutFm: Math.round(l.fmN / l.n) });
+    for (const l of ev.lignes) for (let k = 0; k < l.n; k++) ajouterVente(S.base, { id: l.id, statut: 'draft', prix: l.prixVente, coutCraft: Math.round(l.craftN / l.n), coutFm: l.fmSource ? Math.round(l.fmN / l.n) : null });
     ctx.sauverBase(); fixer({}); ctx.toast(`${ev.crafts} exemplaires mis en vente ✓`);
   };
   $$('#craft-plan [data-plus]').forEach(b => b.onclick = () => modifier(b.dataset.plus, +1));
@@ -151,14 +151,14 @@ function contenuInfobulle(ctx, f, n, p) {
   const revenu = vente == null ? null : vente - taxe;
   const fm = (f.fm ?? 0) * n, fs = f.fmSource;
   const marge = revenu == null || d.total == null ? null : revenu - d.total - fm;
-  const fmLib = !fs ? 'FM : aucune vente avec un coût de FM renseigné' : `FM estimée (moyenne de ${fs.n} vente${fs.n > 1 ? 's' : ''}${fs.source === 'item' ? ' de cet item' : ', tous items'})`;
+  const fmLib = !fs ? 'FM estimée (aucune vente de cet item avec un coût de FM)' : `FM estimée (moyenne de ${fs.n} vente${fs.n > 1 ? 's' : ''} de cet item)`;
   const prix = l => l.prixUnitaire == null ? '<span class="bad">?</span>' : `${fmtK(l.prixUnitaire)}${l.source === 'moyen' ? '<sup title="prix moyen HDV">m</sup>' : ''}`;
   return `<div class="tip-t">${icone(it.iconId)} <b>${esc(it.nom)}</b>${n > 1 ? ` <span class="muted">× ${n} crafts</span>` : ''}</div>
     <table><thead><tr><th></th><th class="r">qté</th><th class="r">prix/u</th><th class="r">coût</th></tr></thead><tbody>
     ${d.lignes.sort((a, b) => (b.cout ?? Infinity) - (a.cout ?? Infinity)).map(l => `<tr><td class="tn">${icone(l.iconId)}<span>${esc(l.nom)}</span>${pastille(l.niveau)}</td><td class="r">${fmt(l.q)}</td><td class="r">${prix(l)}</td><td class="r">${l.cout == null ? '–' : fmtK(l.cout)}</td></tr>`).join('')}
     </tbody><tfoot>
       <tr><td colspan="3">Coût du craft</td><td class="r"><b>${fmtK(d.total)}</b></td></tr>
-      <tr><td colspan="3">${fmLib}</td><td class="r">${fs ? fmtK(fm) : '–'}</td></tr>
+      <tr><td colspan="3">${fmLib}</td><td class="r">${fs ? fmtK(fm) : '<span class="muted">n/a</span>'}</td></tr>
       <tr><td colspan="3">Prix de vente${n > 1 ? ` (${n} × ${fmtK(f.prixVente)})` : ''}</td><td class="r">${fmtK(vente)}</td></tr>
       <tr><td colspan="3">Taxe ${pct(p.taxeVente)}</td><td class="r bad">${taxe == null ? '–' : `−${fmtK(taxe)}`}</td></tr>
       <tr><td colspan="3">Marge</td><td class="r"><b class="${marge == null ? '' : marge >= 0 ? 'ok' : 'bad'}">${fmtK(marge)}</b> <span class="muted">${pct(marge != null && d.total ? marge / (d.total + fm) : null)}</span></td></tr>

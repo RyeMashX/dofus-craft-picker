@@ -108,17 +108,14 @@ export function migrerVentes(base, coutDe = () => null) {
 }
 
 // ---------- coût de FM estimé ----------
-// Moyenne des coûts de FM renseignés sur les exemplaires vendus de l'item ; à défaut, de tous les items vendus.
+// Moyenne des coûts de FM renseignés sur les exemplaires vendus du même item ; null (n/a) sans donnée.
 // Un coût de FM à 0 est traité comme non renseigné (c'est la valeur par défaut d'une ligne).
 export function coutFmEstime(base, id) {
-  const v = vendues(base).filter(l => (l.coutFm ?? 0) > 0);
-  const moy = t => Math.round(t.reduce((s, l) => s + l.coutFm, 0) / t.length);
-  const it = v.filter(l => l.id === Number(id));
-  if (it.length) return { valeur: moy(it), source: 'item', n: it.length };
-  if (v.length) return { valeur: moy(v), source: 'global', n: v.length };
-  return null;
+  const v = vendues(base).filter(l => l.id === Number(id) && (l.coutFm ?? 0) > 0);
+  if (!v.length) return null;
+  return { valeur: Math.round(v.reduce((s, l) => s + l.coutFm, 0) / v.length), n: v.length };
 }
-const fmDe = (base, id) => coutFmEstime(base, id)?.valeur ?? 0;
+const fmDe = (base, id) => coutFmEstime(base, id)?.valeur ?? null;
 
 // ---------- historique des prix ----------
 // Prix initial = prix d'avant le premier changement à l'HDV (les corrections ne comptent pas).

@@ -117,7 +117,7 @@ rendement = marge / coût du craft     (seuil : 25 %)
 
 Prix de vente visé = annonce la moins chère − 1 kama (option : moyenne des 3 moins chères − 1).
 On ne se fie ni au prix moyen ni au médian : un item à 2 M peut se vendre 10 M avec un exo, ce qui fausse les moyennes.
-**Coût de FM estimé** : moyenne des coûts de FM renseignés sur tes exemplaires vendus de l'item, sinon de tous tes items vendus (un coût à 0 compte comme non renseigné). Il est déduit de la marge du Craft (viabilité, recommandation, plan, budget), détaillé dans l'infobulle, et prérempli sur les lignes de Ventes (mise en vente depuis le Craft, relevé OCR). Sans aucune vente renseignée, pas de FM déduite. `inclureFm: false` dans les paramètres revient à une marge sans FM.
+**Coût de FM estimé** : moyenne des coûts de FM renseignés sur tes exemplaires vendus du même item (un coût à 0 compte comme non renseigné). Il est déduit de la marge du Craft (viabilité, recommandation, plan, budget), détaillé dans l'infobulle, et prérempli sur les lignes de Ventes (mise en vente depuis le Craft, relevé OCR). Sans vente de cet item avec une FM renseignée : n/a, rien n'est déduit et le champ FM reste vide. `inclureFm: false` dans les paramètres revient à une marge sans FM.
 
 **Ressource introuvable** : quand l'HDV n'a aucun lot d'une ressource (légendes…), le scan échoue ; « Aucun lot disponible » (bouton de la carte de lecture en modification, ou de la saisie manuelle en mode lots) la marque introuvable. Elle compte comme orange, n'a plus de prix, et aucun craft qui en a besoin n'est proposé (raison affichée dans le plan). Comme toute donnée orange, elle peut revenir dès le prochain plan de scan ; le prochain relevé de lots la rétablit. Étiquette « introuvable » dans Données.
 
