@@ -1,13 +1,17 @@
 // Ventes : une ligne par exemplaire mis en vente (deux Écharpes = deux lignes, chacune avec son prix).
 //
-// base.ventes = [{ uid, id, statut, dateMiseEnVente, prix, coutCraft, frais, fraisManuel, coutFm, dateVente }]
+// base.ventes = [{ uid, id, statut, dateMiseEnVente, prix, coutCraft, frais, fraisManuel, coutFm, dateVente, changements }]
 //   statut : 'draft'  ajouté depuis le Craft, chiffres à vérifier
 //            'valide' prix et coûts vérifiés à la main (ou lus à l'HDV par OCR)
 //            'vendu'  sorti de la liste, visible dans le Bilan
-// Marge = prix − coût du craft − frais de mise en vente (2 % du prix par défaut) − coût de FM.
+// Marge = prix − coût du craft − frais de mise en vente − coût de FM.
+// Frais (règle de l'HDV) : 2 % du prix initial, puis 1 % du nouveau prix à chaque changement de prix.
+//   - en draft : recalculés à 2 % du prix à chaque modification (la ligne n'est pas encore figée) ;
+//   - validée : ils ne bougent plus, sauf saisie manuelle ou « prix modifié » (changerPrix : + 1 % du nouveau prix).
+//   changements = [{ date, ancien, prix, frais }] historique des changements de prix.
 // Règle : tant qu'un item a au moins une ligne draft ou validée, il n'est pas proposé dans le plan de craft.
 
-export const TAUX_FRAIS = 0.02;
+export const TAUX_FRAIS = 0.02, TAUX_CHANGEMENT = 0.01;
 const ACTIFS = new Set(['draft', 'valide']);
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -33,12 +37,29 @@ export function ajouterVente(base, { id, statut = 'draft', prix = null, coutCraf
 
 export const trouverLigne = (base, u) => lignes(base).find(l => l.uid === u);
 
-// Modifie un champ. Changer le prix recalcule les frais, sauf s'ils ont été saisis à la main.
+// Modifie un champ (correction). En draft, changer le prix recalcule les frais à 2 %, sauf saisie manuelle ;
+// une ligne validée garde ses frais (pour un vrai changement de prix à l'HDV : changerPrix).
+// Repasser une ligne en draft recalcule ses frais à 2 % du prix (sauf saisie manuelle).
 export function majLigne(base, u, champ, valeur) {
   const l = trouverLigne(base, u);
   if (!l) return null;
-  if (champ === 'frais') { l.frais = valeur; l.fraisManuel = valeur != null; if (valeur == null) l.frais = fraisDe(l.prix); }
-  else { l[champ] = valeur; if (champ === 'prix' && !l.fraisManuel) l.frais = fraisDe(valeur); }
+  if (champ === 'frais') { l.fraisManuel = valeur != null; l.frais = valeur ?? fraisDe(l.prix); }
+  else {
+    l[champ] = valeur;
+    if (l.statut === 'draft' && !l.fraisManuel && (champ === 'prix' || champ === 'statut')) l.frais = fraisDe(l.prix);
+  }
+  return l;
+}
+
+// Changement de prix à l'HDV : nouveau prix et + 1 % du nouveau prix dans les frais (une ligne draft recalcule simplement ses 2 %)
+export function changerPrix(base, u, prix, maintenant = Date.now()) {
+  const l = trouverLigne(base, u);
+  if (!l || prix == null || prix === l.prix) return l;
+  if (l.statut === 'draft') return majLigne(base, u, 'prix', prix);
+  const sup = Math.round(prix * TAUX_CHANGEMENT);
+  (l.changements ??= []).push({ date: maintenant, ancien: l.prix, prix, frais: sup });
+  l.prix = prix;
+  l.frais = (l.frais ?? 0) + sup;
   return l;
 }
 export const supprimerLigne = (base, u) => { base.ventes = lignes(base).filter(l => l.uid !== u); };
@@ -71,8 +92,8 @@ export function importerCapture(base, identifie, coutDe, maintenant = Date.now()
   return res;
 }
 
-// Résolution : fusion = l'annonce lue met à jour le prix d'une ligne existante
-export const fusionner = (base, u, prix) => majLigne(base, u, 'prix', prix);
+// Résolution : fusion = l'annonce suivie a changé de prix à l'HDV (+ 1 % du nouveau prix si la ligne est validée)
+export const fusionner = (base, u, prix, maintenant = Date.now()) => changerPrix(base, u, prix, maintenant);
 export const nouvelleLigne = (base, id, prix, coutDe, maintenant = Date.now()) =>
   ajouterVente(base, { id, statut: 'valide', prix, coutCraft: coutDe(id), coutFm: 0, date: maintenant });
 

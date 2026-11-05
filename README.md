@@ -75,9 +75,10 @@ KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources), 
 
 ## Onglet Ventes
 
-- Une ligne par exemplaire : date de mise en vente, prix, coût du craft, coût de mise en vente (2 % du prix, recalculé tant qu'il n'est pas saisi à la main), coût de FM, tous modifiables ; marge = prix − craft − mise en vente − FM.
+- Une ligne par exemplaire : date de mise en vente, prix, coût du craft, coût de mise en vente, coût de FM, tous modifiables ; marge = prix − craft − mise en vente − FM.
+- **Frais de mise en vente** (règle de l'HDV) : 2 % du prix initial, puis 1 % du nouveau prix à chaque changement de prix. En draft, ils sont recalculés à 2 % du prix à chaque modification ; une fois la ligne validée, ils sont figés (sauf saisie manuelle). « Prix modifié » enregistre un changement de prix à l'HDV : nouveau prix et + 1 % de ce prix dans les frais. Modifier directement le champ prix d'une ligne validée est une simple correction, sans frais.
 - Statut **draft** (ajouté depuis le Craft, à vérifier) ou **validé** (clic sur le statut pour basculer).
-- **Relevé OCR** depuis l'onglet (« Scanner mes ventes », zone propre) : item absent → ligne validée, coût estimé d'après la base ; même item au même prix → même annonce ; même item à un autre prix → tu choisis « Fusionner avec la ligne du … » ou « Nouvelle ligne ». Deux exemplaires lus sur le même écran font deux lignes.
+- **Relevé OCR** depuis l'onglet (« Scanner mes ventes », zone propre) : item absent → ligne validée, coût estimé d'après la base ; même item au même prix → même annonce ; même item à un autre prix → tu choisis « Fusionner avec la ligne du … » (= changement de prix, + 1 % de frais sur une ligne validée) ou « Nouvelle ligne ». Deux exemplaires lus sur le même écran font deux lignes.
 - Tant qu'un item a au moins une ligne en vente, il n'est pas proposé dans le plan de craft ni préparé par le plan de scan.
 - **✓ Vendu** : la ligne sort de la liste et passe dans le **Bilan** (date de vente modifiable).
 

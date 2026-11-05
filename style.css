@@ -251,6 +251,8 @@ label.numl input.big { width: 120px; }
 .vf span { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .vf input { width: 100%; min-width: 0; padding: 2px 4px; font-size: 12px; }
 .vf input.auto { color: var(--muted); }
+.vt-chg { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 6px; padding: 6px; border: 1px solid var(--accent); border-radius: 6px; }
+.vt-chg .vf { flex: 1 1 140px; }
 .vendu-btn { border-color: var(--sc); color: var(--sc); }
 .vt-det summary { cursor: pointer; }
 .tr-l { border-top: 1px solid #22252c; padding: 6px 0; }
