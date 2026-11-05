@@ -311,3 +311,10 @@ body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
 .prix-items td.tn .ico { width: 20px; height: 20px; flex: none; }
 .prix-items { table-layout: fixed; }
 .prix-items th:not(:first-child), .prix-items td:not(:first-child) { width: 13%; }
+
+/* Bouton « Régénérer » (plan de craft, liste d'achat) */
+.regen { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px 3px 8px; font-size: 12px; border-radius: 14px; background: transparent; border: 1px solid var(--line); color: var(--muted); }
+.regen .ic { width: 13px; height: 13px; display: block; transition: transform .35s; }
+.regen:hover { color: var(--accent); border-color: var(--accent); }
+.regen:hover .ic { transform: rotate(-180deg); }
+.regen.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }

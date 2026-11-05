@@ -108,7 +108,7 @@ export function renderAchats(ctx) {
 
   $('#achats').innerHTML = `
     <div class="row"><h2>Liste d'achat</h2><span class="muted small">générée le ${dateCourte(L.date)}</span><div class="spacer"></div>
-      <button id="ac-gen" class="${perime ? 'primary' : 'link'} small">régénérer</button></div>
+      <button id="ac-gen" class="regen${perime ? ' on' : ''}" title="Recalculer la liste à partir du plan de craft actuel"><svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 1.8v3h-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Régénérer</span></button></div>
     ${perime ? '<p class="small warn alerte-bloc">Le plan de craft a changé depuis cette liste. Régénère-la pour la mettre à jour.</p>' : ''}
     <div class="kpis kpis4">
       <div class="kpi"><div class="v">${fmtK(total)}</div><div class="l">à dépenser</div></div>

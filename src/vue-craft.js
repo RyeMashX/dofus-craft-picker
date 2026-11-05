@@ -5,6 +5,7 @@
 import { viables, recommander, evaluerPlan, niveauConfiance, detailCraft } from './craft-plan.js';
 import { pastille } from './vue-donnees.js';
 import { ajouterVente } from './ventes.js';
+import { estExclu } from './statut.js';
 import { icone } from './vue-plan.js';
 
 const pctConf = c => c == null ? '–' : `${Math.round(c * 100)} %`;
@@ -77,7 +78,7 @@ export function renderCraft(ctx) {
   : `
     <div class="row"><h2>Plan de craft</h2>
       <span class="muted small">${g ? `${g.manuel ? 'composé' : 'généré'} le ${dateCourte(g.date)}${g.manuel ? '' : ` pour ${g.budget} M`}` : ''}</span>
-      <div class="spacer"></div><button id="cp-generer" class="link small">régénérer</button></div>
+      <div class="spacer"></div><button id="cp-generer" class="regen" title="Recalculer une recommandation à partir du budget (remplace le plan actuel)"><svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 1.8v3h-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Régénérer</span></button></div>
     <div class="row small"><label class="sel muted">Budget <input id="budget" type="text" inputmode="decimal" class="num" value="${S.etat.budget}"> M</label></div>
     <div class="kpis kpis4">
       <div class="kpi"><div class="v ok">${fmtK(ev.marge)}</div><div class="l">marge, ${pct(ev.rendement)}</div></div>
@@ -98,6 +99,9 @@ export function renderCraft(ctx) {
   let rows = liste;
   if (C.filtre === 'cible') rows = rows.filter(v => v.niveau === 'cible');
   if (C.filtre === 'acceptable') rows = rows.filter(v => v.niveau === 'acceptable');
+  const nEnVente = rows.filter(v => v.enVente).length;
+  if (C.sansVente) rows = rows.filter(v => !v.enVente);
+  const nExclus = Object.keys(S.base.exclus ?? {}).filter(id => estExclu(S.base, id)).length;
   const ligneViable = v => {
     const dans = plan[v.id] ?? 0;
     return `<div class="cv-l${dans ? ' dans' : ''}" data-tip="${v.id}" data-n="1">
@@ -114,6 +118,8 @@ export function renderCraft(ctx) {
   const viablesHtml = `
     <div class="row"><h2>Crafts viables</h2><span class="muted small">${liste.length}</span><div class="spacer"></div>
       <div id="cv-filtre" class="seg">${[['tous', 'tous'], ['cible', '≥ ' + Math.round(p.margeMin * 100) + ' %'], ['acceptable', Math.round(p.margeAcceptable * 100) + '–' + Math.round(p.margeMin * 100) + ' %']].map(([k, l]) => `<button data-f="${k}" class="${C.filtre === k ? 'on' : ''}">${l}</button>`).join('')}</div></div>
+    <div class="row small"><label class="chk"><input type="checkbox" id="cv-sans-vente"${C.sansVente ? ' checked' : ''}> masquer les items déjà en vente${nEnVente ? ` <span class="muted">(${nEnVente})</span>` : ''}</label>
+      <div class="spacer"></div><span class="muted" title="Les items de la liste noire ne sont jamais proposés (onglet Données pour les réintégrer)">${nExclus ? `${nExclus} exclu${nExclus > 1 ? 's' : ''} (liste noire) masqué${nExclus > 1 ? 's' : ''}` : ''}</span></div>
     ${rows.length ? `<div class="cp">${rows.slice(0, n).map(ligneViable).join('')}</div>${rows.length > n ? `<p class="small"><button id="cv-plus" class="link small">afficher 50 de plus (${rows.length - n} restants)</button></p>` : ''}` : '<p class="muted small">Aucun craft dans cette catégorie.</p>'}
     <p class="muted small">Viable : données sans orange ni noir, au moins ${p.volumeMin} ventes par mois, rendement d'au moins ${Math.round(p.margeAcceptable * 100)} % FM estimée comprise, aucune ressource introuvable à l'HDV. La confiance reflète la fraîcheur des données (pondérée par le poids de chaque ressource dans le coût) et ne modifie pas la marge.</p>`;
 
@@ -134,6 +140,7 @@ export function renderCraft(ctx) {
   $$('#craft-plan [data-retirer]').forEach(b => b.onclick = () => modifier(b.dataset.retirer, -Infinity));
   $$('#craft-plan [data-vendre]').forEach(b => b.onclick = () => { const l = ev.lignes.find(x => x.id === +b.dataset.vendre); if (l) { mettreEnVente(l, 1); ctx.toast(`${l.nom} mis en vente (draft)`); } });
   $$('#craft-viables [data-ajout]').forEach(b => b.onclick = () => modifier(b.dataset.ajout, +1));
+  $('#cv-sans-vente').onchange = e => { C.sansVente = e.target.checked; C.n = 50; ctx.sauverEtat(); ctx.renderTout(); };
   $$('#cv-filtre button').forEach(b => b.onclick = () => { C.filtre = b.dataset.f; C.n = 50; ctx.sauverEtat(); ctx.renderTout(); });
   const plus = $('#cv-plus'); if (plus) plus.onclick = () => { C.n = n + 50; ctx.renderTout(); };
   const fiche = id => ev.lignes.find(l => l.id === id) ?? liste.find(v => v.id === id);
