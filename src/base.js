@@ -45,7 +45,7 @@ export function majRessource(base, resId, offre, date = Date.now()) {
   return base;
 }
 
-// Aucun lot en vente à l'HDV (fréquent pour les ressources rares, légendes…) : donnée orange,
+// Aucun lot en vente à l'HDV (fréquent pour les ressources rares, légendes…) : donnée rouge,
 // la ressource n'a pas de prix utilisable et les crafts qui en ont besoin ne sont pas craftables.
 export function majIndispo(base, resId, date = Date.now()) {
   ressource(base, resId).indispo = { date };

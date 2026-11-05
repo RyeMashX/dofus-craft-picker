@@ -18,7 +18,7 @@ import { estExclu, lotsEnVente } from './statut.js';
 import { coutFmEstime } from './ventes.js';
 import { estIndispo } from './base.js';
 
-const POINTS = { vert: 1, jaune: 0.6, orange: 0.2, noir: 0 };
+const POINTS = { vert: 1, jaune: 0.6, orange: 0.2, rouge: 0, noir: 0 };
 
 // Lots de ressources utilisables (vert ou jaune), au format du moteur
 export function offresUtilisables(base, maintenant = Date.now()) {
@@ -111,7 +111,7 @@ export function detailCraft(it, catalogue, base, p, n = 1, maintenant = Date.now
   const lignes = it.recette.map(r => {
     const res = base.ressources[r.id] ?? {}, cat = catalogue.ressources[r.id] ?? { nom: `#${r.id}` };
     const q = r.qte * n;
-    if (estIndispo(res)) return { id: r.id, nom: cat.nom, iconId: cat.iconId, q, cout: null, prixUnitaire: null, source: 'indispo', niveau: 'orange' };
+    if (estIndispo(res)) return { id: r.id, nom: cat.nom, iconId: cat.iconId, q, cout: null, prixUnitaire: null, source: 'indispo', niveau: 'rouge' };
     const achat = res.lots ? planAchat(q, res.lots.valeurs, p) : null;
     const cout = achat ? achat.cout : res.prixMoyen ? q * res.prixMoyen.valeur : null;
     return {

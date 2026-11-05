@@ -1,6 +1,7 @@
 // Niveaux de fraîcheur des données et état des items.
 //
 //   noir   : aucune info
+//   rouge  : ressource introuvable à l'HDV (aucun lot en vente au dernier passage)
 //   orange : périmé (ou prix moyen seul pour un prix)
 //   jaune  : risque d'évolution
 //   vert   : à jour
@@ -15,7 +16,7 @@ export const FRAICHEUR = {
   ressource: { jaune: 3, orange: 7 },    // lots d'une ressource
 };
 
-export const NIVEAUX = ['noir', 'orange', 'jaune', 'vert'];
+export const NIVEAUX = ['noir', 'rouge', 'orange', 'jaune', 'vert']; // rouge : ressource introuvable à l'HDV
 const rang = n => NIVEAUX.indexOf(n);
 
 function parAge(date, seuils, maintenant) {
@@ -34,7 +35,7 @@ export function niveauPrixItem(b, maintenant = Date.now()) {
 }
 
 export function niveauRessource(r, maintenant = Date.now()) {
-  if (r?.indispo && (!r.lots || r.indispo.date >= r.lots.date)) return 'orange'; // aucun lot en vente
+  if (r?.indispo && (!r.lots || r.indispo.date >= r.lots.date)) return 'rouge'; // aucun lot en vente
   if (r?.lots) return parAge(r.lots.date, FRAICHEUR.ressource, maintenant);
   return r?.prixMoyen ? 'orange' : 'noir';
 }
@@ -47,9 +48,9 @@ export function etatItem(it, base, maintenant = Date.now(), maxJaunes = 2) {
   const volume = niveauVolume(b, maintenant);
   const prix = niveauPrixItem(b, maintenant);
   const ressources = it.recette.map(r => ({ id: r.id, niveau: niveauRessource(base.ressources[r.id], maintenant) }));
-  const compte = { noir: 0, orange: 0, jaune: 0, vert: 0 };
+  const compte = { noir: 0, rouge: 0, orange: 0, jaune: 0, vert: 0 };
   ressources.forEach(r => compte[r.niveau]++);
-  const resOk = compte.noir === 0 && compte.orange === 0;
+  const resOk = compte.noir === 0 && compte.rouge === 0 && compte.orange === 0;
   const pret = rang(volume) >= rang('jaune') && prix === 'vert' && resOk && compte.jaune <= maxJaunes;
   const utilisable = rang(volume) >= rang('jaune') && rang(prix) >= rang('jaune') && resOk;
   return { volume, prix, ressources, compte, pret, utilisable };

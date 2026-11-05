@@ -151,7 +151,7 @@ function contenuInfobulle(ctx, f, n, p) {
   const revenu = vente == null ? null : vente - taxe;
   const fm = (f.fm ?? 0) * n, fs = f.fmSource;
   const marge = revenu == null || d.total == null ? null : revenu - d.total - fm;
-  const fmLib = !fs ? 'FM estimée (aucune vente de cet item avec un coût de FM)' : `FM estimée (moyenne de ${fs.n} vente${fs.n > 1 ? 's' : ''} de cet item)`;
+  const fmLib = `<span title="${fs ? `Moyenne de ${fs.n} vente${fs.n > 1 ? 's' : ''} de cet item` : 'Aucune vente de cet item avec un coût de FM'}">Coût de FM estimé</span>`;
   const prix = l => l.prixUnitaire == null ? '<span class="bad">?</span>' : `${fmtK(l.prixUnitaire)}${l.source === 'moyen' ? '<sup title="prix moyen HDV">m</sup>' : ''}`;
   return `<div class="tip-t">${icone(it.iconId)} <b>${esc(it.nom)}</b>${n > 1 ? ` <span class="muted">× ${n} crafts</span>` : ''}</div>
     <table><thead><tr><th></th><th class="r">qté</th><th class="r">prix/u</th><th class="r">coût</th></tr></thead><tbody>

@@ -46,14 +46,16 @@ Pour le volume, la courbe doit être sur l'onglet **30 jours** (détecté à sa 
 | Prix équipement | aucune | prix moyen seul, ou > 2 semaines | > 1 semaine | < 1 semaine |
 | Prix ressource | aucune | prix moyen seul, ou > 1 semaine | > 3 jours | < 3 jours |
 
-- **Prêt pour le craft** : volume vert ou jaune, prix vert, ressources sans orange ni noir et au plus 2 jaunes.
+**Rouge (introuvable)** : ressource sans aucun lot en vente au dernier passage (« Aucun lot disponible »). Priorité entre noir et orange ; un item qui en dépend n'est ni prêt ni utilisable.
+
+- **Prêt pour le craft** : volume vert ou jaune, prix vert, ressources sans orange, rouge ni noir et au plus 2 jaunes.
 - **Utilisable** : aucune donnée orange ou noire. Le plan de craft (onglet Craft) prend les items utilisables et signale ceux qui ne sont pas prêts (⚠).
 
 ## Plan de scan
 
 1. Tu indiques le temps disponible. L'outil le convertit en scans (durée par type mesurée sur tes scans réels, sinon 15 s / 15 s / 10 s) et affiche combien d'items seront prêts à la fin.
 2. **Préparer le craft (70 %, réglable)** : on complète les dossiers d'items pour qu'ils deviennent prêts, en prenant à chaque fois celui qui rapporte le plus par seconde de scan restante (marge estimée × ventes par jour ; une ressource partagée ne compte qu'une fois).
-3. **Entretien (le reste)** : données noires, orange puis jaunes du reste de la base, pondérées par leur importance (ventes de l'item, proximité du seuil de volume, nombre d'items vendables qui utilisent la ressource). Une donnée rafraîchie repasse au vert : ce ne sont jamais les mêmes qui reviennent.
+3. **Entretien (le reste)** : données noires, rouges (ressources introuvables), orange puis jaunes du reste de la base, pondérées par leur importance (ventes de l'item, proximité du seuil de volume, nombre d'items vendables qui utilisent la ressource). Une donnée rafraîchie repasse au vert : ce ne sont jamais les mêmes qui reviennent.
 4. **Déroulé** : HDV Équipements puis HDV Ressources (les prix des ressources bougent le plus, on les relève en dernier). Un groupe = un réglage de filtres (catégories cochées et niveaux min / max). Les petites catégories sont regroupées, les très grosses découpées par tranche de niveau. Lignes triées dans l'ordre de l'HDV (accents après le z).
 5. « Je scanne » suit la prochaine tâche. Une ligne se coche quand sa donnée est relevée ; fin de catégorie et fin d'HDV sont signalées.
 
@@ -119,7 +121,7 @@ Prix de vente visé = annonce la moins chère − 1 kama (option : moyenne des 3
 On ne se fie ni au prix moyen ni au médian : un item à 2 M peut se vendre 10 M avec un exo, ce qui fausse les moyennes.
 **Coût de FM estimé** : moyenne des coûts de FM renseignés sur tes exemplaires vendus du même item (un coût à 0 compte comme non renseigné). Il est déduit de la marge du Craft (viabilité, recommandation, plan, budget), détaillé dans l'infobulle, et prérempli sur les lignes de Ventes (mise en vente depuis le Craft, relevé OCR). Sans vente de cet item avec une FM renseignée : n/a, rien n'est déduit et le champ FM reste vide. `inclureFm: false` dans les paramètres revient à une marge sans FM.
 
-**Ressource introuvable** : quand l'HDV n'a aucun lot d'une ressource (légendes…), le scan échoue ; « Aucun lot disponible » (bouton de la carte de lecture en modification, ou de la saisie manuelle en mode lots) la marque introuvable. Elle compte comme orange, n'a plus de prix, et aucun craft qui en a besoin n'est proposé (raison affichée dans le plan). Comme toute donnée orange, elle peut revenir dès le prochain plan de scan ; le prochain relevé de lots la rétablit. Étiquette « introuvable » dans Données.
+**Ressource introuvable** : quand l'HDV n'a aucun lot d'une ressource (légendes…), le scan échoue ; « Aucun lot disponible » (bouton de la carte de lecture en modification, ou de la saisie manuelle en mode lots) la marque introuvable. Elle passe en **rouge** (introuvable : priorité de scan entre noir et orange), n'a plus de prix, et aucun craft qui en a besoin n'est proposé (raison affichée dans le plan). Elle peut revenir dès le prochain plan de scan ; le prochain relevé de lots la rétablit. Étiquette « introuvable » dans Données.
 
 ### Règle des lots (achat des ressources)
 

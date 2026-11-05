@@ -8,7 +8,7 @@ import { planAchat } from './lots.js';
 import { icone } from './vue-plan.js';
 import { exclusion, exclure, reintegrer, finDeJournee, lotsEnVente } from './statut.js';
 
-const NOM_NIV = { noir: 'aucune info', orange: 'périmé', jaune: 'à risque', vert: 'à jour' };
+const NOM_NIV = { noir: 'aucune info', rouge: 'introuvable', orange: 'périmé', jaune: 'à risque', vert: 'à jour' };
 export const pastille = n => `<i class="pt pt-${n}" title="${NOM_NIV[n]}"></i>`;
 
 // ---------- données calculées ----------
@@ -57,11 +57,11 @@ function lignesRessources(S, p) {
 function barre(titre, compte) {
   const total = NIVEAUX.reduce((s, n) => s + compte[n], 0) || 1;
   const segs = [...NIVEAUX].reverse().map(n => compte[n] ? `<i class="seg-${n}" style="width:${(100 * compte[n] / total).toFixed(2)}%" title="${NOM_NIV[n]} : ${compte[n]}"></i>` : '').join('');
-  const leg = [...NIVEAUX].reverse().map(n => `<span>${pastille(n)} ${compte[n]}</span>`).join(' ');
+  const leg = [...NIVEAUX].reverse().filter(n => n !== 'rouge' || compte[n]).map(n => `<span>${pastille(n)} ${compte[n]}</span>`).join(' ');
   return `<div><div class="bar-l"><span>${titre}</span><span class="leg small">${leg}</span></div><div class="bar fr">${segs}</div></div>`;
 }
 
-const compter = (liste, f) => { const c = { noir: 0, orange: 0, jaune: 0, vert: 0 }; liste.forEach(x => c[f(x)]++); return c; };
+const compter = (liste, f) => { const c = { noir: 0, rouge: 0, orange: 0, jaune: 0, vert: 0 }; liste.forEach(x => c[f(x)]++); return c; };
 
 const COLS = {
   equipements: [
@@ -109,6 +109,7 @@ export function renderDonnees(ctx) {
     else if (D.etat === 'utilisable') rows = rows.filter(x => x.etat);
     else if (D.etat === 'exclus') rows = rows.filter(x => x.exclu);
     else if (D.etat === 'enVente') rows = rows.filter(x => x.enVente);
+    else if (D.etat === 'rouge') rows = rows.filter(x => x.compte.rouge > 0);
     else if (D.etat) rows = rows.filter(x => x.nVol === D.etat || x.nPrix === D.etat);
   } else {
     if (D.vendables) rows = rows.filter(x => x.vendables > 0);
@@ -134,7 +135,7 @@ export function renderDonnees(ctx) {
     nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>${x.indispo ? ' <span class="tag urgent" title="Aucun lot en vente au dernier passage : ses crafts ne sont pas proposés">introuvable</span>' : ''}`, categorie: esc(x.categorie), niveau: x.niveau,
     vendus: `${fmt(x.vendus)} ${pastille(x.nVol)}`, prixMin: `${fmtK(x.prixMin)} ${pastille(x.nPrix)}`, prixMoyen: fmtK(x.prixMoyen),
     cout: fmtK(x.cout), rendement: x.rendement == null ? '–' : `<span class="${x.rendement >= p.margeMin ? 'ok' : x.rendement < 0 ? 'bad' : ''}">${pct(x.rendement)}</span>`,
-    resVertes: `<span title="${x.compte.vert} vertes, ${x.compte.jaune} jaunes, ${x.compte.orange} orange, ${x.compte.noir} sans info">${x.resVertes}/${x.resTotal}</span> ${pastille(x.compte.noir ? 'noir' : x.compte.orange ? 'orange' : x.compte.jaune ? 'jaune' : 'vert')}`,
+    resVertes: `<span title="${x.compte.vert} vertes, ${x.compte.jaune} jaunes, ${x.compte.orange} orange, ${x.compte.rouge} introuvables, ${x.compte.noir} sans info">${x.resVertes}/${x.resTotal}</span> ${pastille(x.compte.noir ? 'noir' : x.compte.rouge ? 'rouge' : x.compte.orange ? 'orange' : x.compte.jaune ? 'jaune' : 'vert')}`,
     etat: x.etat === 'prêt' ? '<span class="tag ok-tag">prêt</span>' : x.etat ? '<span class="tag faire">utilisable</span>' : '',
     statut: [x.exclu ? `<span class="tag urgent" title="Exclu des plans">⛔ ${x.exclu.jusquau ? `jusqu'au ${new Date(x.exclu.jusquau).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}` : 'exclu'}</span>` : '',
       x.enVente ? `<span class="tag tard" title="Lots en vente">en vente ${x.enVente}</span>` : ''].join(' '),
@@ -171,8 +172,8 @@ export function renderDonnees(ctx) {
   };
 
   const optEtat = onglet === 'equipements'
-    ? [['', 'tous états'], ['prêt', 'prêts'], ['utilisable', 'utilisables'], ['vert', 'au moins un vert'], ['jaune', 'à risque (jaune)'], ['orange', 'périmé (orange)'], ['noir', 'sans info'], ['exclus', 'exclus (liste noire)'], ['enVente', 'en vente']]
-    : [['', 'toutes fraîcheurs'], ['vert', 'à jour'], ['jaune', 'à risque'], ['orange', 'périmé'], ['noir', 'sans info']];
+    ? [['', 'tous états'], ['prêt', 'prêts'], ['utilisable', 'utilisables'], ['vert', 'au moins un vert'], ['jaune', 'à risque (jaune)'], ['orange', 'périmé (orange)'], ['rouge', 'ressource introuvable (rouge)'], ['noir', 'sans info'], ['exclus', 'exclus (liste noire)'], ['enVente', 'en vente']]
+    : [['', 'toutes fraîcheurs'], ['vert', 'à jour'], ['jaune', 'à risque'], ['orange', 'périmé'], ['rouge', 'introuvable'], ['noir', 'sans info']];
 
   $('#donnees').innerHTML = `${kpis}
     <div class="row"><div id="don-onglets" class="seg">

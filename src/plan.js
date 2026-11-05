@@ -11,7 +11,7 @@ import { itemsFocus, estimerItem } from './entonnoir.js';
 import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus } from './fraicheur.js';
 import { estExclu, estEnVente } from './statut.js';
 
-const POIDS_NIVEAU = { noir: 3, orange: 2, jaune: 1, vert: 0 };
+const POIDS_NIVEAU = { noir: 3, rouge: 2.5, orange: 2, jaune: 1, vert: 0 }; // rouge entre noir et orange
 export const cleTache = t => `${t.kind}:${t.id}`;
 
 // Tâches nécessaires pour qu'un item devienne prêt (sans celles déjà prévues)
@@ -20,7 +20,7 @@ function tachesPourPret(it, etat, base) {
   if (etat.volume === 'noir' || etat.volume === 'orange') t.push({ kind: 'volume', id: it.id });
   if (etat.prix !== 'vert') t.push({ kind: 'prixItem', id: it.id });
   const res = etat.ressources;
-  for (const r of res) if (r.niveau === 'noir' || r.niveau === 'orange') t.push({ kind: 'ressource', id: r.id });
+  for (const r of res) if (r.niveau === 'noir' || r.niveau === 'rouge' || r.niveau === 'orange') t.push({ kind: 'ressource', id: r.id });
   // au plus 2 jaunes : on rafraîchit les plus anciennes au-delà
   const jaunes = res.filter(r => r.niveau === 'jaune')
     .sort((a, b) => (base.ressources[a.id]?.lots?.date ?? 0) - (base.ressources[b.id]?.lots?.date ?? 0));

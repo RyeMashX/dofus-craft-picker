@@ -166,7 +166,7 @@ function resume(L) {
   }
   if (!r.objet) return `<p class="small">Titre lu : « ${esc(r.titre ?? '?')} ».</p>`;
   if (L.type === 'courbe') return cases([['Vendus 30 j', r.vendus], ['', null], ['', null]], 3, true);
-  if (L.indispo) return `<p class="small warn">Aucun lot en vente à l'HDV : ressource marquée introuvable (orange). Les crafts qui en ont besoin ne sont pas proposés jusqu'au prochain relevé de lots.</p>`;
+  if (L.indispo) return `<p class="small warn">Aucun lot en vente à l'HDV : ressource marquée introuvable (rouge). Les crafts qui en ont besoin ne sont pas proposés jusqu'au prochain relevé de lots.</p>`;
   if (r.objet.genre === 'ressource') {
     // positions fixes x1 · x10 · x100 · x1000 ; un lot sans offre laisse sa case vide
     const lot = t => r.annonces.find(a => a.lot === t)?.prix ?? null;
@@ -210,7 +210,7 @@ function formulaire(L) {
   if (r.objet.genre === 'ressource') {
     const lot = t => r.annonces.find(a => a.lot === t)?.prix ?? null;
     return lignesEdition([1, 10, 100, 1000].map(t => [`x${t}`, `data-champ="x${t}"`, lot(t)]))
-      + `<div class="row"><button id="lect-indispo" class="secondary small" title="Aucun lot de cette ressource en vente : marquée introuvable (orange), ses crafts ne sont plus proposés">Aucun lot disponible</button></div>`;
+      + `<div class="row"><button id="lect-indispo" class="secondary small" title="Aucun lot de cette ressource en vente : marquée introuvable (rouge), ses crafts ne sont plus proposés">Aucun lot disponible</button></div>`;
   }
   const tries = [...r.annonces].filter(a => a.prix).sort((a, b) => a.prix - b.prix);
   return lignesEdition(Array.from({ length: NB_PRIX }, (_, i) => [`${i + 1}.`, `data-i="${i}" data-champ="prix"`, tries[i]?.prix ?? null, tries[i] && !tries[i].sur]));
@@ -337,7 +337,7 @@ function renderSaisie() {
       : lignesEdition(CHAMPS_SAISIE[mode].map(([k, l]) => [l, `data-saisie="${k}"`, sz.valeurs[k] ?? null]))}
     ${sz.erreur ? `<p class="small bad">${esc(sz.erreur)}</p>` : ''}
     <div class="row"><button id="saisie-ok" class="primary small">Enregistrer</button>
-      ${mode === 'lots' ? '<button id="saisie-indispo" class="secondary small" title="Aucun lot de cette ressource en vente : marquée introuvable (orange), ses crafts ne sont plus proposés">Aucun lot disponible</button>' : ''}</div></div>`;
+      ${mode === 'lots' ? '<button id="saisie-indispo" class="secondary small" title="Aucun lot de cette ressource en vente : marquée introuvable (rouge), ses crafts ne sont plus proposés">Aucun lot disponible</button>' : ''}</div></div>`;
   $('#saisie-fermer').onclick = () => { S.saisie = null; renderSaisie(); };
   $('#saisie-ok').onclick = enregistrerSaisie;
   const ind = $('#saisie-indispo');
@@ -386,7 +386,7 @@ function enregistrerSaisie() {
   renderTout();
 }
 
-// Aucun lot en vente pour une ressource : donnée orange, ses crafts ne sont plus craftables
+// Aucun lot en vente pour une ressource : donnée rouge, ses crafts ne sont plus craftables
 function marquerIndispo(o, avant = exporter(S.base)) {
   if (S.derniere?.avant === avant) S.base = importer(avant); // remplace ce que la lecture avait enregistré
   majIndispo(S.base, o.id);

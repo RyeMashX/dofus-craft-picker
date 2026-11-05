@@ -97,7 +97,7 @@ test('ressource introuvable à l\'HDV : orange, plus de prix, ses crafts ne sont
   const b = base();
   assert.ok(viables(cat, b, p, T).liste.some(v => v.id === cat.items[0].id));
   majIndispo(b, 101, T);
-  assert.equal(niveauRessource(b.ressources[101], T), 'orange');
+  assert.equal(niveauRessource(b.ressources[101], T), 'rouge');
   assert.ok(!viables(cat, b, p, T).liste.some(v => v.id === cat.items[0].id));
   assert.match(ficheItem(cat.items[0], cat, b, p, offresUtilisables(b, T), T).raison, /introuvable/);
   assert.ok(!('101' in offresToutes(b)));
