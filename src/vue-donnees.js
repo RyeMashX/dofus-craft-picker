@@ -7,12 +7,15 @@ import { majVolume, majPrixItem, majPrixMoyenItem, majRessource, majPrixMoyenRes
 import { planAchat } from './lots.js';
 import { icone } from './vue-plan.js';
 import { exclusion, exclure, reintegrer, finDeJournee, lotsEnVente } from './statut.js';
+import { vendues } from './ventes.js';
 
 const NOM_NIV = { noir: 'aucune info', rouge: 'introuvable', orange: 'périmé', jaune: 'à risque', vert: 'à jour' };
 export const pastille = n => `<i class="pt pt-${n}" title="${NOM_NIV[n]}"></i>`;
 
 // ---------- données calculées ----------
 function lignesEquipements(S, p) {
+  const mesVentes = new Map();
+  for (const l of vendues(S.base)) mesVentes.set(l.id, (mesVentes.get(l.id) ?? 0) + 1);
   return itemsFocus(S.catalogue, p).map(it => {
     const b = S.base.items[it.id] ?? {};
     const e = etatItem(it, S.base);
@@ -26,7 +29,9 @@ function lignesEquipements(S, p) {
       resVertes: e.compte.vert, resTotal: it.recette.length, compte: e.compte,
       etat: e.pret ? 'prêt' : e.utilisable ? 'utilisable' : '',
       exclu: exclusion(S.base, it.id), enVente: lotsEnVente(S.base, it.id),
-      statut: exclusion(S.base, it.id) ? 2 : lotsEnVente(S.base, it.id) ? 1 : 0,
+      // statut unique (tri) : prêt, utilisable, en vente, rien, exclu (l'affichage suit la priorité exclu > en vente > prêt > utilisable)
+      statut: exclusion(S.base, it.id) ? 5 : lotsEnVente(S.base, it.id) ? 3 : e.pret ? 1 : e.utilisable ? 2 : 4,
+      mesVentes: mesVentes.get(it.id) ?? 0,
     };
   });
 }
@@ -68,7 +73,7 @@ const COLS = {
     { cle: 'nom', t: 'Nom' }, { cle: 'categorie', t: 'Catégorie' }, { cle: 'niveau', t: 'Niv.', r: 1 },
     { cle: 'vendus', t: 'Vendus 30 j', r: 1, edit: 'vendus' }, { cle: 'prixMin', t: 'Prix min', r: 1, edit: 'prix' },
     { cle: 'prixMoyen', t: 'Prix moyen', r: 1, edit: 'prixMoyen' }, { cle: 'cout', t: 'Coût craft', r: 1 },
-    { cle: 'rendement', t: 'Rend.', r: 1 }, { cle: 'resVertes', t: 'Ress.', r: 1 }, { cle: 'etat', t: 'État' }, { cle: 'statut', t: 'Statut' },
+    { cle: 'rendement', t: 'Rend.', r: 1 }, { cle: 'resVertes', t: 'Ress.', r: 1 }, { cle: 'mesVentes', t: 'Mes ventes', r: 1 }, { cle: 'statut', t: 'Statut' },
   ],
   ressources: [
     { cle: 'nom', t: 'Nom' }, { cle: 'categorie', t: 'Catégorie' }, { cle: 'niveau', t: 'Niv.', r: 1 },
@@ -136,9 +141,12 @@ export function renderDonnees(ctx) {
     vendus: `${fmt(x.vendus)} ${pastille(x.nVol)}`, prixMin: `${fmtK(x.prixMin)} ${pastille(x.nPrix)}`, prixMoyen: fmtK(x.prixMoyen),
     cout: fmtK(x.cout), rendement: x.rendement == null ? '–' : `<span class="${x.rendement >= p.margeMin ? 'ok' : x.rendement < 0 ? 'bad' : ''}">${pct(x.rendement)}</span>`,
     resVertes: `<span title="${x.compte.vert} vertes, ${x.compte.jaune} jaunes, ${x.compte.orange} orange, ${x.compte.rouge} introuvables, ${x.compte.noir} sans info">${x.resVertes}/${x.resTotal}</span> ${pastille(x.compte.noir ? 'noir' : x.compte.rouge ? 'rouge' : x.compte.orange ? 'orange' : x.compte.jaune ? 'jaune' : 'vert')}`,
-    etat: x.etat === 'prêt' ? '<span class="tag ok-tag">prêt</span>' : x.etat ? '<span class="tag faire">utilisable</span>' : '',
-    statut: [x.exclu ? `<span class="tag urgent" title="Exclu des plans">⛔ ${x.exclu.jusquau ? `jusqu'au ${new Date(x.exclu.jusquau).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}` : 'exclu'}</span>` : '',
-      x.enVente ? `<span class="tag tard" title="Lots en vente">en vente ${x.enVente}</span>` : ''].join(' '),
+    mesVentes: x.mesVentes ? `<span title="Exemplaires vendus (onglet Bilan)">${x.mesVentes}</span>` : '<span class="muted">–</span>',
+    // un seul statut, par ordre de priorité : exclu, en vente, prêt, utilisable
+    statut: x.exclu ? `<span class="tag urgent" title="Exclu des plans">⛔ ${x.exclu.jusquau ? `jusqu'au ${new Date(x.exclu.jusquau).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}` : 'exclu'}</span>`
+      : x.enVente ? `<span class="tag tard" title="${x.enVente} exemplaire${x.enVente > 1 ? 's' : ''} en vente : pas proposé dans le plan de craft${x.etat ? ` (données : ${x.etat})` : ''}">en vente ${x.enVente}</span>`
+      : x.etat === 'prêt' ? '<span class="tag ok-tag" title="Volume, prix et ressources à jour">prêt</span>'
+      : x.etat ? '<span class="tag faire" title="Données utilisables, avec des jaunes">utilisable</span>' : '',
   });
   const rendRs = x => ({
     nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>`, categorie: esc(x.categorie), niveau: x.niveau,
@@ -189,7 +197,7 @@ export function renderDonnees(ctx) {
     <div class="table-large"><table class="rt don"><thead><tr>${cols.map(c => `<th class="sort${c.r ? ' r' : ''}${c.cle === cle ? ' on' : ''}" data-cle="${c.cle}">${c.t} <span class="fl">${c.cle === cle ? (sens > 0 ? '▴' : '▾') : '↕'}</span></th>`).join('')}</tr></thead>
     <tbody>${rows.slice(0, D.n).map(x => {
       const r = rend(x), ouvert = S.ligneOuverte === `${onglet}:${x.id}`;
-      return `<tr class="${ouvert ? 'ouverte' : ''}${x.exclu ? ' off' : ''}" data-id="${x.id}">${cols.map(c => `<td class="${c.r ? 'r' : ''}${c.cle === 'nom' ? ' nom dep' : ''}">${cellule(x, c, r[c.cle])}</td>`).join('')}</tr>
+      return `<tr class="${ouvert ? 'ouverte' : ''}${x.exclu ? ' off' : ''}" data-id="${x.id}">${cols.map(c => `<td class="${c.r ? 'r' : ''}${c.cle === 'nom' ? ' nom dep' : ''} c-${c.cle}">${cellule(x, c, r[c.cle])}</td>`).join('')}</tr>
         ${ouvert ? `<tr class="detail"><td colspan="${cols.length}">${detail(x)}</td></tr>` : ''}`;
     }).join('')}</tbody></table></div>
     ${rows.length > D.n ? `<p class="small"><button id="don-plus" class="link small">afficher 100 de plus</button></p>` : ''}

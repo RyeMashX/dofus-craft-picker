@@ -318,3 +318,6 @@ body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
 .regen:hover { color: var(--accent); border-color: var(--accent); }
 .regen:hover .ic { transform: rotate(-180deg); }
 .regen.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+/* Données : statut (plusieurs étiquettes possibles, jamais coupées) */
+.rt.don td.c-statut { white-space: nowrap; }

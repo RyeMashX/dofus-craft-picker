@@ -63,6 +63,8 @@ Pour le volume, la courbe doit être sur l'onglet **30 jours** (détecté à sa 
 
 KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources), puis deux tables (Équipements, Ressources) : recherche, filtres (catégorie, état ou fraîcheur, vendables), tri par colonne, modification directe des valeurs (clic sur une valeur soulignée), et détail au clic sur le nom (recette d'un équipement, items qui utilisent une ressource).
 
+Équipements : une seule colonne **Statut**, par priorité exclu > en vente (n exemplaires) > prêt > utilisable ; colonne **Mes ventes** = exemplaires vendus (Bilan).
+
 ## Onglet Craft
 
 - **Crafts viables** : données sans orange ni noir, au moins 60 ventes / mois, rendement d'au moins 15 %. « Cible » à partir de 25 %, « acceptable » entre 15 et 25 %. Les items exclus n'apparaissent pas ; ceux en vente sont marqués.
