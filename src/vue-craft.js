@@ -117,9 +117,8 @@ export function renderCraft(ctx) {
   const n = C.n ?? 50;
   const viablesHtml = `
     <div class="row"><h2>Crafts viables</h2><span class="muted small">${liste.length}</span><div class="spacer"></div>
-      <div id="cv-filtre" class="seg">${[['tous', 'tous'], ['cible', '≥ ' + Math.round(p.margeMin * 100) + ' %'], ['acceptable', Math.round(p.margeAcceptable * 100) + '–' + Math.round(p.margeMin * 100) + ' %']].map(([k, l]) => `<button data-f="${k}" class="${C.filtre === k ? 'on' : ''}">${l}</button>`).join('')}</div></div>
-    <div class="row small"><label class="chk"><input type="checkbox" id="cv-sans-vente"${C.sansVente ? ' checked' : ''}> masquer les items déjà en vente${nEnVente ? ` <span class="muted">(${nEnVente})</span>` : ''}</label>
-      <div class="spacer"></div><span class="muted" title="Les items de la liste noire ne sont jamais proposés (onglet Données pour les réintégrer)">${nExclus ? `${nExclus} exclu${nExclus > 1 ? 's' : ''} (liste noire) masqué${nExclus > 1 ? 's' : ''}` : ''}</span></div>
+      <div class="cv-outils"><button id="cv-sans-vente" class="toggle${C.sansVente ? ' on' : ''}" title="${C.sansVente ? 'Afficher' : 'Masquer'} les items qui ont déjà des exemplaires en vente${nExclus ? ` · ${nExclus} item${nExclus > 1 ? 's' : ''} de la liste noire, jamais affichés` : ''}">${C.sansVente ? '✓ ' : ''}hors vente${nEnVente ? ` <span class="nb">${nEnVente}</span>` : ''}</button>
+      <div id="cv-filtre" class="seg">${[['tous', 'tous'], ['cible', '≥ ' + Math.round(p.margeMin * 100) + ' %'], ['acceptable', Math.round(p.margeAcceptable * 100) + '–' + Math.round(p.margeMin * 100) + ' %']].map(([k, l]) => `<button data-f="${k}" class="${C.filtre === k ? 'on' : ''}">${l}</button>`).join('')}</div></div></div>
     ${rows.length ? `<div class="cp">${rows.slice(0, n).map(ligneViable).join('')}</div>${rows.length > n ? `<p class="small"><button id="cv-plus" class="link small">afficher 50 de plus (${rows.length - n} restants)</button></p>` : ''}` : '<p class="muted small">Aucun craft dans cette catégorie.</p>'}
     <p class="muted small">Viable : données sans orange ni noir, au moins ${p.volumeMin} ventes par mois, rendement d'au moins ${Math.round(p.margeAcceptable * 100)} % FM estimée comprise, aucune ressource introuvable à l'HDV. La confiance reflète la fraîcheur des données (pondérée par le poids de chaque ressource dans le coût) et ne modifie pas la marge.</p>`;
 
@@ -140,7 +139,7 @@ export function renderCraft(ctx) {
   $$('#craft-plan [data-retirer]').forEach(b => b.onclick = () => modifier(b.dataset.retirer, -Infinity));
   $$('#craft-plan [data-vendre]').forEach(b => b.onclick = () => { const l = ev.lignes.find(x => x.id === +b.dataset.vendre); if (l) { mettreEnVente(l, 1); ctx.toast(`${l.nom} mis en vente (draft)`); } });
   $$('#craft-viables [data-ajout]').forEach(b => b.onclick = () => modifier(b.dataset.ajout, +1));
-  $('#cv-sans-vente').onchange = e => { C.sansVente = e.target.checked; C.n = 50; ctx.sauverEtat(); ctx.renderTout(); };
+  $('#cv-sans-vente').onclick = () => { C.sansVente = !C.sansVente; C.n = 50; ctx.sauverEtat(); ctx.renderTout(); };
   $$('#cv-filtre button').forEach(b => b.onclick = () => { C.filtre = b.dataset.f; C.n = 50; ctx.sauverEtat(); ctx.renderTout(); });
   const plus = $('#cv-plus'); if (plus) plus.onclick = () => { C.n = n + 50; ctx.renderTout(); };
   const fiche = id => ev.lignes.find(l => l.id === id) ?? liste.find(v => v.id === id);

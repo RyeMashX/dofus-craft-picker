@@ -321,3 +321,11 @@ body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
 
 /* Données : statut (plusieurs étiquettes possibles, jamais coupées) */
 .rt.don td.c-statut { white-space: nowrap; }
+
+/* Bouton bascule (filtre « hors vente » des crafts viables) */
+.toggle { padding: 4px 10px; font-size: 13px; border-radius: 6px; background: transparent; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.toggle .nb { font-size: 11px; background: #2a2e36; border-radius: 8px; padding: 0 5px; margin-left: 2px; }
+.toggle:hover { color: var(--text, #e8e8e8); border-color: var(--muted); }
+.toggle.on { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.toggle.on .nb { background: #0003; }
+.cv-outils { display: flex; align-items: center; gap: 6px; margin-left: auto; }
