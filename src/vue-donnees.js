@@ -2,7 +2,7 @@
 // avec recherche, filtres, tri, édition directe des valeurs et détail dépliable (recette / utilisations).
 
 import { itemsFocus, estimerItem } from './entonnoir.js';
-import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus, NIVEAUX } from './fraicheur.js';
+import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus, compareCategorie, NIVEAUX } from './fraicheur.js';
 import { majVolume, majPrixItem, majPrixMoyenItem, majRessource, majPrixMoyenRessource, estIndispo } from './base.js';
 import { planAchat } from './lots.js';
 import { icone } from './vue-plan.js';
@@ -105,7 +105,7 @@ export function renderDonnees(ctx) {
 
   // ---- table ----
   const onglet = D.onglet, lignes = onglet === 'equipements' ? eq : rs;
-  const cats = [...new Set(lignes.map(x => x.categorie))].sort(compareDofus);
+  const cats = [...new Set(lignes.map(x => x.categorie))].sort(compareCategorie);
   const q = ctx.normaliser(D.q ?? '');
   let rows = lignes.filter(x => (!q || ctx.normaliser(x.nom).includes(q)) && (!D.cat || x.categorie === D.cat));
   if (onglet === 'equipements') {
@@ -124,7 +124,7 @@ export function renderDonnees(ctx) {
   rows.sort((a, b) => {
     const va = a[cle], vb = b[cle];
     if (va == null && vb == null) return 0; if (va == null || va === '') return 1; if (vb == null || vb === '') return -1;
-    return (typeof va === 'string' ? compareDofus(va, vb) : va - vb) * sens;
+    return (typeof va === 'string' ? (D.tri.cle === 'categorie' ? compareCategorie : compareDofus)(va, vb) : va - vb) * sens;
   });
 
   const ed = S.editDonnee;

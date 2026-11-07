@@ -8,7 +8,7 @@
 // Puis présentation : HDV Équipements, puis HDV Ressources ; groupes de catégories (filtres HDV) ; tri Dofus.
 
 import { itemsFocus, estimerItem } from './entonnoir.js';
-import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus } from './fraicheur.js';
+import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus, compareCategorie, hdvDe, ORDRE_HDV } from './fraicheur.js';
 import { estExclu, estEnVente } from './statut.js';
 
 const POIDS_NIVEAU = { noir: 3, rouge: 2.5, orange: 2, jaune: 1, vert: 0 }; // rouge entre noir et orange
@@ -143,7 +143,7 @@ export function organiser(plan, catalogue, { minGroupe = 3, maxGroupe = 12 } = {
   const lignes = new Map();
   for (const t of plan.taches) {
     const res = t.kind === 'ressource' ? catalogue.ressources[t.id] : null;
-    const hdv = res && !typesEquipement.has(res.type) ? 'ressources' : 'equipements';
+    const hdv = res ? hdvDe(res.type, typesEquipement) : 'equipements';
     const k = `${t.kind === 'ressource' ? 'r' : 'i'}:${t.id}`;
     if (!lignes.has(k)) {
       const o = res ?? items.get(t.id);
@@ -155,10 +155,10 @@ export function organiser(plan, catalogue, { minGroupe = 3, maxGroupe = 12 } = {
   lignes.forEach(l => l.kinds.sort((a, b) => ordreKinds[a] - ordreKinds[b]));
 
   const hdvs = [];
-  for (const hdv of ['equipements', 'ressources']) {
+  for (const hdv of ORDRE_HDV) {
     const parCat = new Map();
     for (const l of lignes.values()) if (l.hdv === hdv) (parCat.get(l.categorie) ?? parCat.set(l.categorie, []).get(l.categorie)).push(l);
-    const cats = [...parCat.keys()].sort(compareDofus);
+    const cats = [...parCat.keys()].sort(compareCategorie);
     // fusion : une petite catégorie (ou un petit groupe) rejoint son voisin tant que le total reste raisonnable
     const groupes = [];
     for (const c of cats) {

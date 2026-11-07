@@ -68,7 +68,7 @@ test('organiser : HDV Équipements puis Ressources, petites catégories fusionn�
   assert.equal(h[0].groupes[0].lignes.find(l => l.id === 1).kinds.join('+'), 'prixItem');
   const r = h[1].groupes;
   assert.equal(r.length, 1);
-  assert.deepEqual(r[0].categories, ['Aile', 'Bois', 'Os', 'Étoffe']); // accents après le z
+  assert.deepEqual(r[0].categories, ['Aile', 'Bois', 'Étoffe', 'Os']); // catégories : É rangé avec les E
   assert.deepEqual([r[0].niveauMin, r[0].niveauMax], [170, 200]);
 });
 
@@ -98,4 +98,11 @@ test('statut : exclusion datée qui expire', async () => {
   exclure(b, 5, T + 2 * JOUR, T);
   assert.equal(estExclu(b, 5, T + JOUR), true);
   assert.equal(estExclu(b, 5, T + 3 * JOUR), false);
+});
+
+test('organiser : une ressource consommable (potion…) va dans un HDV Consommables, traité en dernier', () => {
+  const cat2 = { ...cat, ressources: { ...cat.ressources, 104: { id: 104, nom: 'Potion Étoilée', niveau: 200, type: 'Potion' } } };
+  const h = organiser({ taches: [{ kind: 'ressource', id: 104 }, { kind: 'ressource', id: 101 }, { kind: 'prixItem', id: 1 }] }, cat2);
+  assert.deepEqual(h.map(x => x.hdv), ['equipements', 'ressources', 'consommables']);
+  assert.deepEqual(h[2].groupes[0].lignes.map(l => l.nom), ['Potion Étoilée']);
 });

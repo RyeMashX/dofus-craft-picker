@@ -4,7 +4,7 @@ import { calculerPlan, organiser, tacheFaite } from './plan.js';
 
 const LIB = { volume: 'Courbe', prixItem: 'Annonces', ressource: 'Lots' };
 const MODE = { volume: 'courbe', prixItem: 'annonces', ressource: 'lots' };
-const HDV = { equipements: 'HDV Équipements', ressources: 'HDV Ressources' };
+const HDV = { equipements: 'HDV Équipements', ressources: 'HDV Ressources', consommables: 'HDV Consommables' };
 export const icone = id => id ? `<img class="ico" loading="lazy" alt="" src="https://api.dofusdb.fr/img/items/${id}.png">` : '<span class="ico"></span>';
 const cleGroupe = (h, g) => `${h.hdv}|${g.categories.join('+')}|${g.niveauMin}`;
 

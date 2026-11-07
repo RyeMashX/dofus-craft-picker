@@ -74,3 +74,28 @@ export function compareDofus(a, b) {
   }
   return a.length - b.length;
 }
+
+// Les catégories (filtres de l'HDV) ne suivent pas cette règle : une catégorie qui commence par une lettre
+// accentuée se range avec sa lettre de base, juste après les catégories non accentuées de cette lettre
+// (Œil après Os, Étoffe après les catégories en E). Le reste du nom suit l'ordre de Dofus.
+const BASE = { 'œ': 'o', 'æ': 'a' };
+const lettreBase = ch => { const c = ch.toLowerCase(); return BASE[c] ?? c.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); };
+export function compareCategorie(a, b) {
+  if (!a || !b) return (a ? 1 : 0) - (b ? 1 : 0);
+  const ba = lettreBase(a[0]), bb = lettreBase(b[0]);
+  if (ba !== bb) return compareDofus(ba, bb);
+  const xa = ba !== a[0].toLowerCase(), xb = bb !== b[0].toLowerCase();   // première lettre accentuée ?
+  if (xa !== xb) return xa ? 1 : -1;
+  return compareDofus(a, b);
+}
+
+// ---------- HDV où s'achète une ressource ----------
+// Quelques ingrédients sont des équipements (Épée, Anneau…) : HDV Équipements. Quelques autres sont des
+// consommables (Potion Étoilée…) : HDV Consommables, traité en dernier. Le reste : HDV Ressources.
+export const CATEGORIES_CONSOMMABLES = new Set(['Ballon', 'Bière', 'Boisson', 'Boîte de fragments', 'Bourse', 'Cadeau', 'Coffre', 'Conteneur',
+  'Document', 'Éklâme', "Fée d'artifice", 'Friandise', 'Mimibiote', 'Mots de haïku', 'Objet utilisable', 'Objet utilisable de Temporis', 'Pain',
+  "Parchemin d'attitude", 'Parchemin de caractéristique', 'Parchemin de sortilège', 'Parchemin de titre', "Parchemin d'émoticônes", "Parchemin d'expérience",
+  'Poisson comestible', 'Popoche de Havre-Sac', 'Potion', "Potion d'attitude", 'Potion de conquête', 'Potion de téléportation', 'Prisme',
+  'Sac de ressources', 'Tatouage de la Foire du Trool', 'Viande comestible']);
+export const ORDRE_HDV = ['equipements', 'ressources', 'consommables'];
+export const hdvDe = (type, typesEquipement) => typesEquipement.has(type) ? 'equipements' : CATEGORIES_CONSOMMABLES.has(type) ? 'consommables' : 'ressources';

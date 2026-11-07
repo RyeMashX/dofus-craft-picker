@@ -8,7 +8,7 @@ import { estIndispo } from './base.js';
 import { pastille } from './vue-donnees.js';
 import { icone } from './vue-plan.js';
 
-const HDV = { equipements: 'HDV Équipements', ressources: 'HDV Ressources' };
+const HDV = { equipements: 'HDV Équipements', ressources: 'HDV Ressources', consommables: 'HDV Consommables' };
 const TAILLES = [1000, 100, 10, 1];
 const dateCourte = t => new Date(t).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 

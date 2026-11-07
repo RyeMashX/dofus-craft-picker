@@ -10,7 +10,7 @@
 
 import { itemsFocus } from './entonnoir.js';
 import { versMoteur } from './catalogue.js';
-import { etatItem, niveauRessource, niveauVolume, niveauPrixItem, compareDofus } from './fraicheur.js';
+import { etatItem, niveauRessource, niveauVolume, niveauPrixItem, compareDofus, compareCategorie, hdvDe, ORDRE_HDV } from './fraicheur.js';
 import { prixVenteEstime, evaluerItem, maxCrafts } from './marge.js';
 import { allouer } from './allocation.js';
 import { planAchat } from './lots.js';
@@ -177,8 +177,8 @@ export function achatsConsolides(lignes, offres, catalogue, p) {
     const res = catalogue.ressources[a.id] ?? { nom: `#${a.id}` };
     return {
       ...a, nom: res.nom, type: res.type ?? '?', niveau: res.niveau ?? 0, iconId: res.iconId,
-      hdv: typesEquipement.has(res.type) ? 'equipements' : 'ressources',
+      hdv: hdvDe(res.type, typesEquipement),
       plan: offres[a.id] ? planAchat(a.q, offres[a.id], p) : null,
     };
-  }).sort((x, y) => (x.hdv === y.hdv ? 0 : x.hdv === 'equipements' ? -1 : 1) || compareDofus(x.type, y.type) || compareDofus(x.nom, y.nom));
+  }).sort((x, y) => ORDRE_HDV.indexOf(x.hdv) - ORDRE_HDV.indexOf(y.hdv) || compareCategorie(x.type, y.type) || compareDofus(x.nom, y.nom));
 }
