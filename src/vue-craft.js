@@ -9,7 +9,9 @@ import { estExclu } from './statut.js';
 import { icone } from './vue-plan.js';
 
 const pctConf = c => c == null ? '–' : `${Math.round(c * 100)} %`;
-export const confHtml = c => c == null ? '' : `<span class="conf conf-${niveauConfiance(c)}" title="Confiance dans les données : ${niveauConfiance(c)} (${pctConf(c)}). N'affecte pas la marge.">${pctConf(c)}</span>`;
+// Confiance : fraîcheur des données (volume 15 %, prix de vente 35 %, ressources 50 % pondérées par leur coût).
+// Le détail de ce qui n'est pas vert s'affiche au survol. N'affecte pas la marge.
+export const confHtml = (c, details = []) => c == null ? '' : `<span class="conf conf-${niveauConfiance(c)}" title="${`Confiance dans les données : ${niveauConfiance(c)} (${pctConf(c)}). N'affecte pas la marge.\n${details.length ? `À vérifier : ${details.join(' · ')}` : 'Toutes les données sont vertes.'}`.replace(/"/g, '&quot;')}">${pctConf(c)}</span>`;
 const tagNiveau = n => n === 'cible' ? '<span class="tag ok-tag">cible</span>' : '<span class="tag faire">acceptable</span>';
 export const signaturePlan = plan => JSON.stringify(Object.entries(plan ?? {}).filter(([, n]) => n > 0).sort((a, b) => a[0] - b[0]));
 const dateCourte = t => new Date(t).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
@@ -55,7 +57,7 @@ export function renderCraft(ctx) {
   // ---- plan ----
   const depasseBudget = ev.capital > budget;
   const lignePlan = l => `<div class="cp-l${l.raison || l.enVente ? ' alerte' : ''}" data-tip="${l.id}" data-n="${l.n}">
-      <div class="cp-nom">${icone(l.iconId)} <span class="n">${esc(l.nom)}</span> ${l.raison ? '' : tagNiveau(l.niveau)} ${confHtml(l.confiance)}</div>
+      <div class="cp-nom">${icone(l.iconId)} <span class="n">${esc(l.nom)}</span> ${l.raison ? '' : tagNiveau(l.niveau)} ${confHtml(l.confiance, l.aVerifier)}</div>
       <div class="cp-chiffres">
         <span class="stepper"><button data-moins="${l.id}" title="Un craft de moins">−</button><b>${l.n}</b><button data-plus="${l.id}" title="Un craft de plus">+</button></span>
         <span class="muted small">coût</span> ${fmtK(l.coutN)}
@@ -105,8 +107,8 @@ export function renderCraft(ctx) {
   const ligneViable = v => {
     const dans = plan[v.id] ?? 0;
     return `<div class="cv-l${dans ? ' dans' : ''}" data-tip="${v.id}" data-n="1">
-      <div class="cp-nom">${icone(v.iconId)} <span class="n">${esc(v.nom)}</span> ${tagNiveau(v.niveau)} ${confHtml(v.confiance)}
-        ${v.enVente ? `<span class="tag tard" title="Déjà en vente : pas recommandé">en vente ${v.enVente}</span>` : ''}${v.pret ? '' : ' <span class="tag tard" title="Données jaunes : vérifie avant d\'acheter">⚠</span>'}</div>
+      <div class="cp-nom">${icone(v.iconId)} <span class="n">${esc(v.nom)}</span> ${tagNiveau(v.niveau)} ${confHtml(v.confiance, v.aVerifier)}
+        ${v.enVente ? `<span class="tag tard" title="Déjà en vente : pas recommandé">en vente ${v.enVente}</span>` : ''}</div>
       <div class="cp-chiffres">
         <span class="muted small">vente</span> ${fmtK(v.prixVente)} <span class="muted small">craft</span> ${fmtK(v.cout)}
         <span class="muted small">marge</span> <b>${fmtK(v.marge)}</b> <span class="${v.niveau === 'cible' ? 'ok' : 'warn'}">${pct(v.rendement)}</span>

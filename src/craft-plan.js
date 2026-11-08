@@ -68,9 +68,22 @@ export function ficheItem(it, catalogue, base, p, offres, maintenant = Date.now(
     volume: b.volume?.valeur ?? 0, prixVente, cout: ev.coutCraft, fm: ev.coutFm, fmSource: fm, marge: ev.marge, rendement: ev.rendement,
     niveau: ev.rendement != null && ev.rendement >= p.margeMin ? 'cible' : 'acceptable',
     confiance: confiance(it, base, offres, p, maintenant),
-    pret: etat.pret, maxCrafts: maxCrafts(b.volume?.valeur ?? 0, p),
+    pret: etat.pret, aVerifier: aVerifier(it, catalogue, base, maintenant), maxCrafts: maxCrafts(b.volume?.valeur ?? 0, p),
     enVente: lotsEnVente(base, it.id), raison,
   };
+}
+
+// Ce qui n'est pas vert dans les données d'un item (détail de la confiance) : ['prix de vente jaune', 'Étoffe jaune', …]
+export function aVerifier(it, catalogue, base, maintenant = Date.now()) {
+  const b = base.items[it.id], out = [];
+  const nv = niveauVolume(b, maintenant), np = niveauPrixItem(b, maintenant);
+  if (nv !== 'vert') out.push(`volume ${nv}`);
+  if (np !== 'vert') out.push(`prix de vente ${np}`);
+  for (const r of it.recette) {
+    const n = niveauRessource(base.ressources[r.id], maintenant);
+    if (n !== 'vert') out.push(`${catalogue.ressources[r.id]?.nom ?? `#${r.id}`} ${n}`);
+  }
+  return out;
 }
 
 // Tous les crafts viables (1 craft), triés par rendement

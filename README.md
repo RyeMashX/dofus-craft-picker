@@ -49,7 +49,7 @@ Pour le volume, la courbe doit être sur l'onglet **30 jours** (détecté à sa 
 **Rouge (introuvable)** : ressource sans aucun lot en vente au dernier passage (« Aucun lot disponible »). Priorité entre noir et orange ; un item qui en dépend n'est ni prêt ni utilisable.
 
 - **Prêt pour le craft** : volume vert ou jaune, prix vert, ressources sans orange, rouge ni noir et au plus 2 jaunes.
-- **Utilisable** : aucune donnée orange ou noire. Le plan de craft (onglet Craft) prend les items utilisables et signale ceux qui ne sont pas prêts (⚠).
+- **Utilisable** : aucune donnée orange ou noire. Le Craft prend les items utilisables ; leur pourcentage de confiance résume la fraîcheur des données, et son survol liste ce qui n'est pas vert (« prix de vente jaune · Étoffe jaune »).
 
 ## Plan de scan
 
