@@ -11,7 +11,7 @@ import { icone } from './vue-plan.js';
 const pctConf = c => c == null ? '–' : `${Math.round(c * 100)} %`;
 // Confiance : fraîcheur des données (volume 15 %, prix de vente 35 %, ressources 50 % pondérées par leur coût).
 // Le détail de ce qui n'est pas vert s'affiche au survol. N'affecte pas la marge.
-export const confHtml = (c, details = []) => c == null ? '' : `<span class="conf conf-${niveauConfiance(c)}" title="${`Confiance dans les données : ${niveauConfiance(c)} (${pctConf(c)}). N'affecte pas la marge.\n${details.length ? `À vérifier : ${details.join(' · ')}` : 'Toutes les données sont vertes.'}`.replace(/"/g, '&quot;')}">${pctConf(c)}</span>`;
+export const confHtml = (c, details = []) => c == null ? '' : `<span class="conf conf-${niveauConfiance(c)}" title="${`Confiance dans les données : ${niveauConfiance(c)} (${pctConf(c)}).\n${details.length ? `À vérifier : ${details.join(' · ')}` : 'Toutes les données sont à jour.'}`.replace(/"/g, '&quot;')}">${pctConf(c)}</span>`;
 const tagNiveau = n => n === 'cible' ? '<span class="tag ok-tag">cible</span>' : '<span class="tag faire">acceptable</span>';
 export const signaturePlan = plan => JSON.stringify(Object.entries(plan ?? {}).filter(([, n]) => n > 0).sort((a, b) => a[0] - b[0]));
 const dateCourte = t => new Date(t).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
