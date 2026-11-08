@@ -75,18 +75,12 @@ export function compareDofus(a, b) {
   return a.length - b.length;
 }
 
-// Les catégories (filtres de l'HDV) ne suivent pas cette règle : une catégorie qui commence par une lettre
-// accentuée se range avec sa lettre de base, juste après les catégories non accentuées de cette lettre
-// (Œil après Os, Étoffe après les catégories en E). Le reste du nom suit l'ordre de Dofus.
-const BASE = { 'œ': 'o', 'æ': 'a' };
-const lettreBase = ch => { const c = ch.toLowerCase(); return BASE[c] ?? c.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); };
+// Les catégories (filtres de l'HDV) ne suivent pas cette règle : elles sont triées sans tenir compte des accents,
+// œ et æ lus « oe » et « ae » (Écorce, Étoffe, Fleur ; Nowel, Œil, Œuf, Oreille, Os). À égalité, l'ordre de Dofus.
+const plat = t => t.toLowerCase().replace(/œ/g, 'oe').replace(/æ/g, 'ae').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 export function compareCategorie(a, b) {
   if (!a || !b) return (a ? 1 : 0) - (b ? 1 : 0);
-  const ba = lettreBase(a[0]), bb = lettreBase(b[0]);
-  if (ba !== bb) return compareDofus(ba, bb);
-  const xa = ba !== a[0].toLowerCase(), xb = bb !== b[0].toLowerCase();   // première lettre accentuée ?
-  if (xa !== xb) return xa ? 1 : -1;
-  return compareDofus(a, b);
+  return compareDofus(plat(a), plat(b)) || compareDofus(a, b);
 }
 
 // ---------- HDV où s'achète une ressource ----------

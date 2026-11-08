@@ -142,7 +142,7 @@ function renderDeroule(ctx) {
       ${h.groupes.map(g => groupeHtml(h, g)).join('')}</div>`).join('')}`;
 
   S.flash = null;
-  $('#plan-neuf').onclick = () => { if (termine || confirm('Abandonner ce plan et en préparer un nouveau ?')) { S.etat.plan = null; ctx.sauverEtat(); ctx.renderTout(); } };
+  $('#plan-neuf').onclick = async () => { if (termine || await ctx.confirmer('Abandonner ce plan et en préparer un nouveau ?', { ok: 'Nouveau plan' })) { S.etat.plan = null; ctx.sauverEtat(); ctx.renderTout(); } };
   const pc = $('#plan-craft'); if (pc) pc.onclick = () => { S.etat.vue = 'resultats'; ctx.sauverEtat(); ctx.renderTout(); };
   $$('#plan .grp-tete').forEach(el => el.onclick = () => { S.groupeOuvert = el.dataset.g === ouvert ? '' : el.dataset.g; ctx.renderTout(); });
   ctx.brancherCopier('#plan');

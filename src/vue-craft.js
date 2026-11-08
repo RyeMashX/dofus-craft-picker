@@ -39,8 +39,8 @@ export function renderCraft(ctx) {
     if (!genere) S.etat.craftGenere = { date: Date.now(), budget: S.etat.budget, manuel: true };
     fixer(nouveau);
   };
-  const generer = () => {
-    if (genere && Object.keys(plan).length && !confirm('Remplacer le plan de craft actuel par une nouvelle recommandation ?')) return;
+  const generer = async () => {
+    if (genere && Object.keys(plan).length && !(await ctx.confirmer('Remplacer le plan de craft actuel par une nouvelle recommandation ?', { ok: 'Régénérer' }))) return;
     S.etat.craftGenere = { date: Date.now(), budget: S.etat.budget };
     fixer(recommander(liste, offres, budget, p));
     ctx.toast('Plan de craft généré ✓');
@@ -129,8 +129,8 @@ export function renderCraft(ctx) {
   $('#cp-generer').onclick = generer;
   const ach = $('#cp-achats'); if (ach) ach.onclick = () => { if (!achatsAJour) ctx.genererListeAchat(); S.etat.vue = 'achats'; ctx.sauverEtat(); ctx.renderTout(); };
   const tout = $('#cp-tout-vendre');
-  if (tout) tout.onclick = () => {
-    if (!confirm(`Mettre en vente les ${ev.crafts} exemplaires du plan ? Ils passeront dans Ventes (statut « draft ») et sortiront du plan.`)) return;
+  if (tout) tout.onclick = async () => {
+    if (!(await ctx.confirmer(`Mettre en vente les ${ev.crafts} exemplaires du plan ? Ils passeront dans Ventes (statut « draft ») et sortiront du plan.`, { ok: "Mettre en vente" }))) return;
     for (const l of ev.lignes) for (let k = 0; k < l.n; k++) ajouterVente(S.base, { id: l.id, statut: 'draft', prix: l.prixVente, coutCraft: Math.round(l.craftN / l.n), coutFm: l.fmSource ? Math.round(l.fmN / l.n) : null });
     ctx.sauverBase(); fixer({}); ctx.toast(`${ev.crafts} exemplaires mis en vente ✓`);
   };

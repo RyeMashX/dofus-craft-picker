@@ -329,3 +329,9 @@ body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
 .toggle.on { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 .toggle.on .nb { background: #0003; }
 .cv-outils { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+
+/* Confirmation intégrée (fonctionne aussi dans la fenêtre flottante) */
+.confirm-fond { position: fixed; inset: 0; z-index: 200; background: #0009; display: grid; place-items: center; padding: 16px; animation: entree .15s ease-out; }
+.confirm-boite { width: min(360px, 100%); background: var(--card, #1b1d22); border: 1px solid var(--accent); border-radius: 10px; padding: 14px 16px; box-shadow: 0 12px 40px #000c; }
+.confirm-boite p { margin: 0 0 12px; font-size: 14px; line-height: 1.4; }
+.confirm-boite .row { gap: 8px; }

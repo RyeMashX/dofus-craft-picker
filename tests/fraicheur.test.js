@@ -48,11 +48,9 @@ test('tri Dofus : les accents après le z', () => {
 });
 
 import { compareCategorie, hdvDe } from '../src/fraicheur.js';
-test('ordre des catégories : lettre accentuée rangée avec sa lettre de base, après les non accentuées', () => {
-  const cats = ['Œil', 'Os', 'Oreille', 'Étoffe', 'Écorce', 'Épée', 'Fleur', 'Aile', 'Œuf', 'Minerai', 'Vêtement'];
-  assert.deepEqual([...cats].sort(compareCategorie), ['Aile', 'Écorce', 'Épée', 'Étoffe', 'Fleur', 'Minerai', 'Oreille', 'Os', 'Œil', 'Œuf', 'Vêtement']);
-  // une catégorie en E non accentuée passe avant les accentuées
-  assert.ok(compareCategorie('Essence', 'Écorce') < 0);
+test('ordre des catégories : accents ignorés, œ lu « oe » (comme les filtres de l\'HDV)', () => {
+  const cats = ['Œil', 'Os', 'Oreille', 'Nowel', 'Étoffe', 'Écorce', 'Fleur', 'Cuir', 'Œuf', 'Minerai', 'Fragment de carte', 'Coquille', 'Patte', 'Peau'];
+  assert.deepEqual([...cats].sort(compareCategorie), ['Coquille', 'Cuir', 'Écorce', 'Étoffe', 'Fleur', 'Fragment de carte', 'Minerai', 'Nowel', 'Œil', 'Œuf', 'Oreille', 'Os', 'Patte', 'Peau']);
 });
 test('HDV d\'une ressource : équipements, consommables (potion…) ou ressources', () => {
   const eq = new Set(['Épée', 'Anneau']);

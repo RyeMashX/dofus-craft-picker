@@ -40,8 +40,8 @@ export function renderAchats(ctx) {
   const { plan, ev } = etatCraft(ctx);
   const L = S.etat.listeAchat;
   const planVide = !ev.lignes.length;
-  const generer = () => {
-    if (L && Object.keys(S.etat.achetes ?? {}).length && !confirm('Regénérer la liste ? Les cases cochées seront remises à zéro.')) return;
+  const generer = async () => {
+    if (L && Object.keys(S.etat.achetes ?? {}).length && !(await ctx.confirmer('Regénérer la liste ? Les cases cochées seront remises à zéro.', { ok: 'Regénérer' }))) return;
     genererListeAchat(ctx); ctx.toast('Liste d\'achat générée ✓'); ctx.renderTout();
   };
 

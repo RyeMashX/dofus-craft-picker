@@ -161,7 +161,7 @@ export function renderVentes(ctx) {
   const okChg = () => { const p = ctx.nombreSaisi($('#chg-prix').value), l = trouverLigne(S.base, S.chgPrix); S.chgPrix = null; if (p && l && p !== l.prix) { changerPrix(S.base, l.uid, p); ctx.sauverBase(); ctx.toast(`Nouveau prix ${ctx.fmt(p)} · frais + ${ctx.fmt(Math.round(p * 0.01))}`); } ctx.renderTout(); };
   if ($('#chg-ok')) { $('#chg-ok').onclick = okChg; $('#chg-prix').onkeydown = e => { if (e.key === 'Enter') okChg(); if (e.key === 'Escape') { S.chgPrix = null; ctx.renderTout(); } }; $('#chg-annuler').onclick = () => { S.chgPrix = null; ctx.renderTout(); }; }
   $$('#ventes [data-vendu]').forEach(b => b.onclick = () => { marquerVendu(S.base, b.dataset.vendu); ctx.sauverBase(); ctx.toast('Vendu ✓ (voir Bilan)'); ctx.renderTout(); });
-  $$('#ventes [data-suppr]').forEach(b => b.onclick = () => { if (!confirm('Supprimer cette ligne ? (pour un exemplaire vendu, utilise plutôt « Vendu »)')) return; supprimerLigne(S.base, b.dataset.suppr); ctx.sauverBase(); ctx.renderTout(); });
+  $$('#ventes [data-suppr]').forEach(b => b.onclick = async () => { if (!(await ctx.confirmer('Supprimer cette ligne ? (pour un exemplaire vendu, utilise plutôt « Vendu »)', { ok: 'Supprimer' }))) return; supprimerLigne(S.base, b.dataset.suppr); ctx.sauverBase(); ctx.renderTout(); });
   brancherChamps(ctx, '#ventes');
 
   const majF = (k, v) => { F[k] = v; ctx.sauverEtat(); ctx.renderTout(); };

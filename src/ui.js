@@ -464,6 +464,23 @@ function toast(msg) {
   setTimeout(() => el.remove(), 2400);
 }
 
+// Confirmation dans la page elle-même : confirm() du navigateur s'ouvre sur la fenêtre principale, cachée
+// derrière le jeu quand l'outil est en fenêtre flottante, et bloque tout en attendant une réponse invisible.
+function confirmer(msg, { ok = 'Confirmer', annuler = 'Annuler' } = {}) {
+  return new Promise(resolve => {
+    const fond = root.createElement('div');
+    fond.className = 'confirm-fond';
+    fond.innerHTML = `<div class="confirm-boite" role="dialog" aria-modal="true"><p></p><div class="row"><div class="spacer"></div><button class="secondary small" data-r="0">${annuler}</button><button class="primary small" data-r="1">${ok}</button></div></div>`;
+    fond.querySelector('p').textContent = msg;
+    const fin = r => { fond.remove(); root.removeEventListener('keydown', clavier, true); resolve(r); };
+    const clavier = e => { if (e.key === 'Escape') { e.preventDefault(); fin(false); } else if (e.key === 'Enter') { e.preventDefault(); fin(true); } };
+    fond.onclick = e => { if (e.target === fond) fin(false); const b = e.target.closest('[data-r]'); if (b) fin(b.dataset.r === '1'); };
+    root.addEventListener('keydown', clavier, true);
+    root.body.appendChild(fond);
+    fond.querySelector('[data-r="1"]').focus();
+  });
+}
+
 function statut(msg) { const el = $('#scan-status'); if (el) el.textContent = msg; }
 
 // ---------- résultats ----------
@@ -493,6 +510,7 @@ const ctx = {
   S, $: s => $(s), $$: s => $$(s), params, sauverBase, sauverEtat, renderTout: () => renderTout(), toast,
   esc, fmt, fmtK, pct, age, nombreSaisi, normaliser, fmtSaisie, champsPrix,
   versionBase: () => S.versionBase, autocompletion: (i, l, m, f) => brancherAutocompletion(i, l, m, f, null),
+  confirmer: (m, o) => confirmer(m, o),
   boutonCopier: (n, t) => boutonCopier(n, t), brancherCopier: s => brancherCopier(s), choisirMode: m => choisirMode(m),
   genererListeAchat: () => genererListeAchat(ctx),
   // capture pour l'onglet Ventes (relevé « Mes ventes »)
@@ -643,7 +661,7 @@ function brancher() {
     try { S.base = importer(await f.text()); sauverBase(); renderTout(); } catch (err) { alert(err.message); }
     e.target.value = '';
   };
-  $('#base-reset').onclick = () => { if (confirm('Vider toute la base de prix ? (export conseillé avant)')) { S.base = creerBase(); sauverBase(); renderTout(); } };
+  $('#base-reset').onclick = async () => { if (await confirmer('Vider toute la base de prix ? (export conseillé avant)')) { S.base = creerBase(); sauverBase(); renderTout(); } };
 }
 
 // ---------- fenêtre flottante (Document Picture-in-Picture, Chrome / Edge) ----------
