@@ -273,7 +273,7 @@ label.numl input.big { width: 120px; }
 body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
 
 /* ===== Infobulle recette (Craft) ===== */
-.cp-nom { cursor: help; }
+.cp-nom { cursor: pointer; }
 .tip { position: fixed; z-index: 90; width: min(400px, calc(100vw - 16px)); background: #121418; border: 1px solid var(--accent); border-radius: 8px; padding: 8px 10px; box-shadow: 0 8px 24px #000a; font-size: 12px; pointer-events: none; }
 .tip-t { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 13px; }
 .tip table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; table-layout: fixed; }
@@ -335,3 +335,24 @@ body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
 .confirm-boite { width: min(360px, 100%); background: var(--card, #1b1d22); border: 1px solid var(--accent); border-radius: 10px; padding: 14px 16px; box-shadow: 0 12px 40px #000c; }
 .confirm-boite p { margin: 0 0 12px; font-size: 14px; line-height: 1.4; }
 .confirm-boite .row { gap: 8px; }
+
+/* Craft : volet de détail (clic sur le nom) */
+.cp-l.ouvert, .cv-l.ouvert { border-color: var(--accent); }
+.volet { margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--line); display: grid; gap: 6px; }
+.vo-u { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.vo-u > div { background: #15171b; border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; display: grid; }
+.vo-u span { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.vo-u b { font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.vo-u em { font-style: normal; font-size: 11px; color: var(--muted); }
+.vo-note { margin: 0; font-size: 11px; }
+.vo-conf { margin: 0; font-size: 12px; line-height: 1.5; }
+.vo-t { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; table-layout: fixed; }
+.vo-t th { font-size: 10px; color: var(--muted); font-weight: 600; text-align: left; }
+.vo-t th:not(:first-child), .vo-t td:not(:first-child) { width: 17%; }
+.vo-t td { padding: 2px 0; border-top: 1px solid #22252c; }
+.vo-t .r { text-align: right; }
+.vo-t td.tn { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.vo-t td.tn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.vo-t td.tn .ico { width: 18px; height: 18px; flex: none; }
+.vo-t sup { color: var(--accent); font-size: 9px; }
+.vo-t tfoot td { border-top: 1px solid var(--line); }

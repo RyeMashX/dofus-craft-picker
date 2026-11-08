@@ -71,7 +71,7 @@ KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources), 
 - **Plan de craft** : « Générer le plan de craft » calcule une recommandation à partir du budget (items cibles, ni en vente ni exclus, au plus un jour de vente par item), puis le plan est **figé** : ses chiffres suivent les prix, mais ses items ne changent que si tu le modifies (+ / − / ✕, ajout depuis les viables) ou le régénères. Un item du plan devenu non viable reste, signalé avec la raison.
 - **Mise en vente** : « 🏷 vente » sur une ligne met 1 exemplaire en vente (ligne « draft » dans Ventes, prix = prix de vente estimé, coût = coût du craft, FM = FM estimée) et le retire du plan ; « Tout mettre en vente » fait de même pour tout le plan.
 - **Marge affichée = marge réelle** (taxe de 2 % déduite). L'effort (coût fictif par craft, réglable) ne sert qu'à départager dans la recommandation. La **confiance** (volume 15 %, prix de vente 35 %, ressources 50 % pondérées par leur part du coût ; vert = 1, jaune = 0,6) est affichée seulement.
-- **Infobulle** au survol du nom d'un craft (plan ou viables) : la recette avec, pour chaque ressource, la quantité (× nombre de crafts dans le plan), le prix unitaire, le coût et la fraîcheur ; puis coût du craft, prix de vente, taxe et marge. Lots relevés sinon prix moyen (marqué « m »).
+- **Détail d'un craft** (clic sur son nom, dans le plan ou les viables) : craft, FM, vente et marge **par craft** en tête ; confiance et données à vérifier (ce qui n'est pas vert) ; recette chiffrée (quantités × nombre de crafts du plan, prix unitaire, coût, fraîcheur ; « m » = prix moyen).
 - Le coût total du plan est calculé avec les **achats regroupés** : une ressource partagée entre plusieurs crafts est achetée en une fois.
 
 ## Onglet Achats
