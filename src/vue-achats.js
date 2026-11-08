@@ -75,6 +75,7 @@ export function renderAchats(ctx) {
     const r = S.base.ressources[a.id], ouvert = ouverts.has(a.id);
     return `<div class="ac-l${fait(a) ? ' fini' : ''}${ouvert ? ' ouvert' : ''}">
       <div class="ac-ligne" data-ouvrir="${a.id}" title="${esc(a.nom)} : clique pour le détail">
+        <span class="chev" aria-hidden="true"></span>
         ${ctx.boutonCopier(a.nom, 'ressource')}
         ${icone(a.iconId)}
         <span class="n">${esc(a.nom)}${a.plan?.alerte ? ' <span class="warn" title="À revérifier à l\'HDV">⚠</span>' : ''}</span>
@@ -118,7 +119,6 @@ export function renderAchats(ctx) {
       <div class="kpi"><div class="v">${achats.reduce((s, a) => s + (a.plan?.nbLots ?? 0), 0)}</div><div class="l">lots</div></div>
     </div>
     <div class="crafts-l">${L.crafts.map(c => `<span class="craft-c" title="${esc(c.nom)}">${icone(c.iconId)}<span class="n">${esc(c.nom)}</span><b>×${c.n}</b></span>`).join('')}</div>
-    <p class="muted small">Quantités additionnées sur tous les crafts, lots les moins chers au moment de la génération. Clique une ressource pour voir ses lots, son relevé et les crafts qui l'utilisent.</p>
     ${corps}
     <div class="row"><button id="ac-raz" class="link small">tout décocher</button></div>`;
 

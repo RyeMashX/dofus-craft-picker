@@ -58,7 +58,7 @@ export function renderCraft(ctx) {
   const depasseBudget = ev.capital > budget;
   const ouverts = (S.craftOuverts ??= new Set());
   const lignePlan = l => `<div class="cp-l${l.raison || l.enVente ? ' alerte' : ''}${ouverts.has(`p${l.id}`) ? ' ouvert' : ''}" data-volet="p${l.id}">
-      <div class="cp-nom">${icone(l.iconId)} <span class="n">${esc(l.nom)}</span> ${l.raison ? '' : tagNiveau(l.niveau)} ${confHtml(l.confiance)}</div>
+      <div class="cp-nom"><span class="chev" aria-hidden="true"></span>${icone(l.iconId)} <span class="n">${esc(l.nom)}</span> ${l.raison ? '' : tagNiveau(l.niveau)} ${confHtml(l.confiance)}</div>
       <div class="cp-chiffres">
         <span class="stepper"><button data-moins="${l.id}" title="Un craft de moins">−</button><b>${l.n}</b><button data-plus="${l.id}" title="Un craft de plus">+</button></span>
         <span class="muted small">coût</span> ${fmtK(l.coutN)}
@@ -96,7 +96,7 @@ export function renderCraft(ctx) {
         <button id="cp-achats" class="primary small">${achatsAJour ? 'Voir la liste d\'achat →' : 'Générer la liste d\'achat →'}</button>
         <button id="cp-tout-vendre" class="secondary small" title="Chaque exemplaire du plan devient une ligne « draft » dans Ventes">🏷 Tout mettre en vente</button></div>
       ${S.etat.listeAchat && !achatsAJour ? '<p class="small warn">Le plan a changé depuis la dernière liste d\'achat.</p>' : ''}
-      <p class="muted small">Marge réelle : taxe de 2 % et FM estimée déduites (coût moyen de FM de tes ventes du même item, rien si n/a ; détail au survol d\'un nom). Coût total calculé avec les achats regroupés : une ressource partagée entre plusieurs crafts est achetée en une fois.</p>`
+      <p class="muted small">Marge nette de la taxe et de la FM estimée ; achats regroupés entre crafts.</p>`
       : '<p class="muted small">Le plan est vide. Ajoute des crafts depuis la liste ci-dessous, ou régénère-le.</p>'}`;
 
   // ---- viables ----
@@ -109,7 +109,7 @@ export function renderCraft(ctx) {
   const ligneViable = v => {
     const dans = plan[v.id] ?? 0;
     return `<div class="cv-l${dans ? ' dans' : ''}${ouverts.has(`v${v.id}`) ? ' ouvert' : ''}" data-volet="v${v.id}">
-      <div class="cp-nom">${icone(v.iconId)} <span class="n">${esc(v.nom)}</span> ${tagNiveau(v.niveau)} ${confHtml(v.confiance)}
+      <div class="cp-nom"><span class="chev" aria-hidden="true"></span>${icone(v.iconId)} <span class="n">${esc(v.nom)}</span> ${tagNiveau(v.niveau)} ${confHtml(v.confiance)}
         ${v.enVente ? `<span class="tag tard" title="Déjà en vente : pas recommandé">en vente ${v.enVente}</span>` : ''}</div>
       <div class="cp-chiffres">
         <span class="muted small">vente</span> ${fmtK(v.prixVente)} <span class="muted small">craft</span> ${fmtK(v.cout)}
@@ -124,7 +124,7 @@ export function renderCraft(ctx) {
       <div class="cv-outils"><button id="cv-sans-vente" class="toggle${C.sansVente ? ' on' : ''}" title="${C.sansVente ? 'Afficher' : 'Masquer'} les items qui ont déjà des exemplaires en vente${nExclus ? ` · ${nExclus} item${nExclus > 1 ? 's' : ''} de la liste noire, jamais affichés` : ''}">${C.sansVente ? '✓ ' : ''}hors vente${nEnVente ? ` <span class="nb">${nEnVente}</span>` : ''}</button>
       <div id="cv-filtre" class="seg">${[['tous', 'tous'], ['cible', '≥ ' + Math.round(p.margeMin * 100) + ' %'], ['acceptable', Math.round(p.margeAcceptable * 100) + '–' + Math.round(p.margeMin * 100) + ' %']].map(([k, l]) => `<button data-f="${k}" class="${C.filtre === k ? 'on' : ''}">${l}</button>`).join('')}</div></div></div>
     ${rows.length ? `<div class="cp">${rows.slice(0, n).map(ligneViable).join('')}</div>${rows.length > n ? `<p class="small"><button id="cv-plus" class="link small">afficher 50 de plus (${rows.length - n} restants)</button></p>` : ''}` : '<p class="muted small">Aucun craft dans cette catégorie.</p>'}
-    <p class="muted small">Viable : données sans orange ni noir, au moins ${p.volumeMin} ventes par mois, rendement d'au moins ${Math.round(p.margeAcceptable * 100)} % FM estimée comprise, aucune ressource introuvable à l'HDV. La confiance reflète la fraîcheur des données (pondérée par le poids de chaque ressource dans le coût) et ne modifie pas la marge.</p>`;
+    <p class="muted small">Viable : données à jour, ${p.volumeMin} ventes / mois et ${Math.round(p.margeAcceptable * 100)} % de rendement minimum.</p>`;
 
   $('#craft-plan').innerHTML = planHtml;
   $('#craft-viables').innerHTML = viablesHtml;
