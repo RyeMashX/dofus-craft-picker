@@ -175,7 +175,7 @@ export function evaluerPlan(plan, liste, offres, catalogue, p, base = null) {
     const ev = evaluerItem(v.item, toutes, p, n);
     lignes.push({ ...v, n, coutN: ev.capital, craftN: ev.coutCraft, fmN: ev.coutFm, revenuN: ev.revenu ?? 0, margeN: ev.marge ?? 0, rendementN: ev.rendement, depasse: n > v.maxCrafts });
   }
-  lignes.sort((a, b) => b.margeN - a.margeN);
+  lignes.sort((a, b) => (b.rendementN ?? -Infinity) - (a.rendementN ?? -Infinity)); // % de marge décroissant
   const achats = achatsConsolides(lignes, toutes, catalogue, p);
   const fm = lignes.reduce((s, l) => s + l.fmN, 0);
   const capital = achats.reduce((s, a) => s + (a.plan?.cout ?? 0), 0) + fm;

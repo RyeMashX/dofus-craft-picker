@@ -178,7 +178,7 @@ function voletCraft(ctx, f, n, p) {
     <p class="vo-note muted">Par craft, taxe de ${pct(p.taxeVente)} déduite${fs ? `, FM : moyenne de ${fs.n} vente${fs.n > 1 ? 's' : ''}` : ''}.</p>
     <p class="vo-conf">${confHtml(f.confiance)} ${det.length ? `<span class="muted">À vérifier :</span> ${det.map(esc).join(' · ')}` : '<span class="muted">Toutes les données sont à jour.</span>'}</p>
     <table class="vo-t"><thead><tr><th></th><th class="r">qté</th><th class="r">prix/u</th><th class="r">coût</th></tr></thead><tbody>
-    ${d.lignes.sort((a, b) => (b.cout ?? Infinity) - (a.cout ?? Infinity)).map(l => `<tr><td class="tn">${icone(l.iconId)}<span>${esc(l.nom)}</span>${pastille(l.niveau)}</td><td class="r">${fmt(l.q / n)}</td><td class="r">${prix(l)}</td><td class="r">${l.cout == null ? '–' : fmtK(l.cout / n)}</td></tr>`).join('')}
+    ${d.lignes.map(l => `<tr><td class="tn">${icone(l.iconId)}<span>${esc(l.nom)}</span>${pastille(l.niveau)}</td><td class="r">${fmt(l.q / n)}</td><td class="r">${prix(l)}</td><td class="r">${l.cout == null ? '–' : fmtK(l.cout / n)}</td></tr>`).join('')}
     </tbody><tfoot><tr><td colspan="3">Coût pour 1 craft</td><td class="r"><b>${fmtK(craftU)}</b></td></tr>
       ${n > 1 ? `<tr><td colspan="3">Coût pour ${n} crafts</td><td class="r"><b>${fmtK(d.total)}</b></td></tr>` : ''}</tfoot></table>
     ${n > 1 ? `<p class="vo-note muted">Prix unitaires payés en achetant pour ${n} crafts.</p>` : ''}
