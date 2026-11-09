@@ -146,6 +146,10 @@ img.ico, span.ico { display: inline-block; width: 22px; height: 22px; vertical-a
 
 /* ===== Données ===== */
 body.view-donnees main, body.view-donnees header.top { max-width: 1180px; }
+/* Bilan : onglet de lecture, jamais en fenêtre flottante → toute la largeur */
+body.view-bilan main, body.view-bilan header.top { max-width: 1180px; }
+body.view-bilan #bilan .cp { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 8px; }
+body.view-bilan #bilan .prix-items td.tn { max-width: none; }
 .table-large { overflow-x: auto; }
 .rt.don th .fl { color: var(--muted); font-size: 10px; } .rt.don th.on .fl { color: var(--accent); }
 .rt.don td.nom { max-width: 260px; }
@@ -380,7 +384,7 @@ body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
 }
 .prix-items .pi-det > td { padding: 4px 0 8px 22px; background: #1b1d22; white-space: normal; }
 .pi-t td:first-child { white-space: normal; }
-.pi-t { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+.pi-t { width: 100%; max-width: 760px; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
 .pi-t th { font-size: 10px; color: var(--muted); font-weight: 600; text-align: left; }
 .pi-t td { padding: 2px 4px; border-top: 1px solid #22252c; width: auto !important; }
 .pi-t .r { text-align: right; }
