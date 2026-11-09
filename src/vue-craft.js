@@ -2,7 +2,7 @@
 // crafts viables en dessous (toujours visibles). La marge affichée est la marge réelle :
 // ni la confiance ni l'effort ne la modifient.
 
-import { viables, recommander, evaluerPlan, niveauConfiance, detailCraft } from './craft-plan.js';
+import { viables, recommanderDansBudget, evaluerPlan, niveauConfiance, detailCraft } from './craft-plan.js';
 import { pastille } from './vue-donnees.js';
 import { ajouterVente } from './ventes.js';
 import { estExclu } from './statut.js';
@@ -44,7 +44,7 @@ export function renderCraft(ctx) {
   const generer = async () => {
     if (genere && Object.keys(plan).length && !(await ctx.confirmer('Remplacer le plan de craft actuel par une nouvelle recommandation ?', { ok: 'Régénérer' }))) return;
     S.etat.craftGenere = { date: Date.now(), budget: S.etat.budget };
-    fixer(recommander(liste, offres, budget, p));
+    fixer(recommanderDansBudget(liste, offres, budget, p, S.catalogue, S.base));
     ctx.toast('Plan de craft généré ✓');
   };
   // Mise en vente : chaque unité devient une ligne « draft » dans Ventes et sort du plan

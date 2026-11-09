@@ -107,3 +107,13 @@ test('ressource introuvable à l\'HDV : orange, plus de prix, ses crafts ne sont
   assert.equal(niveauRessource(b.ressources[101], T + 1), 'vert');
   assert.ok(viables(cat, b, p, T + 1).liste.some(v => v.id === cat.items[0].id));
 });
+
+test('recommandation dans le budget : le plan regroupé ne dépasse jamais le budget', async () => {
+  const { recommanderDansBudget } = await import('../src/craft-plan.js');
+  const b = base();
+  const { liste, offres } = viables(cat, b, p, T);
+  for (const budget of [1e6, 3e6, 10e6, 30e6]) {
+    const plan = recommanderDansBudget(liste, offres, budget, p, cat, b);
+    assert.ok(evaluerPlan(plan, liste, offres, cat, p, b).capital <= budget);
+  }
+});

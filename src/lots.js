@@ -36,10 +36,9 @@ export function valeurSurplus(s, offre, plafond, p) {
   const unite = dispo(offre, 1) ? Math.min(r * offre[1], plafond)
     : dispo(offre, 10) ? Math.min(r * offre[10] / 10, plafond) : 0;
   const paquet = dispo(offre, 10) ? Math.min(r * offre[10], 10 * plafond) : 0;
+  // k paquets de 10 + le reste à l'unité : linéaire en k, donc le meilleur est k = 0 ou k maximal
   let best = s * unite;
-  for (let k = 1; k <= Math.floor(s / 10) && paquet; k++) {
-    best = Math.max(best, k * paquet + (s - 10 * k) * unite);
-  }
+  if (paquet) { const k = Math.floor(s / 10); best = Math.max(best, k * paquet + (s - 10 * k) * unite); }
   return best * (1 - p.taxeVente);
 }
 
@@ -53,7 +52,10 @@ function meilleursPlans(q, offre, p, profondeur, surcout) {
     const r1000 = Math.max(0, q - 1000 * n1000);
     for (let n100 = 0; n100 <= max(100, r1000); n100++) {
       const r100 = Math.max(0, r1000 - 100 * n100);
-      for (let n10 = 0; n10 <= max(10, r100); n10++) {
+      // Le coût en fonction de n10 est linéaire par morceaux : le minimum est sur une cassure (profondeur des
+      // lots x10, profondeur des lots x1, besoin couvert sans x1, besoin dépassé). On ne teste que celles-là :
+      // des milliers d'unités ne font plus des milliers d'essais.
+      for (const n10 of candidatsX10(r100, max(10, r100), profondeur, dispo(offre, 1))) {
         const n1 = Math.max(0, r100 - 10 * n10);
         if (n1 > 0 && !dispo(offre, 1)) continue;
 
@@ -69,6 +71,15 @@ function meilleursPlans(q, offre, p, profondeur, surcout) {
     }
   }
   return { best, sansSurplus };
+}
+
+function candidatsX10(r, max, profondeur, avecX1) {
+  const c = new Set([0, max]);
+  const ajoute = x => { for (const v of [Math.floor(x), Math.ceil(x)]) for (const d of [-1, 0, 1]) { const n = v + d; if (n >= 0 && n <= max) c.add(n); } };
+  ajoute(r / 10);                                                         // plus besoin de x1 / début du surplus
+  if (Number.isFinite(profondeur[10])) ajoute(profondeur[10]);           // les x10 deviennent plus chers
+  if (avecX1 && Number.isFinite(profondeur[1])) ajoute((r - profondeur[1]) / 10); // les x1 deviennent plus chers
+  return [...c].sort((a, b) => a - b);
 }
 
 function choisir({ best, sansSurplus }, p) {

@@ -18,25 +18,31 @@ export function optionsItem(item, offres, p) {
 }
 
 export function allouer(items, offres, budget, p) {
-  const nbPas = Math.floor(budget / p.pasBudget);
-  // dp[b] = meilleure sélection avec au plus b pas de budget
-  let dp = Array.from({ length: nbPas + 1 }, () => ({ score: 0, choix: [] }));
-
+  const nbPas = Math.max(0, Math.floor(budget / p.pasBudget));
+  // dp[b] = meilleur score avec au plus b pas de budget ; pour chaque item, l'option retenue à chaque b
+  // (on remonte ensuite ces choix au lieu de recopier des listes à chaque case : beaucoup plus rapide)
+  let dp = new Float64Array(nbPas + 1);
+  const etapes = [];
   for (const item of items) {
-    const opts = optionsItem(item, offres, p);
+    const opts = optionsItem(item, offres, p).map(o => ({ o, c: Math.ceil(o.capital / p.pasBudget) }));
     if (!opts.length) continue;
-    const suivant = dp.slice();
-    for (const o of opts) {
-      const c = Math.ceil(o.capital / p.pasBudget);
+    const suivant = dp.slice(), pris = new Int16Array(nbPas + 1).fill(-1);
+    opts.forEach(({ o, c }, k) => {
       for (let b = c; b <= nbPas; b++) {
-        const cand = dp[b - c].score + o.score;
-        if (cand > suivant[b].score) suivant[b] = { score: cand, choix: [...dp[b - c].choix, o] };
+        const cand = dp[b - c] + o.score;
+        if (cand > suivant[b]) { suivant[b] = cand; pris[b] = k; }
       }
-    }
+    });
+    etapes.push({ opts, pris });
     dp = suivant;
   }
+  const choix = [];
+  for (let e = etapes.length - 1, b = nbPas; e >= 0; e--) {
+    const k = etapes[e].pris[b];
+    if (k >= 0) { const { o, c } = etapes[e].opts[k]; choix.unshift(o); b -= c; }
+  }
+  const best = { score: dp[nbPas], choix };
 
-  const best = dp[nbPas];
   const capital = best.choix.reduce((s, o) => s + o.capital, 0);
   const marge = best.choix.reduce((s, o) => s + o.marge, 0);
   const crafts = best.choix.reduce((s, o) => s + o.n, 0);

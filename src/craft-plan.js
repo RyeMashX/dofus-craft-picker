@@ -144,6 +144,20 @@ export function recommander(liste, offres, budget, p) {
   return Object.fromEntries(a.choix.map(o => [o.id, o.n]));
 }
 
+// Recommandation qui tient dans le budget une fois les achats regroupés : regrouper une ressource partagée peut
+// coûter plus cher que la somme des crafts pris séparément (on vide plus de lots au prix affiché). Tant que le plan
+// dépasse, on retire le craft le moins rentable.
+export function recommanderDansBudget(liste, offres, budget, p, catalogue, base) {
+  const plan = recommander(liste, offres, budget, p);
+  for (let garde = 0; garde < 200; garde++) {
+    const ev = evaluerPlan(plan, liste, offres, catalogue, p, base);
+    if (ev.capital <= budget || !ev.lignes.length) break;
+    const pire = ev.lignes.reduce((a, l) => (l.rendementN ?? -Infinity) < (a.rendementN ?? -Infinity) ? l : a);
+    if (--plan[pire.id] <= 0) delete plan[pire.id];
+  }
+  return plan;
+}
+
 // Évaluation d'un plan { [id]: n } : lignes par item (chiffres réels) et totaux avec achats consolidés.
 // Un item du plan qui n'est plus viable reste dans le plan, évalué avec les données disponibles, et signalé (raison).
 export function evaluerPlan(plan, liste, offres, catalogue, p, base = null) {
