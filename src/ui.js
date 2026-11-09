@@ -582,7 +582,7 @@ async function scanner() {
       S.derniere = L;
       if (L.enregistre) noterScan(L);
       if (!L.enregistre && !o && L.type !== 'liste') ouvrirSaisie(preremplir(L.type, brut.lecture));
-      statut(L.enregistre ? 'Enregistré. Corrige avec « Modifier » si besoin, sinon passe au suivant.' : 'Lecture non enregistrée.');
+      statut(L.enregistre ? '' : 'Lecture non enregistrée.');
     }
   } catch (e) { statut('Erreur de lecture : ' + e.message); }
   b.classList.remove('busy'); b.disabled = !Cap.enCours();

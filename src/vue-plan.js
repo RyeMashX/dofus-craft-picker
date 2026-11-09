@@ -138,7 +138,6 @@ function renderDeroule(ctx) {
     ${termine ? `<div class="fin"><b>Plan terminé ✓</b><p class="small">Les données sont à jour pour le plan de craft.</p><button id="plan-craft" class="primary small">Voir le plan de craft</button></div>` : ''}
     ${hdvsTries.map(h => `<div class="hdv${etatHdv.get(h.hdv) ? ' fini' : ''}">
       <h3>${HDV[h.hdv]}${etatHdv.get(h.hdv) ? ' <span class="ok">✓</span>' : ''}</h3>
-      <p class="muted small">Filtres : niveau, catégories cochées, tri par nom. Descends la liste et scanne chaque ligne.</p>
       ${h.groupes.map(g => groupeHtml(h, g)).join('')}</div>`).join('')}`;
 
   S.flash = null;
