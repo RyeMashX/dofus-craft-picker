@@ -90,7 +90,7 @@ KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources), 
 
 ## Onglet Bilan
 
-**Historique des prix** : chaque « Prix modifié » (ou fusion d'une annonce relue à un autre prix) est gardé. Les lignes de Ventes et du Bilan montrent la suite des prix (3,5 M → 3,2 M → 2,9 M), l'écart au prix initial et le nombre de changements. Le Bilan donne les changements de prix par vente, la part vendue au prix initial, l'écart moyen prix final / initial, et le détail par item (ventes, changements, écart, délai). Les corrections du champ prix ne comptent pas comme des changements.
+**Historique des prix** : chaque « Prix modifié » (ou fusion d'une annonce relue à un autre prix) est gardé. Les lignes de Ventes et du Bilan montrent la suite des prix (3,5 M → 3,2 M → 2,9 M), l'écart au prix initial et le nombre de changements. Le Bilan donne les changements de prix par vente, la part vendue après un changement de prix, l'écart moyen prix final / initial, et un tableau par item (ventes, prix moyen, marge moyenne et rendement, changements, écart) ; un clic sur un item déplie le détail de chacune de ses ventes. Un changement de prix saisi par erreur se supprime avec le × à côté du prix (son 1 % de frais est retiré). Les corrections du champ prix ne comptent pas comme des changements.
 
 Ventes, chiffre d'affaires, marge et rendement, délai moyen de vente, détail par mois, liste de tout ce qui a été vendu (chiffres modifiables, « remettre en vente » en cas d'erreur).
 

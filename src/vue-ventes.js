@@ -5,7 +5,7 @@
 // - même item à un autre prix → tu choisis : fusionner avec une ligne existante ou créer une ligne.
 // « Vendu » sort la ligne de la liste : elle passe dans l'onglet Bilan.
 
-import { historiquePrix, ecartPrix, actives, marge, rendement, majLigne, changerPrix, supprimerLigne, marquerVendu, importerCapture, fusionner, nouvelleLigne, trouverLigne } from './ventes.js';
+import { supprimerChangement, historiquePrix, ecartPrix, actives, marge, rendement, majLigne, changerPrix, supprimerLigne, marquerVendu, importerCapture, fusionner, nouvelleLigne, trouverLigne } from './ventes.js';
 import { coutEstime } from './craft-plan.js';
 import { compareDofus } from './fraicheur.js';
 import { icone } from './vue-plan.js';
@@ -20,7 +20,8 @@ export function histPrix(ctx, l) {
   const h = historiquePrix(l);
   if (h.length < 2) return '';
   const e = ecartPrix(l);
-  return `<div class="vt-hist"><span class="muted">prix</span>${h.map((x, k) => `<span class="${k === h.length - 1 ? 'pfin' : ''}" title="${dateCourte(x.date)}">${ctx.fmtK(x.prix)}</span>`).join('<span class="muted">→</span>')}
+  // chaque changement (k ≥ 1) peut être supprimé s'il a été saisi par erreur
+  return `<div class="vt-hist"><span class="muted">prix</span>${h.map((x, k) => `<span class="${k === h.length - 1 ? 'pfin' : ''}${k ? ' chg' : ''}" title="${dateCourte(x.date)}">${ctx.fmtK(x.prix)}${k ? `<button class="chg-x" data-supchg="${l.uid}|${k - 1}" title="Supprimer ce changement de prix (et son 1 % de frais)" aria-label="Supprimer ce changement">×</button>` : ''}</span>`).join('<span class="muted">→</span>')}
     <span class="${e < 0 ? 'bad' : 'ok'}" title="Écart au prix initial">${e > 0 ? '+' : ''}${ctx.pct(e)}</span><span class="muted">· ${h.length - 1} changement${h.length > 2 ? 's' : ''}</span></div>`;
 }
 
@@ -33,6 +34,13 @@ const aideFrais = (ctx, l) => l.fraisManuel ? 'Saisi à la main. Vide le champ p
 export const champ = (ctx, l, k, lib) => `<label class="vf"><span>${k === 'frais' && l.changements?.length ? `${lib} (+${l.changements.length})` : lib}</span><input class="num milliers${k === 'frais' && !l.fraisManuel && l.statut === 'draft' ? ' auto' : ''}" inputmode="numeric" data-uid="${l.uid}" data-champ="${k}" value="${ctx.fmtSaisie(l[k])}"${k === 'frais' ? ` title="${ctx.esc(aideFrais(ctx, l))}"` : k === 'prix' && l.statut === 'valide' ? ' title="Corrige le prix sans toucher aux frais. Pour un changement de prix à l\'HDV, utilise « Prix modifié »."' : ''}></label>`;
 export function brancherChamps(ctx, sel) {
   const { S, $$ } = ctx;
+  $$(`${sel} [data-supchg]`).forEach(b => b.onclick = async e => {
+    e.stopPropagation();
+    const [u, k] = b.dataset.supchg.split('|');
+    const c = trouverLigne(S.base, u)?.changements?.[+k];
+    if (!c || !(await ctx.confirmer(`Supprimer le changement de prix ${ctx.fmt(c.ancien)} → ${ctx.fmt(c.prix)} ? Son 1 % de frais (${ctx.fmt(c.frais)}) sera retiré.`, { ok: 'Supprimer' }))) return;
+    supprimerChangement(S.base, u, +k); ctx.sauverBase(); ctx.renderTout();
+  });
   $$(`${sel} input[data-champ]`).forEach(el => el.onchange = () => {
     majLigne(S.base, el.dataset.uid, el.dataset.champ, ctx.nombreSaisi(el.value));
     ctx.sauverBase(); ctx.renderTout();

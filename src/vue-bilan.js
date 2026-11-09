@@ -1,8 +1,8 @@
 // Onglet Bilan : statistiques et liste de tout ce qui a été vendu.
 
-import { vendues, marge, rendement, bilan, remettreEnVente, prixParItem } from './ventes.js';
+import { vendues, marge, rendement, bilan, remettreEnVente, prixParItem, nbChangements, historiquePrix } from './ventes.js';
 import { icone } from './vue-plan.js';
-import { champ, brancherChamps, jourIso, histPrix } from './vue-ventes.js';
+import { champ, brancherChamps, jourIso, histPrix, dateCourte } from './vue-ventes.js';
 
 const MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 const nomMois = k => { const [a, m] = k.split('-'); return `${MOIS[+m - 1]} ${a}`; };
@@ -29,6 +29,9 @@ export function renderBilan(ctx) {
     </div>`;
   };
 
+  const ouverts = (S.bilanOuverts ??= new Set());
+  // écran étroit : 4 colonnes visibles (voir style.css), le détail doit s'étendre sur 4 colonnes et pas 6
+  const etroit = $('body').ownerDocument.defaultView.matchMedia('(max-width: 560px)').matches;
   $('#bilan').innerHTML = `
     <div class="kpis kpis4">
       <div class="kpi"><div class="v">${b.ventes}</div><div class="l">ventes</div></div>
@@ -39,11 +42,15 @@ export function renderBilan(ctx) {
     ${b.ventes ? `<h3>Prix de vente</h3>
     <div class="kpis">
       <div class="kpi"><div class="v">${b.changementsMoyens.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}</div><div class="l">changements de prix par vente</div></div>
-      <div class="kpi"><div class="v">${pct(b.sansChangement)}</div><div class="l">vendus au prix initial</div></div>
+      <div class="kpi"><div class="v">${pct(1 - b.sansChangement)}</div><div class="l">vendus après un changement de prix</div></div>
       <div class="kpi"><div class="v ${b.ecartMoyen < 0 ? 'bad' : ''}">${b.ecartMoyen > 0 ? '+' : ''}${pct(b.ecartMoyen)}</div><div class="l">écart moyen prix final / initial</div></div>
     </div>
-    <table class="rt mois prix-items"><thead><tr><th>item</th><th class="r">ventes</th><th class="r" title="Changements de prix moyens par vente">chgts</th><th class="r" title="Écart moyen du prix de vente au prix initial">écart</th><th class="r" title="Délai moyen de vente">délai</th></tr></thead><tbody>
-      ${prixParItem(S.base).map(p => { const it = items.get(p.id); return `<tr><td class="tn">${icone(it?.iconId)}<span>${esc(it?.nom ?? `#${p.id}`)}</span></td><td class="r">${p.ventes}</td><td class="r">${p.changementsMoyens.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}</td><td class="r ${p.ecartMoyen < 0 ? 'bad' : ''}">${p.ecartMoyen ? `${p.ecartMoyen > 0 ? '+' : ''}${pct(p.ecartMoyen)}` : '0 %'}</td><td class="r">${p.delaiMoyen == null ? '–' : `${p.delaiMoyen.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} j`}</td></tr>`; }).join('')}
+    <table class="rt mois prix-items"><thead><tr><th>item</th><th class="r">ventes</th><th class="r" title="Prix de vente moyen">prix</th><th class="r" title="Marge moyenne par vente, et rendement">marge</th><th class="r" title="Changements de prix moyens par vente">chgts</th><th class="r" title="Écart moyen du prix de vente au prix initial">écart</th></tr></thead><tbody>
+      ${prixParItem(S.base).map(p => { const it = items.get(p.id), ouvert = ouverts.has(p.id);
+        return `<tr class="pi-l${ouvert ? ' ouvert' : ''}" data-pi="${p.id}"><td class="tn"><span class="chev" aria-hidden="true"></span>${icone(it?.iconId)}<span>${esc(it?.nom ?? `#${p.id}`)}</span></td><td class="r">${p.ventes}</td><td class="r">${fmtK(p.prixMoyen)}</td><td class="r"><b class="${p.margeMoyenne >= 0 ? 'ok' : 'bad'}">${fmtK(p.margeMoyenne)}</b> <span class="muted">${pct(p.rendement)}</span></td><td class="r">${p.changementsMoyens.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}</td><td class="r ${p.ecartMoyen < 0 ? 'bad' : ''}">${p.ecartMoyen ? `${p.ecartMoyen > 0 ? '+' : ''}${pct(p.ecartMoyen)}` : '0 %'}</td></tr>
+        ${ouvert ? `<tr class="pi-det"><td colspan="${etroit ? 4 : 6}"><table class="pi-t"><thead><tr><th>vendu le</th><th class="r">prix</th><th class="r">marge</th><th class="r">délai</th></tr></thead><tbody>
+          ${p.lignes.map(l => { const m = marge(l), d = l.dateVente && l.dateMiseEnVente ? (l.dateVente - l.dateMiseEnVente) / 864e5 : null; return `<tr><td>${dateCourte(l.dateVente)}${nbChangements(l) ? `<div class="muted small">${historiquePrix(l).map(x => fmtK(x.prix)).join(' → ')}</div>` : ''}</td><td class="r">${fmtK(l.prix)}</td><td class="r"><span class="${m >= 0 ? 'ok' : 'bad'}">${fmtK(m)}</span> <span class="muted">${pct(rendement(l))}</span></td><td class="r">${d == null ? '–' : `${d.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} j`}</td></tr>`; }).join('')}
+          </tbody></table><p class="muted small">Moyennes : ${p.changementsMoyens.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} changement${p.changementsMoyens > 1 ? 's' : ''} de prix · écart final / initial ${p.ecartMoyen > 0 ? '+' : ''}${pct(p.ecartMoyen ?? 0)}${p.delaiMoyen != null ? ` · délai ${p.delaiMoyen.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} j` : ''}</p></td></tr>` : ''}`; }).join('')}
     </tbody></table>
     <p class="muted small">Prix initial : celui d'avant le premier « Prix modifié » (ou fusion d'une annonce relue à un autre prix). Les corrections du champ prix ne comptent pas comme des changements.</p>` : ''}
     ${b.parMois.length ? `<h3>Par mois</h3><table class="rt mois"><thead><tr><th></th><th class="r">ventes</th><th class="r">CA</th><th class="r">marge</th></tr></thead><tbody>
@@ -53,6 +60,7 @@ export function renderBilan(ctx) {
       : '<p class="muted small">Rien de vendu pour l\'instant. Dans l\'onglet Ventes, « ✓ Vendu » fait passer une ligne ici.</p>'}`;
 
   brancherChamps(ctx, '#bilan');
+  $$('#bilan [data-pi]').forEach(tr => tr.onclick = () => { const id = +tr.dataset.pi; if (ouverts.has(id)) ouverts.delete(id); else ouverts.add(id); ctx.renderTout(); });
   $$('#bilan [data-remettre]').forEach(x => x.onclick = () => { remettreEnVente(S.base, x.dataset.remettre); ctx.sauverBase(); ctx.renderTout(); });
   const plus = $('#bl-plus'); if (plus) plus.onclick = () => { S.bilanN = n + 50; ctx.renderTout(); };
 }

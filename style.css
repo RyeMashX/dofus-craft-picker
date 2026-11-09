@@ -361,3 +361,26 @@ body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
 .chev { display: inline-block; width: 0; height: 0; border-left: 5px solid var(--muted); border-top: 4px solid transparent; border-bottom: 4px solid transparent; margin-right: 6px; transition: transform .15s; flex: none; }
 .ouvert .chev, .ac-l.ouvert .chev { transform: rotate(90deg); border-left-color: var(--accent); }
 .cp-nom:hover .chev, .ac-ligne:hover .chev { border-left-color: var(--accent); }
+
+/* Ventes : suppression d'un changement de prix */
+.vt-hist .chg { position: relative; display: inline-flex; align-items: center; gap: 2px; }
+.chg-x { padding: 0 3px; font-size: 11px; line-height: 14px; border: none; background: transparent; color: var(--muted); border-radius: 3px; cursor: pointer; }
+.chg-x:hover { color: #fff; background: var(--ec, #d9534f); }
+/* Bilan : prix par item dépliable */
+.prix-items tr.pi-l { cursor: pointer; }
+.prix-items tr.pi-l:hover td { background: #22252c; }
+.prix-items tr.pi-l.ouvert .chev { transform: rotate(90deg); border-left-color: var(--accent); }
+.prix-items th:not(:first-child), .prix-items td:not(:first-child) { width: 12%; }
+.prix-items th:nth-child(4), .prix-items td:nth-child(4) { width: 20%; }
+/* écran étroit : changements et écart passent dans le détail de l'item */
+@media (max-width: 560px) {
+  .prix-items > thead th:nth-child(n+5), .prix-items > tbody > tr.pi-l > td:nth-child(n+5) { display: none; }
+  .prix-items th:not(:first-child), .prix-items td:not(:first-child) { width: 17%; }
+  .prix-items th:nth-child(4), .prix-items td:nth-child(4) { width: 27%; }
+}
+.prix-items .pi-det > td { padding: 4px 0 8px 22px; background: #1b1d22; white-space: normal; }
+.pi-t td:first-child { white-space: normal; }
+.pi-t { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+.pi-t th { font-size: 10px; color: var(--muted); font-weight: 600; text-align: left; }
+.pi-t td { padding: 2px 4px; border-top: 1px solid #22252c; width: auto !important; }
+.pi-t .r { text-align: right; }

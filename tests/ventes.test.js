@@ -138,3 +138,25 @@ test('coût de FM estimé : moyenne des ventes du même item seulement, n/a sino
   assert.equal(r.ajoutees[0].coutFm, null);
   assert.equal(nouvelleLigne(b, 1, 4e6, () => 2e6).coutFm, 500_000);
 });
+
+test('supprimer un changement de prix : frais retirés, prix et historique recousus', async () => {
+  const { supprimerChangement } = await import('../src/ventes.js');
+  const b = creerBase();
+  const l = ajouterVente(b, { id: 4, statut: 'valide', prix: 10_000_000 });   // frais 200 k
+  changerPrix(b, l.uid, 9_000_000, 1); changerPrix(b, l.uid, 8_000_000, 2);  // + 90 k + 80 k
+  supprimerChangement(b, l.uid, 0);                                           // le 10 M → 9 M était une erreur
+  assert.equal(l.frais, 280_000); assert.equal(l.prix, 8_000_000);
+  assert.deepEqual(historiquePrix(l).map(x => x.prix), [10_000_000, 8_000_000]);
+  supprimerChangement(b, l.uid, 0);                                           // dernier : retour au prix d'avant
+  assert.equal(l.prix, 10_000_000); assert.equal(l.frais, 200_000); assert.equal(l.changements.length, 0);
+});
+
+test('prix par item : prix moyen, marge moyenne et rendement', () => {
+  const b = creerBase();
+  for (const prix of [10e6, 8e6]) { const l = ajouterVente(b, { id: 6, statut: 'valide', prix, coutCraft: 5e6 }); marquerVendu(b, l.uid); }
+  const [p] = prixParItem(b);
+  assert.equal(p.prixMoyen, 9e6);
+  assert.equal(p.margeMoyenne, (10e6 - 5e6 - 2e5 + 8e6 - 5e6 - 1.6e5) / 2);
+  assert.ok(Math.abs(p.rendement - p.margeMoyenne * 2 / 10e6) < 1e-9);
+  assert.equal(p.lignes.length, 2);
+});

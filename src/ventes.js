@@ -118,6 +118,18 @@ export function coutFmEstime(base, id) {
 const fmDe = (base, id) => coutFmEstime(base, id)?.valeur ?? null;
 
 // ---------- historique des prix ----------
+// Supprimer le changement k (saisi par erreur) : ses frais (1 %) sont retirés ; si c'était le dernier,
+// la ligne reprend le prix d'avant ; sinon le changement suivant repart du prix d'avant.
+export function supprimerChangement(base, u, k) {
+  const l = trouverLigne(base, u), c = l?.changements?.[k];
+  if (!c) return l;
+  l.frais = Math.max(0, (l.frais ?? 0) - (c.frais ?? 0));
+  if (k === l.changements.length - 1) l.prix = c.ancien;
+  else l.changements[k + 1].ancien = c.ancien;
+  l.changements.splice(k, 1);
+  return l;
+}
+
 // Prix initial = prix d'avant le premier changement à l'HDV (les corrections ne comptent pas).
 export const prixInitial = l => l.changements?.length ? l.changements[0].ancien : l.prix;
 export const nbChangements = l => l.changements?.length ?? 0;
@@ -129,14 +141,19 @@ export const ecartPrix = l => { const i = prixInitial(l); return i && l.prix != 
 export function prixParItem(base) {
   const m = new Map();
   for (const l of vendues(base).filter(x => x.prix != null)) {
-    const a = m.get(l.id) ?? { id: l.id, ventes: 0, changements: 0, ecarts: [], delais: [] };
-    a.ventes++; a.changements += nbChangements(l);
+    const a = m.get(l.id) ?? { id: l.id, ventes: 0, changements: 0, ecarts: [], delais: [], prix: 0, marge: 0, couts: 0, lignes: [] };
+    a.ventes++; a.changements += nbChangements(l); a.lignes.push(l);
+    a.prix += l.prix; a.marge += marge(l) ?? 0; a.couts += (l.coutCraft ?? 0) + (l.coutFm ?? 0);
     const e = ecartPrix(l); if (e != null) a.ecarts.push(e);
     if (l.dateVente && l.dateMiseEnVente) a.delais.push((l.dateVente - l.dateMiseEnVente) / 864e5);
     m.set(l.id, a);
   }
   const moy = t => t.length ? t.reduce((s, x) => s + x, 0) / t.length : null;
-  return [...m.values()].map(a => ({ id: a.id, ventes: a.ventes, changementsMoyens: a.changements / a.ventes, ecartMoyen: moy(a.ecarts), delaiMoyen: moy(a.delais) }))
+  return [...m.values()].map(a => ({
+    id: a.id, ventes: a.ventes, changementsMoyens: a.changements / a.ventes, ecartMoyen: moy(a.ecarts), delaiMoyen: moy(a.delais),
+    prixMoyen: a.prix / a.ventes, margeMoyenne: a.marge / a.ventes, rendement: a.couts ? a.marge / a.couts : null,
+    lignes: a.lignes.sort((x, y) => (y.dateVente ?? 0) - (x.dateVente ?? 0)),
+  }))
     .sort((x, y) => y.changementsMoyens - x.changementsMoyens || (x.ecartMoyen ?? 0) - (y.ecartMoyen ?? 0));
 }
 
