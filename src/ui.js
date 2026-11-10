@@ -304,7 +304,8 @@ function suggestions(texte, mode, max = 8) {
     const ns = n.split(' ');
     if (!mots.every(m => ns.some(w => w.startsWith(m)))) continue;
     vus.add(n);
-    res.push({ ...c, rang: (n.startsWith(q) ? 0 : 1) * 1000 - c.niveau });
+    // nom exact d'abord (l'Or ne doit pas être noyé sous les Oreille), puis début du nom, puis plus haut niveau
+    res.push({ ...c, rang: (n === q ? 0 : n.startsWith(q) ? 1 : 2) * 1000 - c.niveau });
   }
   return res.sort((a, b) => a.rang - b.rang || a.nom.localeCompare(b.nom, 'fr')).slice(0, max);
 }

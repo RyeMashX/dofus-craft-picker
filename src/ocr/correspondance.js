@@ -22,7 +22,10 @@ export function distance(a, b) {
 // confiance = 1 − distance / longueur. Le niveau, s'il est lu, départage.
 export function trouver(nomLu, candidats, { niveau = null, confianceMin = 0.75 } = {}) {
   const lu = normaliser(nomLu);
-  if (lu.length < 3) return null;
+  if (lu.length < 3) { // nom très court (« Or ») : seulement un nom identique, sans tolérance
+    const c = candidats.find(c => normaliser(c.nom) === lu && (niveau == null || c.niveau == null || c.niveau === niveau));
+    return c ? { candidat: c, confiance: 1 } : null;
+  }
   let best = null;
   for (const c of candidats) {
     if (niveau != null && c.niveau != null && c.niveau !== niveau) continue;
