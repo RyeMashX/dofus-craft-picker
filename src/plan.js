@@ -4,8 +4,12 @@
 //   1. Préparer le craft (70 % par défaut) : on complète des dossiers d'items pour qu'ils soient « prêts »,
 //      en prenant à chaque fois l'item qui rapporte le plus par seconde de scan restante
 //      (valeur = marge estimée × ventes par jour ; les ressources partagées ne comptent qu'une fois).
-//   2. Entretien (le reste) : les données les plus anciennes du reste de la base, pondérées par leur importance ;
+//   2. Veille (10 % par défaut) : ce que ni le craft ni l'entretien ne demandent jamais : prix des équipements sous
+//      le seuil de volume, ressources qui ne servent qu'à des items non vendables, volume et prix des items exclus.
+//      Priorité aux règles habituelles : noir, rouge, orange, jaune, puis les vertes les plus anciennes.
+//   3. Entretien (le reste) : les données les plus anciennes du reste de la base, pondérées par leur importance ;
 //      noires, rouges, orange et jaunes d'abord, puis les vertes les plus anciennes quand il n'y a plus que du vert.
+//      Si l'entretien n'a plus rien à faire, la veille reprend le temps restant.
 // Puis présentation : HDV Équipements, puis HDV Ressources ; groupes de catégories (filtres HDV) ; tri Dofus.
 
 import { itemsFocus, estimerItem } from './entonnoir.js';
@@ -66,9 +70,10 @@ function importances(focus, base, p) {
   };
 }
 
-export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(), partCraft = p.partCraft ?? 0.7) {
-  // un item exclu (liste noire) sort complètement du plan de scan
-  const focus = itemsFocus(catalogue, p).filter(it => !estExclu(base, it.id, maintenant));
+export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(), partCraft = p.partCraft ?? 0.7, partVeille = p.partVeille ?? 0.1) {
+  // un item exclu (liste noire) sort du craft et de l'entretien (il reste suivi par la veille)
+  const tous = itemsFocus(catalogue, p);
+  const focus = tous.filter(it => !estExclu(base, it.id, maintenant));
   const temps = t => p.tempsScan[t.kind === 'ressource' ? 'ressource' : t.kind];
   const budget = minutes * 60;
   const choisies = new Map(); // clé → tâche
@@ -99,8 +104,35 @@ export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(
     vises.push(best.c.it.id);
   }
 
-  // ---- 2. entretien ----
+  // ---- 2. veille : les données que le craft et l'entretien ne demandent jamais ----
   const imp = importances(focus, base, p);
+  const veille = [];
+  const resVeille = new Set();
+  for (const it of tous) {
+    const b = base.items[it.id];
+    if (estExclu(base, it.id, maintenant)) {
+      veille.push({ kind: 'volume', id: it.id, score: poids(niveauVolume(b, maintenant), b?.volume?.date, FRAICHEUR.volume, maintenant) });
+      veille.push({ kind: 'prixItem', id: it.id, score: poids(niveauPrixItem(b, maintenant), b?.prix?.date, FRAICHEUR.prixItem, maintenant) });
+    } else if (b?.volume && b.volume.valeur < p.volumeMin) {
+      veille.push({ kind: 'prixItem', id: it.id, score: poids(niveauPrixItem(b, maintenant), b?.prix?.date, FRAICHEUR.prixItem, maintenant) });
+    }
+    for (const r of it.recette) if (!imp.demande.has(r.id)) resVeille.add(r.id);
+  }
+  for (const id of resVeille) {
+    const r = base.ressources[id];
+    veille.push({ kind: 'ressource', id, score: poids(niveauRessource(r, maintenant), r?.lots?.date, FRAICHEUR.ressource, maintenant) });
+  }
+  veille.sort((a, b) => b.score - a.score);
+  const remplirVeille = limite => {
+    for (const t of veille) {
+      if (t.score <= 0) break;
+      if (choisies.has(cleTache(t)) || utilise + temps(t) > limite) continue;
+      ajouter(t, 'veille');
+    }
+  };
+  remplirVeille(utilise + budget * partVeille);
+
+  // ---- 3. entretien ----
   const ent = [];
   const idsRes = new Set();
   for (const it of focus) {
@@ -125,6 +157,7 @@ export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(
     if (utilise + temps(t) > budget) continue;
     ajouter(t, 'entretien');
   }
+  remplirVeille(budget); // temps que l'entretien n'a pas pris
 
   // ---- prêts avant / après ----
   const pretsAvant = focus.filter(it => etats.get(it.id).pret).length;

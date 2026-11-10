@@ -88,16 +88,16 @@ test('tâche faite : relevé postérieur à la création du plan', () => {
   assert.equal(tacheFaite('ressource', 100, b, T), true);
 });
 
-test('plan : un item exclu disparaît, un item en vente n\'est plus préparé pour le craft', async () => {
+test('plan : un item exclu sort du craft et de l\'entretien (veille seulement), un item en vente n\'est plus préparé', async () => {
   const { exclure } = await import('../src/statut.js');
   const { ajouterVente } = await import('../src/ventes.js');
   const b = baseExemple();
   exclure(b, 1, null, T);
-  let plan = calculerPlan(cat, b, p, 10, T, 1);
-  assert.ok(!plan.taches.some(t => t.kind !== 'ressource' && t.id === 1));
+  let plan = calculerPlan(cat, b, p, 10, T, 0.7, 0.1);
+  assert.ok(plan.taches.filter(t => t.kind !== 'ressource' && t.id === 1).every(t => t.raison === 'veille'));
   const b2 = baseExemple();
   ajouterVente(b2, { id: 1, statut: 'valide', prix: 3e6 });
-  plan = calculerPlan(cat, b2, p, 0.5, T, 1); // 3 scans de craft : A (en vente) ne doit pas être visé
+  plan = calculerPlan(cat, b2, p, 0.5, T, 1, 0); // 3 scans de craft : A (en vente) ne doit pas être visé
   assert.ok(!plan.taches.some(t => t.kind === 'prixItem' && t.id === 1));
 });
 
@@ -114,4 +114,14 @@ test('organiser : une ressource consommable (potion…) va dans un HDV Consommab
   const h = organiser({ taches: [{ kind: 'ressource', id: 104 }, { kind: 'ressource', id: 101 }, { kind: 'prixItem', id: 1 }] }, cat2);
   assert.deepEqual(h.map(x => x.hdv), ['equipements', 'ressources', 'consommables']);
   assert.deepEqual(h[2].groupes[0].lignes.map(l => l.nom), ['Potion Étoilée']);
+});
+
+test('plan : la veille prend sa part (prix sous le seuil de volume, ressources des items non vendables), noires d\'abord', () => {
+  const b = creerBase();
+  for (const id of [1, 2]) { majVolume(b, id, 100, T); majPrixItem(b, id, [3e6], T); }
+  majVolume(b, 3, 20, T);                                   // C sous le seuil : son prix n'est jamais demandé ailleurs
+  for (const id of [100, 101, 102, 103]) majRessource(b, id, { 1: 1000 }, T);
+  const plan = calculerPlan(cat, b, p, 1, T);               // 6 scans de 10 s environ
+  const v = plan.taches.filter(t => t.raison === 'veille');
+  assert.ok(v.some(t => t.kind === 'prixItem' && t.id === 3));
 });

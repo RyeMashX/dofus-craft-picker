@@ -33,7 +33,7 @@ function renderPreparation(ctx) {
   const { S, $, esc, params } = ctx;
   const p = params();
   const pl = calculerPlan(S.catalogue, S.base, p, S.etat.minutes);
-  const craft = pl.taches.filter(t => t.raison === 'craft').length;
+  const nb = r => pl.taches.filter(t => t.raison === r).length;
   const parKind = k => pl.taches.filter(t => t.kind === k).length;
   const ts = p.tempsScan, m = p.tempsMesures ?? {};
   const src = k => m[k] >= 3 ? 'mesuré' : 'par défaut';
@@ -42,7 +42,7 @@ function renderPreparation(ctx) {
     <div class="kpis">
       <div class="kpi"><div class="v">${pl.taches.length}</div><div class="l">scans, ≈ ${Math.ceil(pl.secondes / 60)} min</div></div>
       <div class="kpi"><div class="v ok">${pl.pretsApres}</div><div class="l">items prêts après (${pl.pretsAvant} maintenant)</div></div>
-      <div class="kpi"><div class="v">${craft} / ${pl.taches.length - craft}</div><div class="l">pour le craft / entretien</div></div>
+      <div class="kpi"><div class="v">${nb('craft')} / ${nb('entretien')} / ${nb('veille')}</div><div class="l" title="Veille : prix des équipements sous le seuil de volume, ressources des seuls items non vendables, items exclus">craft / entretien / veille</div></div>
     </div>
     <p class="small muted">${parKind('volume')} courbes, ${parKind('prixItem')} annonces, ${parKind('ressource')} lots de ressources.
       Durée retenue : ${ts.volume} s par courbe (${src('volume')}), ${ts.prixItem} s par annonce (${src('prixItem')}), ${ts.ressource} s par ressource (${src('ressource')}).</p>

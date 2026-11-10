@@ -33,7 +33,7 @@ const ZONES_DEFAUT = {
 };
 const REGLAGES_DEFAUT = {
   volumeMin: PARAMS.volumeMin, margeMin: PARAMS.margeMin * 100, margeAcceptable: PARAMS.margeAcceptable * 100, modePrixVente: PARAMS.modePrixVente,
-  forgeron: PARAMS.metiers.Forgeron, effort: PARAMS.coutEffortParCraft / 1000, partCraft: 70,
+  forgeron: PARAMS.metiers.Forgeron, effort: PARAMS.coutEffortParCraft / 1000, partCraft: 70, partVeille: 10,
 };
 
 const S = {
@@ -61,6 +61,7 @@ function params() {
     coutEffortParCraft: +r.effort * 1000,
     metiers: { ...PARAMS.metiers, Forgeron: +r.forgeron },
     partCraft: (+r.partCraft || 70) / 100,
+    partVeille: (r.partVeille ?? 10) / 100,
     ...(({ tempsScan, mesures }) => ({ tempsScan, tempsMesures: mesures }))(tempsMesures(S.etat.journal, PARAMS.tempsScan)),
   };
 }
@@ -501,7 +502,8 @@ function renderBase(cat, p) {
     <span>Prix de vente visé</span><select data-reg="modePrixVente"><option value="min" ${r.modePrixVente === 'min' ? 'selected' : ''}>annonce la moins chère</option><option value="moy3" ${r.modePrixVente === 'moy3' ? 'selected' : ''}>moyenne des 3 moins chères</option></select>
     <span>Effort par craft (k kamas)</span><input class="num" data-reg="effort" value="${r.effort}">
     <span>Niveau Forgeron</span><input class="num" data-reg="forgeron" value="${r.forgeron}">
-    <span>Plan de scan : part pour le craft (%), le reste en entretien</span><input class="num" data-reg="partCraft" value="${r.partCraft}">`;
+    <span>Plan de scan : part pour le craft (%)</span><input class="num" data-reg="partCraft" value="${r.partCraft}">
+    <span>Plan de scan : part pour la veille (%), le reste en entretien</span><input class="num" data-reg="partVeille" value="${r.partVeille ?? 10}">`;
   $$('#reglages [data-reg]').forEach(el => el.onchange = () => { S.etat.reglages[el.dataset.reg] = el.value; sauverEtat(); renderTout(); });
 }
 
