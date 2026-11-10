@@ -4,15 +4,23 @@
 //   1. Préparer le craft (70 % par défaut) : on complète des dossiers d'items pour qu'ils soient « prêts »,
 //      en prenant à chaque fois l'item qui rapporte le plus par seconde de scan restante
 //      (valeur = marge estimée × ventes par jour ; les ressources partagées ne comptent qu'une fois).
-//   2. Entretien (le reste) : les données les plus anciennes du reste de la base, pondérées par leur importance.
+//   2. Entretien (le reste) : les données les plus anciennes du reste de la base, pondérées par leur importance ;
+//      noires, rouges, orange et jaunes d'abord, puis les vertes les plus anciennes quand il n'y a plus que du vert.
 // Puis présentation : HDV Équipements, puis HDV Ressources ; groupes de catégories (filtres HDV) ; tri Dofus.
 
 import { itemsFocus, estimerItem } from './entonnoir.js';
-import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus, compareCategorie, hdvDe, ORDRE_HDV } from './fraicheur.js';
+import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus, compareCategorie, hdvDe, ORDRE_HDV, FRAICHEUR } from './fraicheur.js';
+import { JOUR } from './base.js';
 import { estExclu, estEnVente } from './statut.js';
 
 const POIDS_NIVEAU = { noir: 3, rouge: 2.5, orange: 2, jaune: 1, vert: 0 }; // rouge entre noir et orange
 export const cleTache = t => `${t.kind}:${t.id}`;
+
+// Poids d'une donnée pour l'entretien. Une donnée verte compte aussi, selon son âge (0 tout juste relevée,
+// 0,6 au seuil du jaune) : quand il n'y a plus de jaune, l'entretien rafraîchit les vertes les plus anciennes
+// au lieu de rester inutilisé. Elle passe toujours après une donnée jaune.
+const poids = (niveau, date, seuils, maintenant) => niveau !== 'vert' ? POIDS_NIVEAU[niveau]
+  : 0.6 * Math.min(1, Math.max(0, (maintenant - (date ?? maintenant)) / (seuils.jaune * JOUR)));
 
 // Tâches nécessaires pour qu'un item devienne prêt (sans celles déjà prévues)
 function tachesPourPret(it, etat, base) {
@@ -98,20 +106,21 @@ export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(
   for (const it of focus) {
     const b = base.items[it.id];
     const nv = niveauVolume(b, maintenant);
-    if (nv !== 'vert') ent.push({ kind: 'volume', id: it.id, score: POIDS_NIVEAU[nv] * imp.volume(it) });
+    ent.push({ kind: 'volume', id: it.id, score: poids(nv, b?.volume?.date, FRAICHEUR.volume, maintenant) * imp.volume(it) });
     if ((b?.volume?.valeur ?? -1) >= p.volumeMin) {
       const np = niveauPrixItem(b, maintenant);
-      if (np !== 'vert') ent.push({ kind: 'prixItem', id: it.id, score: POIDS_NIVEAU[np] * imp.prixItem(it) });
+      ent.push({ kind: 'prixItem', id: it.id, score: poids(np, b?.prix?.date, FRAICHEUR.prixItem, maintenant) * imp.prixItem(it) });
     }
     it.recette.forEach(r => idsRes.add(r.id));
   }
   for (const id of idsRes) {
     if (!imp.demande.has(id)) continue; // ressource d'aucun item vendable
     const nr = niveauRessource(base.ressources[id], maintenant);
-    if (nr !== 'vert') ent.push({ kind: 'ressource', id, score: POIDS_NIVEAU[nr] * imp.ressource(id) });
+    ent.push({ kind: 'ressource', id, score: poids(nr, base.ressources[id]?.lots?.date, FRAICHEUR.ressource, maintenant) * imp.ressource(id) });
   }
   ent.sort((a, b) => b.score - a.score);
   for (const t of ent) {
+    if (t.score <= 0) break; // tout juste relevée : rien à gagner
     if (choisies.has(cleTache(t))) continue;
     if (utilise + temps(t) > budget) continue;
     ajouter(t, 'entretien');

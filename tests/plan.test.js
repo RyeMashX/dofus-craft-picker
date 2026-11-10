@@ -60,12 +60,21 @@ test('plan : rien à faire quand tout est vert', () => {
   assert.equal(plan.pretsAvant, 3);
 });
 
+test('plan : tout vert mais pas tout neuf, l\'entretien rafraîchit les données vertes les plus anciennes', () => {
+  const b = creerBase();
+  for (const id of [1, 2, 3]) { majVolume(b, id, 100, T - 5 * JOUR); majPrixItem(b, id, [3e6], T - JOUR); }
+  for (const id of [100, 101, 102]) majRessource(b, id, { 1: 1000 }, T - 0.5 * JOUR);
+  majRessource(b, 103, { 1: 1000 }, T - 2.5 * JOUR);   // la plus vieille, presque jaune
+  const plan = calculerPlan(cat, b, p, 10 / 60, T, 0); // un seul scan
+  assert.deepEqual(plan.taches.map(t => `${t.kind}:${t.id}:${t.raison}`), ['ressource:103:entretien']);
+});
+
 test('organiser : HDV Équipements puis Ressources, petites catégories fusionnées, tri Dofus', () => {
   const plan = calculerPlan(cat, baseExemple(), p, 5, T);
   const h = organiser(plan, cat);
   assert.deepEqual(h.map(x => x.hdv), ['equipements', 'ressources']);
   assert.deepEqual(h[0].groupes[0].categories, ['Anneau', 'Cape']);
-  assert.equal(h[0].groupes[0].lignes.find(l => l.id === 1).kinds.join('+'), 'prixItem');
+  assert.ok(h[0].groupes[0].lignes.find(l => l.id === 1).kinds.includes('prixItem'));
   const r = h[1].groupes;
   assert.equal(r.length, 1);
   assert.deepEqual(r[0].categories, ['Aile', 'Bois', 'Étoffe', 'Os']); // catégories : É rangé avec les E
