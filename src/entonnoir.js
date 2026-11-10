@@ -9,7 +9,7 @@
 import { itemsCraftables, versMoteur } from './catalogue.js';
 import { etatItem, niveauRessource } from './fraicheur.js';
 import { prixVenteEstime, evaluerItem } from './marge.js';
-import { planAchat } from './lots.js';
+import { resoudre, achatBase } from './souscraft.js';
 
 export function itemsFocus(catalogue, p) {
   const [nMin, nMax] = p.focusNiveaux;
@@ -25,11 +25,12 @@ export function estimerItem(it, base, p) {
   else if (b.prixMoyen) { prixVente = b.prixMoyen.valeur; sourceVente = 'moyen'; }
 
   let cout = 0, nbScan = 0, nbMoyen = 0, manquantes = 0;
+  const acheter = achatBase(base, p);
+  const compter = x => { if (x.mode === 'craft') x.composants.forEach(c => compter(c.res)); else if (x.source === 'lots') nbScan++; else nbMoyen++; };
   for (const r of it.recette) {
-    const res = base.ressources[r.id] ?? {};
-    if (res.lots) { cout += planAchat(r.qte, res.lots.valeurs, p)?.cout ?? 0; nbScan++; }
-    else if (res.prixMoyen) { cout += r.qte * res.prixMoyen.valeur; nbMoyen++; }
-    else manquantes++;
+    const x = resoudre(r, r.qte, acheter, p);
+    if (!x) { manquantes++; continue; }
+    cout += x.cout; compter(x);
   }
 
   if (prixVente == null || manquantes || cout <= 0) {

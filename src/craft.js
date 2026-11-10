@@ -1,7 +1,7 @@
-import { planAchat } from './lots.js';
+import { resoudre, achatOffres } from './souscraft.js';
 
 // Coût de n crafts d'une recette.
-// recette = [{ id, nom, qte }]   (qte pour 1 craft)
+// recette = [{ id, nom, qte, recette? }]   (qte pour 1 craft ; recette : sous-craft possible, voir souscraft.js)
 // offres  = { [idRessource]: { 1, 10, 100, 1000 } }
 // Les quantités sont cumulées sur les n crafts avant d'appliquer la règle des lots :
 // acheter pour 3 crafts n'est pas 3 fois le coût d'un craft.
@@ -9,7 +9,7 @@ import { planAchat } from './lots.js';
 export function coutCraft(recette, offres, n, p) {
   const lignes = recette.map(r => {
     const q = r.qte * n;
-    const plan = planAchat(q, offres[r.id], p);
+    const plan = resoudre(r, q, achatOffres(offres, p), p);
     return { id: r.id, nom: r.nom, qte: r.qte, q, plan };
   });
 

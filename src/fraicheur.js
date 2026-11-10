@@ -40,6 +40,14 @@ export function niveauRessource(r, maintenant = Date.now()) {
   return r?.prixMoyen ? 'orange' : 'noir';
 }
 
+// Fraîcheur d'une ligne de recette : la meilleure entre l'achat direct et le craft (le pire de ses composants)
+export function niveauLigne(r, base, maintenant = Date.now(), prof = 0) {
+  const propre = niveauRessource(base.ressources[r.id], maintenant);
+  if (!r.recette?.length || prof >= 6) return propre;
+  const craft = r.recette.map(c => niveauLigne(c, base, maintenant, prof + 1)).reduce((a, b) => rang(b) < rang(a) ? b : a, 'vert');
+  return rang(craft) > rang(propre) ? craft : propre;
+}
+
 // État complet d'un item du catalogue
 //   pret       : volume vert ou jaune, prix vert, ressources sans orange ni noir et au plus 2 jaunes
 //   utilisable : aucune donnée orange ou noire (jaune toléré partout) → plan de craft avec avertissement
@@ -47,7 +55,7 @@ export function etatItem(it, base, maintenant = Date.now(), maxJaunes = 2) {
   const b = base.items[it.id];
   const volume = niveauVolume(b, maintenant);
   const prix = niveauPrixItem(b, maintenant);
-  const ressources = it.recette.map(r => ({ id: r.id, niveau: niveauRessource(base.ressources[r.id], maintenant) }));
+  const ressources = it.recette.map(r => ({ id: r.id, niveau: niveauLigne(r, base, maintenant) }));
   const compte = { noir: 0, rouge: 0, orange: 0, jaune: 0, vert: 0 };
   ressources.forEach(r => compte[r.niveau]++);
   const resOk = compte.noir === 0 && compte.rouge === 0 && compte.orange === 0;

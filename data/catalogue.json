@@ -1,6 +1,6 @@
 {
  "source": "api.dofusdb.fr",
- "genereLe": "2026-11-04",
+ "genereLe": "2026-11-10",
  "niveaux": [
   190,
   200
@@ -14462,7 +14462,7 @@
     },
     {
      "id": 31678,
-     "qte": 4
+     "qte": 1
     },
     {
      "id": 26036,
@@ -28262,6 +28262,21 @@
    "niveau": 40,
    "typeId": 6,
    "iconId": 6017,
+   "recette": [
+    {
+     "id": 407,
+     "qte": 5
+    },
+    {
+     "id": 881,
+     "qte": 5
+    },
+    {
+     "id": 6841,
+     "qte": 5
+    }
+   ],
+   "metier": "Forgeron",
    "type": "Épée"
   },
   "202": {
@@ -28270,7 +28285,93 @@
    "niveau": 52,
    "typeId": 6,
    "iconId": 6016,
+   "recette": [
+    {
+     "id": 13339,
+     "qte": 6
+    },
+    {
+     "id": 413,
+     "qte": 3
+    },
+    {
+     "id": 2540,
+     "qte": 1
+    },
+    {
+     "id": 8385,
+     "qte": 3
+    }
+   ],
+   "metier": "Forgeron",
    "type": "Épée"
+  },
+  "286": {
+   "id": 286,
+   "nom": "Levure de Boulanger",
+   "niveau": 1,
+   "typeId": 48,
+   "iconId": 48137,
+   "recette": [
+    {
+     "id": 519,
+     "qte": 1
+    },
+    {
+     "id": 311,
+     "qte": 1
+    }
+   ],
+   "metier": "Alchimiste",
+   "type": "Poudre"
+  },
+  "303": {
+   "id": 303,
+   "nom": "Bois de Frêne",
+   "niveau": 1,
+   "typeId": 38,
+   "iconId": 38017,
+   "type": "Bois"
+  },
+  "307": {
+   "id": 307,
+   "nom": "Ailes de Moskito",
+   "niveau": 18,
+   "typeId": 104,
+   "iconId": 104019,
+   "type": "Aile"
+  },
+  "311": {
+   "id": 311,
+   "nom": "Eau Potable",
+   "niveau": 1,
+   "typeId": 228,
+   "iconId": 15026,
+   "type": "Liquide"
+  },
+  "313": {
+   "id": 313,
+   "nom": "Or",
+   "niveau": 160,
+   "typeId": 39,
+   "iconId": 39022,
+   "type": "Minerai"
+  },
+  "350": {
+   "id": 350,
+   "nom": "Argent",
+   "niveau": 120,
+   "typeId": 39,
+   "iconId": 39028,
+   "type": "Minerai"
+  },
+  "380": {
+   "id": 380,
+   "nom": "Menthe Sauvage",
+   "niveau": 60,
+   "typeId": 36,
+   "iconId": 36052,
+   "type": "Plante"
   },
   "395": {
    "id": 395,
@@ -28280,6 +28381,46 @@
    "iconId": 36067,
    "type": "Plante"
   },
+  "405": {
+   "id": 405,
+   "nom": "Malt",
+   "niveau": 120,
+   "typeId": 34,
+   "iconId": 34561,
+   "type": "Céréale"
+  },
+  "407": {
+   "id": 407,
+   "nom": "Pic de Prespic",
+   "niveau": 26,
+   "typeId": 47,
+   "iconId": 47134,
+   "type": "Os"
+  },
+  "413": {
+   "id": 413,
+   "nom": "Bec du Kwak de Vent",
+   "niveau": 44,
+   "typeId": 47,
+   "iconId": 47110,
+   "type": "Os"
+  },
+  "421": {
+   "id": 421,
+   "nom": "Ortie",
+   "niveau": 1,
+   "typeId": 36,
+   "iconId": 36642,
+   "type": "Plante"
+  },
+  "423": {
+   "id": 423,
+   "nom": "Lin",
+   "niveau": 80,
+   "typeId": 34,
+   "iconId": 34122,
+   "type": "Céréale"
+  },
   "426": {
    "id": 426,
    "nom": "Fibre de Chanvre",
@@ -28287,6 +28428,158 @@
    "typeId": 55,
    "iconId": 55123,
    "type": "Étoffe"
+  },
+  "428": {
+   "id": 428,
+   "nom": "Sauge",
+   "niveau": 20,
+   "typeId": 36,
+   "iconId": 36643,
+   "type": "Plante"
+  },
+  "443": {
+   "id": 443,
+   "nom": "Kobalte",
+   "niveau": 60,
+   "typeId": 39,
+   "iconId": 39077,
+   "type": "Minerai"
+  },
+  "444": {
+   "id": 444,
+   "nom": "Étain",
+   "niveau": 100,
+   "typeId": 39,
+   "iconId": 39078,
+   "type": "Minerai"
+  },
+  "445": {
+   "id": 445,
+   "nom": "Manganèse",
+   "niveau": 80,
+   "typeId": 39,
+   "iconId": 39397,
+   "type": "Minerai"
+  },
+  "446": {
+   "id": 446,
+   "nom": "Bauxite",
+   "niveau": 140,
+   "typeId": 39,
+   "iconId": 39076,
+   "type": "Minerai"
+  },
+  "449": {
+   "id": 449,
+   "nom": "Bois d'Ébène",
+   "niveau": 140,
+   "typeId": 38,
+   "iconId": 38073,
+   "type": "Bois"
+  },
+  "460": {
+   "id": 460,
+   "nom": "Bois de Chêne",
+   "niveau": 60,
+   "typeId": 38,
+   "iconId": 38092,
+   "type": "Bois"
+  },
+  "461": {
+   "id": 461,
+   "nom": "Bois d'If",
+   "niveau": 100,
+   "typeId": 38,
+   "iconId": 38094,
+   "type": "Bois"
+  },
+  "470": {
+   "id": 470,
+   "nom": "Bois d'Orme",
+   "niveau": 180,
+   "typeId": 38,
+   "iconId": 38140,
+   "type": "Bois"
+  },
+  "471": {
+   "id": 471,
+   "nom": "Bois d'Érable",
+   "niveau": 80,
+   "typeId": 38,
+   "iconId": 38153,
+   "type": "Bois"
+  },
+  "472": {
+   "id": 472,
+   "nom": "Bois de Charme",
+   "niveau": 160,
+   "typeId": 38,
+   "iconId": 38138,
+   "type": "Bois"
+  },
+  "473": {
+   "id": 473,
+   "nom": "Bois de Châtaignier",
+   "niveau": 20,
+   "typeId": 38,
+   "iconId": 38086,
+   "type": "Bois"
+  },
+  "474": {
+   "id": 474,
+   "nom": "Bois de Merisier",
+   "niveau": 120,
+   "typeId": 38,
+   "iconId": 38139,
+   "type": "Bois"
+  },
+  "476": {
+   "id": 476,
+   "nom": "Bois de Noyer",
+   "niveau": 40,
+   "typeId": 38,
+   "iconId": 38095,
+   "type": "Bois"
+  },
+  "519": {
+   "id": 519,
+   "nom": "Poudre de Perlinpainpain",
+   "niveau": 1,
+   "typeId": 48,
+   "iconId": 48002,
+   "type": "Poudre"
+  },
+  "532": {
+   "id": 532,
+   "nom": "Seigle",
+   "niveau": 100,
+   "typeId": 34,
+   "iconId": 34083,
+   "type": "Céréale"
+  },
+  "593": {
+   "id": 593,
+   "nom": "Orchidée Freyesque",
+   "niveau": 80,
+   "typeId": 35,
+   "iconId": 35192,
+   "type": "Fleur"
+  },
+  "594": {
+   "id": 594,
+   "nom": "Edelweiss",
+   "niveau": 100,
+   "typeId": 35,
+   "iconId": 35191,
+   "type": "Fleur"
+  },
+  "881": {
+   "id": 881,
+   "nom": "Laine de Ramane Strubien",
+   "niveau": 23,
+   "typeId": 57,
+   "iconId": 57208,
+   "type": "Laine"
   },
   "1557": {
    "id": 1557,
@@ -28296,6 +28589,22 @@
    "iconId": 78055,
    "type": "Rune de forgemagie"
   },
+  "1610": {
+   "id": 1610,
+   "nom": "Roue de Tivelo",
+   "niveau": 86,
+   "typeId": 96,
+   "iconId": 15977,
+   "type": "Écorce"
+  },
+  "1611": {
+   "id": 1611,
+   "nom": "Bourgeon de Pirolienne",
+   "niveau": 86,
+   "typeId": 108,
+   "iconId": 15979,
+   "type": "Bourgeon"
+  },
   "1660": {
    "id": 1660,
    "nom": "Ambre d'Abraknyde Sombre",
@@ -28303,6 +28612,544 @@
    "typeId": 50,
    "iconId": 50638,
    "type": "Pierre précieuse"
+  },
+  "1680": {
+   "id": 1680,
+   "nom": "Corne Brûlée du Minotoror",
+   "niveau": 120,
+   "typeId": 47,
+   "iconId": 47245,
+   "type": "Os"
+  },
+  "1682": {
+   "id": 1682,
+   "nom": "Écorce de Liroye Merline",
+   "niveau": 78,
+   "typeId": 96,
+   "iconId": 96542,
+   "type": "Écorce"
+  },
+  "1730": {
+   "id": 1730,
+   "nom": "Mesure de sel",
+   "niveau": 1,
+   "typeId": 48,
+   "iconId": 48261,
+   "type": "Poudre"
+  },
+  "1731": {
+   "id": 1731,
+   "nom": "Dose de jus goûtu",
+   "niveau": 1,
+   "typeId": 15,
+   "iconId": 15262,
+   "type": "Ressource diverse"
+  },
+  "1734": {
+   "id": 1734,
+   "nom": "Cerise",
+   "niveau": 1,
+   "typeId": 46,
+   "iconId": 46265,
+   "type": "Fruit"
+  },
+  "1736": {
+   "id": 1736,
+   "nom": "Citron",
+   "niveau": 1,
+   "typeId": 46,
+   "iconId": 46266,
+   "type": "Fruit"
+  },
+  "1754": {
+   "id": 1754,
+   "nom": "Poisson Igloo",
+   "niveau": 50,
+   "typeId": 41,
+   "iconId": 41271,
+   "type": "Poisson"
+  },
+  "1756": {
+   "id": 1756,
+   "nom": "Poisson Igloo Frit",
+   "niveau": 50,
+   "typeId": 49,
+   "iconId": 49073,
+   "recette": [
+    {
+     "id": 1754,
+     "qte": 1
+    },
+    {
+     "id": 2012,
+     "qte": 1
+    },
+    {
+     "id": 428,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "1759": {
+   "id": 1759,
+   "nom": "Crabe Sourimi Exotique",
+   "niveau": 30,
+   "typeId": 41,
+   "iconId": 41275,
+   "type": "Poisson"
+  },
+  "1762": {
+   "id": 1762,
+   "nom": "Poisson-Tigre",
+   "niveau": 40,
+   "typeId": 41,
+   "iconId": 41279,
+   "type": "Poisson"
+  },
+  "1766": {
+   "id": 1766,
+   "nom": "Bâton de Crabe Exotique",
+   "niveau": 30,
+   "typeId": 49,
+   "iconId": 49076,
+   "recette": [
+    {
+     "id": 1759,
+     "qte": 1
+    },
+    {
+     "id": 421,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "1769": {
+   "id": 1769,
+   "nom": "Poisson-Tigre Fumé",
+   "niveau": 40,
+   "typeId": 49,
+   "iconId": 49077,
+   "recette": [
+    {
+     "id": 1762,
+     "qte": 1
+    },
+    {
+     "id": 1734,
+     "qte": 1
+    },
+    {
+     "id": 428,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "1786": {
+   "id": 1786,
+   "nom": "Greuvette Horreur",
+   "niveau": 10,
+   "typeId": 41,
+   "iconId": 41298,
+   "type": "Poisson"
+  },
+  "1788": {
+   "id": 1788,
+   "nom": "Raie de Farle",
+   "niveau": 130,
+   "typeId": 41,
+   "iconId": 41300,
+   "type": "Poisson"
+  },
+  "1790": {
+   "id": 1790,
+   "nom": "Goujon Kiye",
+   "niveau": 1,
+   "typeId": 41,
+   "iconId": 41302,
+   "type": "Poisson"
+  },
+  "1792": {
+   "id": 1792,
+   "nom": "Bar Iton",
+   "niveau": 160,
+   "typeId": 41,
+   "iconId": 41303,
+   "type": "Poisson"
+  },
+  "1796": {
+   "id": 1796,
+   "nom": "Carpette des sables",
+   "niveau": 60,
+   "typeId": 41,
+   "iconId": 41307,
+   "type": "Poisson"
+  },
+  "1799": {
+   "id": 1799,
+   "nom": "Kralamoure Unique",
+   "niveau": 90,
+   "typeId": 41,
+   "iconId": 41311,
+   "type": "Poisson"
+  },
+  "1803": {
+   "id": 1803,
+   "nom": "Chaton-Perche",
+   "niveau": 120,
+   "typeId": 41,
+   "iconId": 41315,
+   "type": "Poisson"
+  },
+  "1807": {
+   "id": 1807,
+   "nom": "Sardine Sombre",
+   "niveau": 70,
+   "typeId": 41,
+   "iconId": 41319,
+   "type": "Poisson"
+  },
+  "1817": {
+   "id": 1817,
+   "nom": "Carpette Vapeur",
+   "niveau": 60,
+   "typeId": 49,
+   "iconId": 49087,
+   "recette": [
+    {
+     "id": 1796,
+     "qte": 1
+    },
+    {
+     "id": 1977,
+     "qte": 1
+    },
+    {
+     "id": 395,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "1824": {
+   "id": 1824,
+   "nom": "Chaton-Perche Sauté",
+   "niveau": 120,
+   "typeId": 49,
+   "iconId": 49092,
+   "recette": [
+    {
+     "id": 1803,
+     "qte": 1
+    },
+    {
+     "id": 1978,
+     "qte": 1
+    },
+    {
+     "id": 594,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "1827": {
+   "id": 1827,
+   "nom": "Sardine Sombre à l'Étouffée",
+   "niveau": 70,
+   "typeId": 49,
+   "iconId": 49095,
+   "recette": [
+    {
+     "id": 1807,
+     "qte": 1
+    },
+    {
+     "id": 311,
+     "qte": 1
+    },
+    {
+     "id": 395,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "1828": {
+   "id": 1828,
+   "nom": "Bar Iton Grillé",
+   "niveau": 160,
+   "typeId": 49,
+   "iconId": 49099,
+   "recette": [
+    {
+     "id": 1792,
+     "qte": 1
+    },
+    {
+     "id": 1975,
+     "qte": 1
+    },
+    {
+     "id": 16385,
+     "qte": 2
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "1829": {
+   "id": 1829,
+   "nom": "Beignet de Greuvette Horreur",
+   "niveau": 10,
+   "typeId": 49,
+   "iconId": 49100,
+   "recette": [
+    {
+     "id": 1786,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "1830": {
+   "id": 1830,
+   "nom": "Goujon Kiye en Tranche",
+   "niveau": 1,
+   "typeId": 49,
+   "iconId": 49101,
+   "recette": [
+    {
+     "id": 1790,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "1831": {
+   "id": 1831,
+   "nom": "Aile de Raie de Farle",
+   "niveau": 130,
+   "typeId": 49,
+   "iconId": 49102,
+   "recette": [
+    {
+     "id": 1788,
+     "qte": 1
+    },
+    {
+     "id": 1736,
+     "qte": 1
+    },
+    {
+     "id": 594,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "1834": {
+   "id": 1834,
+   "nom": "Truite Ancestrale Flambée",
+   "niveau": 20,
+   "typeId": 49,
+   "iconId": 49109,
+   "recette": [
+    {
+     "id": 1846,
+     "qte": 1
+    },
+    {
+     "id": 421,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "1837": {
+   "id": 1837,
+   "nom": "Brochet Tupe-Halett Farci",
+   "niveau": 80,
+   "typeId": 49,
+   "iconId": 49134,
+   "recette": [
+    {
+     "id": 1849,
+     "qte": 1
+    },
+    {
+     "id": 519,
+     "qte": 1
+    },
+    {
+     "id": 380,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "1840": {
+   "id": 1840,
+   "nom": "Aileron de Requin Marché-Libre",
+   "niveau": 150,
+   "typeId": 49,
+   "iconId": 49105,
+   "recette": [
+    {
+     "id": 1853,
+     "qte": 1
+    },
+    {
+     "id": 1973,
+     "qte": 1
+    },
+    {
+     "id": 7059,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "1846": {
+   "id": 1846,
+   "nom": "Truite Ancestrale",
+   "niveau": 20,
+   "typeId": 41,
+   "iconId": 41398,
+   "type": "Poisson"
+  },
+  "1849": {
+   "id": 1849,
+   "nom": "Brochet Tupe-Halett",
+   "niveau": 80,
+   "typeId": 41,
+   "iconId": 41402,
+   "type": "Poisson"
+  },
+  "1853": {
+   "id": 1853,
+   "nom": "Requin Marché-Libre",
+   "niveau": 150,
+   "typeId": 41,
+   "iconId": 41324,
+   "type": "Poisson"
+  },
+  "1859": {
+   "id": 1859,
+   "nom": "Kralamoure Unique Grillé",
+   "niveau": 90,
+   "typeId": 49,
+   "iconId": 49137,
+   "recette": [
+    {
+     "id": 1799,
+     "qte": 1
+    },
+    {
+     "id": 1986,
+     "qte": 1
+    },
+    {
+     "id": 380,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "1894": {
+   "id": 1894,
+   "nom": "Poil de Gliglitch",
+   "niveau": 146,
+   "typeId": 54,
+   "iconId": 54364,
+   "type": "Poil"
+  },
+  "1973": {
+   "id": 1973,
+   "nom": "Huile à frire",
+   "niveau": 1,
+   "typeId": 60,
+   "iconId": 60073,
+   "type": "Huile"
+  },
+  "1974": {
+   "id": 1974,
+   "nom": "Feuille de salace",
+   "niveau": 26,
+   "typeId": 68,
+   "iconId": 68376,
+   "type": "Légume"
+  },
+  "1975": {
+   "id": 1975,
+   "nom": "Oignon",
+   "niveau": 1,
+   "typeId": 68,
+   "iconId": 68377,
+   "type": "Légume"
+  },
+  "1977": {
+   "id": 1977,
+   "nom": "Épices",
+   "niveau": 1,
+   "typeId": 15,
+   "iconId": 15378,
+   "type": "Ressource diverse"
+  },
+  "1978": {
+   "id": 1978,
+   "nom": "Mesure de Poivre",
+   "niveau": 1,
+   "typeId": 48,
+   "iconId": 48734,
+   "type": "Poudre"
+  },
+  "1983": {
+   "id": 1983,
+   "nom": "Graisse Gélatineuse",
+   "niveau": 54,
+   "typeId": 15,
+   "iconId": 15379,
+   "type": "Ressource diverse"
+  },
+  "1985": {
+   "id": 1985,
+   "nom": "Résine",
+   "niveau": 44,
+   "typeId": 228,
+   "iconId": 15382,
+   "type": "Liquide"
+  },
+  "1986": {
+   "id": 1986,
+   "nom": "Poudre Temporelle",
+   "niveau": 1,
+   "typeId": 48,
+   "iconId": 48002,
+   "type": "Poudre"
+  },
+  "2012": {
+   "id": 2012,
+   "nom": "Sang de Scorbute",
+   "niveau": 36,
+   "typeId": 228,
+   "iconId": 15389,
+   "type": "Liquide"
   },
   "2299": {
    "id": 2299,
@@ -28312,12 +29159,125 @@
    "iconId": 54715,
    "type": "Poil"
   },
+  "2331": {
+   "id": 2331,
+   "nom": "Aubergine",
+   "niveau": 1,
+   "typeId": 46,
+   "iconId": 46472,
+   "type": "Fruit"
+  },
+  "2357": {
+   "id": 2357,
+   "nom": "Bois d'Oliviolet",
+   "niveau": 90,
+   "typeId": 38,
+   "iconId": 38481,
+   "type": "Bois"
+  },
+  "2358": {
+   "id": 2358,
+   "nom": "Bois de Bombu",
+   "niveau": 70,
+   "typeId": 38,
+   "iconId": 38482,
+   "type": "Bois"
+  },
+  "2511": {
+   "id": 2511,
+   "nom": "Cuir de Gliglibido",
+   "niveau": 146,
+   "typeId": 56,
+   "iconId": 56410,
+   "type": "Cuir"
+  },
+  "2514": {
+   "id": 2514,
+   "nom": "Sabot de Gliglicérin",
+   "niveau": 146,
+   "typeId": 47,
+   "iconId": 47539,
+   "type": "Os"
+  },
+  "2539": {
+   "id": 2539,
+   "nom": "Substrat de Buisson",
+   "niveau": 20,
+   "typeId": 183,
+   "iconId": 26016,
+   "recette": [
+    {
+     "id": 7652,
+     "qte": 1
+    },
+    {
+     "id": 16490,
+     "qte": 1
+    }
+   ],
+   "metier": "Bûcheron",
+   "type": "Substrat"
+  },
+  "2540": {
+   "id": 2540,
+   "nom": "Substrat de Futaie",
+   "niveau": 60,
+   "typeId": 183,
+   "iconId": 26017,
+   "recette": [
+    {
+     "id": 7652,
+     "qte": 1
+    },
+    {
+     "id": 16492,
+     "qte": 1
+    }
+   ],
+   "metier": "Bûcheron",
+   "type": "Substrat"
+  },
+  "2623": {
+   "id": 2623,
+   "nom": "Bwak Squelettique",
+   "niveau": 90,
+   "typeId": 15,
+   "iconId": 15608,
+   "type": "Ressource diverse"
+  },
   "2639": {
    "id": 2639,
    "nom": "Fausse Griffe de Ceangal",
    "niveau": 95,
    "typeId": 6,
    "iconId": 6035,
+   "recette": [
+    {
+     "id": 1682,
+     "qte": 4
+    },
+    {
+     "id": 1611,
+     "qte": 8
+    },
+    {
+     "id": 8062,
+     "qte": 2
+    },
+    {
+     "id": 8496,
+     "qte": 4
+    },
+    {
+     "id": 12744,
+     "qte": 1
+    },
+    {
+     "id": 2623,
+     "qte": 1
+    }
+   ],
+   "metier": "Forgeron",
    "type": "Épée"
   },
   "4241": {
@@ -28326,6 +29286,33 @@
    "niveau": 100,
    "typeId": 6,
    "iconId": 6041,
+   "recette": [
+    {
+     "id": 12744,
+     "qte": 2
+    },
+    {
+     "id": 1610,
+     "qte": 7
+    },
+    {
+     "id": 8496,
+     "qte": 3
+    },
+    {
+     "id": 11250,
+     "qte": 13
+    },
+    {
+     "id": 21268,
+     "qte": 3
+    },
+    {
+     "id": 16220,
+     "qte": 2
+    }
+   ],
+   "metier": "Forgeron",
    "type": "Épée"
   },
   "6490": {
@@ -28336,13 +29323,151 @@
    "iconId": 50669,
    "type": "Pierre précieuse"
   },
+  "6841": {
+   "id": 6841,
+   "nom": "Œil de Pikdoa",
+   "niveau": 26,
+   "typeId": 109,
+   "iconId": 25151,
+   "type": "Œil"
+  },
+  "7013": {
+   "id": 7013,
+   "nom": "Bois de Bambou",
+   "niveau": 110,
+   "typeId": 38,
+   "iconId": 38673,
+   "type": "Bois"
+  },
+  "7014": {
+   "id": 7014,
+   "nom": "Bois de Bambou Sacré",
+   "niveau": 190,
+   "typeId": 38,
+   "iconId": 38671,
+   "type": "Bois"
+  },
+  "7016": {
+   "id": 7016,
+   "nom": "Bois de Bambou Sombre",
+   "niveau": 170,
+   "typeId": 38,
+   "iconId": 38672,
+   "type": "Bois"
+  },
+  "7018": {
+   "id": 7018,
+   "nom": "Riz",
+   "niveau": 100,
+   "typeId": 34,
+   "iconId": 34010,
+   "type": "Céréale"
+  },
+  "7032": {
+   "id": 7032,
+   "nom": "Silicate",
+   "niveau": 100,
+   "typeId": 39,
+   "iconId": 39111,
+   "type": "Minerai"
+  },
+  "7033": {
+   "id": 7033,
+   "nom": "Dolomite",
+   "niveau": 180,
+   "typeId": 39,
+   "iconId": 39110,
+   "type": "Minerai"
+  },
   "7035": {
    "id": 7035,
    "nom": "Pyrute",
    "niveau": 180,
    "typeId": 40,
    "iconId": 40708,
+   "recette": [
+    {
+     "id": 313,
+     "qte": 10
+    },
+    {
+     "id": 446,
+     "qte": 10
+    },
+    {
+     "id": 443,
+     "qte": 10
+    },
+    {
+     "id": 7033,
+     "qte": 5
+    },
+    {
+     "id": 27621,
+     "qte": 5
+    },
+    {
+     "id": 444,
+     "qte": 5
+    },
+    {
+     "id": 7032,
+     "qte": 5
+    },
+    {
+     "id": 350,
+     "qte": 10
+    }
+   ],
+   "metier": "Mineur",
    "type": "Alliage"
+  },
+  "7036": {
+   "id": 7036,
+   "nom": "Rutile",
+   "niveau": 160,
+   "typeId": 40,
+   "iconId": 40707,
+   "recette": [
+    {
+     "id": 445,
+     "qte": 10
+    },
+    {
+     "id": 7032,
+     "qte": 5
+    },
+    {
+     "id": 444,
+     "qte": 5
+    },
+    {
+     "id": 446,
+     "qte": 10
+    },
+    {
+     "id": 350,
+     "qte": 10
+    },
+    {
+     "id": 443,
+     "qte": 10
+    },
+    {
+     "id": 313,
+     "qte": 10
+    }
+   ],
+   "metier": "Mineur",
+   "type": "Alliage"
+  },
+  "7059": {
+   "id": 7059,
+   "nom": "Graine de Pandouille",
+   "niveau": 120,
+   "typeId": 58,
+   "iconId": 58067,
+   "type": "Graine"
   },
   "7102": {
    "id": 7102,
@@ -28350,6 +29475,17 @@
    "niveau": 20,
    "typeId": 6,
    "iconId": 6051,
+   "recette": [
+    {
+     "id": 2539,
+     "qte": 2
+    },
+    {
+     "id": 307,
+     "qte": 3
+    }
+   ],
+   "metier": "Forgeron",
    "type": "Épée"
   },
   "7192": {
@@ -28358,6 +29494,37 @@
    "niveau": 111,
    "typeId": 6,
    "iconId": 6059,
+   "recette": [
+    {
+     "id": 13167,
+     "qte": 4
+    },
+    {
+     "id": 8769,
+     "qte": 4
+    },
+    {
+     "id": 13721,
+     "qte": 2
+    },
+    {
+     "id": 16212,
+     "qte": 1
+    },
+    {
+     "id": 15164,
+     "qte": 3
+    },
+    {
+     "id": 1680,
+     "qte": 1
+    },
+    {
+     "id": 8308,
+     "qte": 16
+    }
+   ],
+   "metier": "Forgeron",
    "type": "Épée"
   },
   "7195": {
@@ -28366,6 +29533,41 @@
    "niveau": 158,
    "typeId": 6,
    "iconId": 6060,
+   "recette": [
+    {
+     "id": 8408,
+     "qte": 1
+    },
+    {
+     "id": 2299,
+     "qte": 3
+    },
+    {
+     "id": 2511,
+     "qte": 44
+    },
+    {
+     "id": 13367,
+     "qte": 1
+    },
+    {
+     "id": 7036,
+     "qte": 1
+    },
+    {
+     "id": 2514,
+     "qte": 11
+    },
+    {
+     "id": 1894,
+     "qte": 36
+    },
+    {
+     "id": 15040,
+     "qte": 1
+    }
+   ],
+   "metier": "Forgeron",
    "type": "Épée"
   },
   "7385": {
@@ -28375,6 +29577,14 @@
    "typeId": 15,
    "iconId": 164740,
    "type": "Ressource diverse"
+  },
+  "7393": {
+   "id": 7393,
+   "nom": "Moustache du Shogun Tofugawa",
+   "niveau": 160,
+   "typeId": 54,
+   "iconId": 164769,
+   "type": "Poil"
   },
   "7438": {
    "id": 7438,
@@ -28392,13 +29602,123 @@
    "iconId": 78019,
    "type": "Rune de forgemagie"
   },
+  "7652": {
+   "id": 7652,
+   "nom": "Potion de Souvenir",
+   "niveau": 30,
+   "typeId": 179,
+   "iconId": 12002,
+   "recette": [
+    {
+     "id": 428,
+     "qte": 10
+    },
+    {
+     "id": 421,
+     "qte": 20
+    }
+   ],
+   "metier": "Alchimiste",
+   "type": "Préparation"
+  },
+  "7925": {
+   "id": 7925,
+   "nom": "Bois de Kaliptus",
+   "niveau": 150,
+   "typeId": 38,
+   "iconId": 38001,
+   "type": "Bois"
+  },
+  "8062": {
+   "id": 8062,
+   "nom": "Poils de Koalak Indigo",
+   "niveau": 84,
+   "typeId": 54,
+   "iconId": 54659,
+   "type": "Poil"
+  },
   "8094": {
    "id": 8094,
    "nom": "L'Epée Rilleuse",
    "niveau": 169,
    "typeId": 6,
    "iconId": 6066,
+   "recette": [
+    {
+     "id": 15043,
+     "qte": 45
+    },
+    {
+     "id": 7036,
+     "qte": 2
+    },
+    {
+     "id": 7393,
+     "qte": 2
+    },
+    {
+     "id": 15051,
+     "qte": 45
+    },
+    {
+     "id": 15042,
+     "qte": 2
+    },
+    {
+     "id": 17620,
+     "qte": 2
+    },
+    {
+     "id": 14921,
+     "qte": 6
+    },
+    {
+     "id": 15039,
+     "qte": 4
+    }
+   ],
+   "metier": "Forgeron",
    "type": "Épée"
+  },
+  "8308": {
+   "id": 8308,
+   "nom": "Carapace de Scaratos",
+   "niveau": 114,
+   "typeId": 107,
+   "iconId": 107735,
+   "type": "Carapace"
+  },
+  "8385": {
+   "id": 8385,
+   "nom": "Peau de Shin Larve",
+   "niveau": 50,
+   "typeId": 59,
+   "iconId": 59614,
+   "type": "Peau"
+  },
+  "8408": {
+   "id": 8408,
+   "nom": "Sabot du Minotot",
+   "niveau": 160,
+   "typeId": 47,
+   "iconId": 47754,
+   "type": "Os"
+  },
+  "8496": {
+   "id": 8496,
+   "nom": "Racine d'Abraknyde Ancestral",
+   "niveau": 90,
+   "typeId": 98,
+   "iconId": 98668,
+   "type": "Racine"
+  },
+  "8769": {
+   "id": 8769,
+   "nom": "Coco du Bitouf des Plaines",
+   "niveau": 103,
+   "typeId": 111,
+   "iconId": 111001,
+   "type": "Coquille"
   },
   "8786": {
    "id": 8786,
@@ -28600,6 +29920,14 @@
    "iconId": 38677,
    "type": "Bois"
   },
+  "11109": {
+   "id": 11109,
+   "nom": "Frostiz",
+   "niveau": 200,
+   "typeId": 34,
+   "iconId": 34552,
+   "type": "Céréale"
+  },
   "11110": {
    "id": 11110,
    "nom": "Obsidienne",
@@ -28607,6 +29935,14 @@
    "typeId": 39,
    "iconId": 39112,
    "type": "Minerai"
+  },
+  "11250": {
+   "id": 11250,
+   "nom": "Poil de Chachachovage",
+   "niveau": 82,
+   "typeId": 54,
+   "iconId": 54677,
+   "type": "Poil"
   },
   "11333": {
    "id": 11333,
@@ -28688,12 +30024,59 @@
    "iconId": 56662,
    "type": "Cuir"
   },
+  "11475": {
+   "id": 11475,
+   "nom": "Eau calme",
+   "niveau": 1,
+   "typeId": 228,
+   "iconId": 15778,
+   "type": "Liquide"
+  },
+  "11499": {
+   "id": 11499,
+   "nom": "Frostiz soufflé",
+   "niveau": 200,
+   "typeId": 34,
+   "iconId": 34553,
+   "type": "Céréale"
+  },
+  "11500": {
+   "id": 11500,
+   "nom": "Poisskaille Givré",
+   "niveau": 200,
+   "typeId": 41,
+   "iconId": 41404,
+   "type": "Poisson"
+  },
+  "11501": {
+   "id": 11501,
+   "nom": "Étoile des Neiges",
+   "niveau": 200,
+   "typeId": 35,
+   "iconId": 35290,
+   "type": "Fleur"
+  },
   "11503": {
    "id": 11503,
    "nom": "Pain de Frostiz",
    "niveau": 200,
    "typeId": 33,
    "iconId": 33072,
+   "recette": [
+    {
+     "id": 11109,
+     "qte": 1
+    },
+    {
+     "id": 11475,
+     "qte": 1
+    },
+    {
+     "id": 16389,
+     "qte": 2
+    }
+   ],
+   "metier": "Paysan",
    "type": "Pain"
   },
   "11504": {
@@ -28702,6 +30085,21 @@
    "niveau": 200,
    "typeId": 33,
    "iconId": 33073,
+   "recette": [
+    {
+     "id": 11499,
+     "qte": 1
+    },
+    {
+     "id": 11475,
+     "qte": 1
+    },
+    {
+     "id": 16389,
+     "qte": 2
+    }
+   ],
+   "metier": "Paysan",
    "type": "Pain"
   },
   "11507": {
@@ -28710,6 +30108,21 @@
    "niveau": 200,
    "typeId": 12,
    "iconId": 12722,
+   "recette": [
+    {
+     "id": 11501,
+     "qte": 1
+    },
+    {
+     "id": 16456,
+     "qte": 2
+    },
+    {
+     "id": 11475,
+     "qte": 1
+    }
+   ],
+   "metier": "Alchimiste",
    "type": "Potion"
   },
   "11517": {
@@ -29206,6 +30619,41 @@
    "niveau": 200,
    "typeId": 40,
    "iconId": 40710,
+   "recette": [
+    {
+     "id": 11110,
+     "qte": 10
+    },
+    {
+     "id": 7032,
+     "qte": 5
+    },
+    {
+     "id": 27621,
+     "qte": 5
+    },
+    {
+     "id": 446,
+     "qte": 10
+    },
+    {
+     "id": 7033,
+     "qte": 5
+    },
+    {
+     "id": 350,
+     "qte": 10
+    },
+    {
+     "id": 313,
+     "qte": 10
+    },
+    {
+     "id": 444,
+     "qte": 5
+    }
+   ],
+   "metier": "Mineur",
    "type": "Alliage"
   },
   "12740": {
@@ -29215,6 +30663,29 @@
    "typeId": 152,
    "iconId": 15289,
    "type": "Galet"
+  },
+  "12744": {
+   "id": 12744,
+   "nom": "Substrat de Bosquet",
+   "niveau": 100,
+   "typeId": 183,
+   "iconId": 12728,
+   "recette": [
+    {
+     "id": 17060,
+     "qte": 1
+    },
+    {
+     "id": 7652,
+     "qte": 1
+    },
+    {
+     "id": 16494,
+     "qte": 1
+    }
+   ],
+   "metier": "Bûcheron",
+   "type": "Substrat"
   },
   "12845": {
    "id": 12845,
@@ -29264,6 +30735,14 @@
    "iconId": 47692,
    "type": "Os"
   },
+  "13167": {
+   "id": 13167,
+   "nom": "Plume du Rasboul Majeur",
+   "niveau": 100,
+   "typeId": 53,
+   "iconId": 53650,
+   "type": "Plume"
+  },
   "13193": {
    "id": 13193,
    "nom": "Fiole de gaz draconique",
@@ -29280,6 +30759,45 @@
    "iconId": 56664,
    "type": "Cuir"
   },
+  "13276": {
+   "id": 13276,
+   "nom": "Poisskaille Givré en Ragoût",
+   "niveau": 200,
+   "typeId": 49,
+   "iconId": 49141,
+   "recette": [
+    {
+     "id": 11500,
+     "qte": 1
+    },
+    {
+     "id": 16389,
+     "qte": 3
+    },
+    {
+     "id": 11475,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "13339": {
+   "id": 13339,
+   "nom": "Sceau Royal Contrefait",
+   "niveau": 43,
+   "typeId": 15,
+   "iconId": 15131,
+   "type": "Ressource diverse"
+  },
+  "13367": {
+   "id": 13367,
+   "nom": "Galet Solaire",
+   "niveau": 150,
+   "typeId": 152,
+   "iconId": 152004,
+   "type": "Galet"
+  },
   "13490": {
    "id": 13490,
    "nom": "Bave de Ouassingue",
@@ -29295,6 +30813,14 @@
    "typeId": 54,
    "iconId": 54685,
    "type": "Poil"
+  },
+  "13721": {
+   "id": 13721,
+   "nom": "Croupion de Tofuzmo",
+   "niveau": 114,
+   "typeId": 15,
+   "iconId": 15812,
+   "type": "Ressource diverse"
   },
   "13736": {
    "id": 13736,
@@ -30128,6 +31654,46 @@
    "iconId": 54698,
    "type": "Poil"
   },
+  "15040": {
+   "id": 15040,
+   "nom": "Queue de Kanigroula",
+   "niveau": 160,
+   "typeId": 65,
+   "iconId": 65766,
+   "type": "Queue"
+  },
+  "15042": {
+   "id": 15042,
+   "nom": "Peau de Kanihilan",
+   "niveau": 156,
+   "typeId": 59,
+   "iconId": 59641,
+   "type": "Peau"
+  },
+  "15043": {
+   "id": 15043,
+   "nom": "Cheveux d'Alhyène",
+   "niveau": 156,
+   "typeId": 54,
+   "iconId": 54700,
+   "type": "Poil"
+  },
+  "15051": {
+   "id": 15051,
+   "nom": "Crinière d'Orfélin",
+   "niveau": 155,
+   "typeId": 54,
+   "iconId": 54701,
+   "type": "Poil"
+  },
+  "15164": {
+   "id": 15164,
+   "nom": "Broderie de Malléfisk",
+   "niveau": 100,
+   "typeId": 164,
+   "iconId": 15863,
+   "type": "Vêtement"
+  },
   "15170": {
    "id": 15170,
    "nom": "Défense du Phossile",
@@ -30472,12 +32038,136 @@
    "iconId": 50721,
    "type": "Pierre précieuse"
   },
+  "16212": {
+   "id": 16212,
+   "nom": "Substrat de Fourré",
+   "niveau": 120,
+   "typeId": 183,
+   "iconId": 12748,
+   "recette": [
+    {
+     "id": 7652,
+     "qte": 1
+    },
+    {
+     "id": 17060,
+     "qte": 1
+    },
+    {
+     "id": 16495,
+     "qte": 1
+    }
+   ],
+   "metier": "Bûcheron",
+   "type": "Substrat"
+  },
+  "16220": {
+   "id": 16220,
+   "nom": "Œil de Saltik",
+   "niveau": 86,
+   "typeId": 109,
+   "iconId": 109611,
+   "type": "Œil"
+  },
+  "16385": {
+   "id": 16385,
+   "nom": "Ginseng",
+   "niveau": 140,
+   "typeId": 36,
+   "iconId": 36644,
+   "type": "Plante"
+  },
+  "16387": {
+   "id": 16387,
+   "nom": "Belladone",
+   "niveau": 160,
+   "typeId": 35,
+   "iconId": 35638,
+   "type": "Fleur"
+  },
+  "16389": {
+   "id": 16389,
+   "nom": "Mandragore",
+   "niveau": 180,
+   "typeId": 36,
+   "iconId": 36645,
+   "type": "Plante"
+  },
+  "16419": {
+   "id": 16419,
+   "nom": "Potion des Ancêtres",
+   "niveau": 135,
+   "typeId": 179,
+   "iconId": 174001,
+   "recette": [
+    {
+     "id": 405,
+     "qte": 10
+    },
+    {
+     "id": 532,
+     "qte": 20
+    }
+   ],
+   "metier": "Alchimiste",
+   "type": "Préparation"
+  },
+  "16420": {
+   "id": 16420,
+   "nom": "Potion de Glandage",
+   "niveau": 175,
+   "typeId": 179,
+   "iconId": 174002,
+   "recette": [
+    {
+     "id": 16456,
+     "qte": 10
+    },
+    {
+     "id": 16454,
+     "qte": 20
+    }
+   ],
+   "metier": "Alchimiste",
+   "type": "Préparation"
+  },
+  "16454": {
+   "id": 16454,
+   "nom": "Maïs",
+   "niveau": 160,
+   "typeId": 34,
+   "iconId": 34554,
+   "type": "Céréale"
+  },
+  "16456": {
+   "id": 16456,
+   "nom": "Millet",
+   "niveau": 180,
+   "typeId": 34,
+   "iconId": 34555,
+   "type": "Céréale"
+  },
   "16459": {
    "id": 16459,
    "nom": "Substrat de Forêt vierge",
    "niveau": 180,
    "typeId": 183,
    "iconId": 177002,
+   "recette": [
+    {
+     "id": 16419,
+     "qte": 1
+    },
+    {
+     "id": 16420,
+     "qte": 1
+    },
+    {
+     "id": 16498,
+     "qte": 1
+    }
+   ],
+   "metier": "Bûcheron",
    "type": "Substrat"
   },
   "16460": {
@@ -30486,7 +32176,430 @@
    "niveau": 200,
    "typeId": 183,
    "iconId": 177003,
+   "recette": [
+    {
+     "id": 16419,
+     "qte": 1
+    },
+    {
+     "id": 16420,
+     "qte": 1
+    },
+    {
+     "id": 16499,
+     "qte": 1
+    }
+   ],
+   "metier": "Bûcheron",
    "type": "Substrat"
+  },
+  "16462": {
+   "id": 16462,
+   "nom": "Anguille Souroche",
+   "niveau": 100,
+   "typeId": 41,
+   "iconId": 41408,
+   "type": "Poisson"
+  },
+  "16464": {
+   "id": 16464,
+   "nom": "Daurade Royale",
+   "niveau": 110,
+   "typeId": 41,
+   "iconId": 41410,
+   "type": "Poisson"
+  },
+  "16466": {
+   "id": 16466,
+   "nom": "Glotte",
+   "niveau": 140,
+   "typeId": 41,
+   "iconId": 41412,
+   "type": "Poisson"
+  },
+  "16468": {
+   "id": 16468,
+   "nom": "Morue Barbue",
+   "niveau": 170,
+   "typeId": 41,
+   "iconId": 41414,
+   "type": "Poisson"
+  },
+  "16470": {
+   "id": 16470,
+   "nom": "Tanche Hantée",
+   "niveau": 180,
+   "typeId": 41,
+   "iconId": 41416,
+   "type": "Poisson"
+  },
+  "16472": {
+   "id": 16472,
+   "nom": "Espadon Quichotte",
+   "niveau": 190,
+   "typeId": 41,
+   "iconId": 41418,
+   "type": "Poisson"
+  },
+  "16476": {
+   "id": 16476,
+   "nom": "Anguille Souroche Rôtie",
+   "niveau": 100,
+   "typeId": 49,
+   "iconId": 49144,
+   "recette": [
+    {
+     "id": 16462,
+     "qte": 1
+    },
+    {
+     "id": 1985,
+     "qte": 1
+    },
+    {
+     "id": 593,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "16478": {
+   "id": 16478,
+   "nom": "Daurade Royale au four",
+   "niveau": 110,
+   "typeId": 49,
+   "iconId": 49146,
+   "recette": [
+    {
+     "id": 16464,
+     "qte": 1
+    },
+    {
+     "id": 1730,
+     "qte": 1
+    },
+    {
+     "id": 593,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "16480": {
+   "id": 16480,
+   "nom": "Salace de Glotte",
+   "niveau": 140,
+   "typeId": 49,
+   "iconId": 49148,
+   "recette": [
+    {
+     "id": 16466,
+     "qte": 1
+    },
+    {
+     "id": 1974,
+     "qte": 1
+    },
+    {
+     "id": 7059,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "16482": {
+   "id": 16482,
+   "nom": "Estouffade de Morue Barbue",
+   "niveau": 170,
+   "typeId": 49,
+   "iconId": 49150,
+   "recette": [
+    {
+     "id": 16468,
+     "qte": 1
+    },
+    {
+     "id": 1983,
+     "qte": 1
+    },
+    {
+     "id": 16385,
+     "qte": 2
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "16484": {
+   "id": 16484,
+   "nom": "Tanche Hantée en Matelote",
+   "niveau": 180,
+   "typeId": 49,
+   "iconId": 49152,
+   "recette": [
+    {
+     "id": 16470,
+     "qte": 1
+    },
+    {
+     "id": 1731,
+     "qte": 1
+    },
+    {
+     "id": 16387,
+     "qte": 2
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "16486": {
+   "id": 16486,
+   "nom": "Espadon Quichotte Poêlé",
+   "niveau": 190,
+   "typeId": 49,
+   "iconId": 49154,
+   "recette": [
+    {
+     "id": 16472,
+     "qte": 1
+    },
+    {
+     "id": 2331,
+     "qte": 1
+    },
+    {
+     "id": 16387,
+     "qte": 2
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Poisson comestible"
+  },
+  "16488": {
+   "id": 16488,
+   "nom": "Bois de Noisetier",
+   "niveau": 130,
+   "typeId": 38,
+   "iconId": 38143,
+   "type": "Bois"
+  },
+  "16490": {
+   "id": 16490,
+   "nom": "Planche Contreplaquée",
+   "niveau": 20,
+   "typeId": 95,
+   "iconId": 95001,
+   "recette": [
+    {
+     "id": 473,
+     "qte": 10
+    },
+    {
+     "id": 303,
+     "qte": 10
+    }
+   ],
+   "metier": "Bûcheron",
+   "type": "Planche"
+  },
+  "16492": {
+   "id": 16492,
+   "nom": "Planche de Surf",
+   "niveau": 60,
+   "typeId": 95,
+   "iconId": 95166,
+   "recette": [
+    {
+     "id": 460,
+     "qte": 10
+    },
+    {
+     "id": 476,
+     "qte": 10
+    },
+    {
+     "id": 473,
+     "qte": 10
+    },
+    {
+     "id": 303,
+     "qte": 10
+    }
+   ],
+   "metier": "Bûcheron",
+   "type": "Planche"
+  },
+  "16494": {
+   "id": 16494,
+   "nom": "Planche de Toilette",
+   "niveau": 100,
+   "typeId": 95,
+   "iconId": 95003,
+   "recette": [
+    {
+     "id": 2357,
+     "qte": 5
+    },
+    {
+     "id": 461,
+     "qte": 10
+    },
+    {
+     "id": 471,
+     "qte": 10
+    },
+    {
+     "id": 2358,
+     "qte": 10
+    },
+    {
+     "id": 460,
+     "qte": 10
+    },
+    {
+     "id": 27375,
+     "qte": 5
+    }
+   ],
+   "metier": "Bûcheron",
+   "type": "Planche"
+  },
+  "16495": {
+   "id": 16495,
+   "nom": "Planche à Pâtisserie",
+   "niveau": 120,
+   "typeId": 95,
+   "iconId": 95009,
+   "recette": [
+    {
+     "id": 461,
+     "qte": 10
+    },
+    {
+     "id": 7013,
+     "qte": 10
+    },
+    {
+     "id": 474,
+     "qte": 10
+    },
+    {
+     "id": 2357,
+     "qte": 5
+    },
+    {
+     "id": 471,
+     "qte": 10
+    },
+    {
+     "id": 2358,
+     "qte": 10
+    },
+    {
+     "id": 27375,
+     "qte": 5
+    }
+   ],
+   "metier": "Bûcheron",
+   "type": "Planche"
+  },
+  "16498": {
+   "id": 16498,
+   "nom": "Planche à Dessin",
+   "niveau": 180,
+   "typeId": 95,
+   "iconId": 95005,
+   "recette": [
+    {
+     "id": 7016,
+     "qte": 10
+    },
+    {
+     "id": 449,
+     "qte": 10
+    },
+    {
+     "id": 470,
+     "qte": 10
+    },
+    {
+     "id": 472,
+     "qte": 10
+    },
+    {
+     "id": 7925,
+     "qte": 10
+    },
+    {
+     "id": 16488,
+     "qte": 10
+    },
+    {
+     "id": 474,
+     "qte": 10
+    },
+    {
+     "id": 7013,
+     "qte": 10
+    }
+   ],
+   "metier": "Bûcheron",
+   "type": "Planche"
+  },
+  "16499": {
+   "id": 16499,
+   "nom": "Planche de Salut",
+   "niveau": 200,
+   "typeId": 95,
+   "iconId": 95023,
+   "recette": [
+    {
+     "id": 7016,
+     "qte": 10
+    },
+    {
+     "id": 7014,
+     "qte": 10
+    },
+    {
+     "id": 472,
+     "qte": 10
+    },
+    {
+     "id": 7925,
+     "qte": 10
+    },
+    {
+     "id": 470,
+     "qte": 10
+    },
+    {
+     "id": 11107,
+     "qte": 10
+    },
+    {
+     "id": 449,
+     "qte": 10
+    },
+    {
+     "id": 16488,
+     "qte": 10
+    }
+   ],
+   "metier": "Bûcheron",
+   "type": "Planche"
+  },
+  "16926": {
+   "id": 16926,
+   "nom": "Sève de Tremble",
+   "niveau": 200,
+   "typeId": 185,
+   "iconId": 179018,
+   "type": "Sève"
   },
   "16944": {
    "id": 16944,
@@ -30494,6 +32607,21 @@
    "niveau": 200,
    "typeId": 42,
    "iconId": 42196,
+   "recette": [
+    {
+     "id": 16926,
+     "qte": 1
+    },
+    {
+     "id": 286,
+     "qte": 1
+    },
+    {
+     "id": 16456,
+     "qte": 2
+    }
+   ],
+   "metier": "Paysan",
    "type": "Friandise"
   },
   "17021": {
@@ -30511,6 +32639,25 @@
    "typeId": 51,
    "iconId": 51498,
    "type": "Pierre brute"
+  },
+  "17060": {
+   "id": 17060,
+   "nom": "Potion de Vieillesse",
+   "niveau": 95,
+   "typeId": 179,
+   "iconId": 12002,
+   "recette": [
+    {
+     "id": 7018,
+     "qte": 10
+    },
+    {
+     "id": 423,
+     "qte": 20
+    }
+   ],
+   "metier": "Alchimiste",
+   "type": "Préparation"
   },
   "17117": {
    "id": 17117,
@@ -30600,12 +32747,144 @@
    "iconId": 54706,
    "type": "Poil"
   },
+  "17850": {
+   "id": 17850,
+   "nom": "Jus de poisson abominable",
+   "niveau": 60,
+   "typeId": 228,
+   "iconId": 176004,
+   "recette": [
+    {
+     "id": 1830,
+     "qte": 1
+    },
+    {
+     "id": 1829,
+     "qte": 1
+    },
+    {
+     "id": 1834,
+     "qte": 1
+    },
+    {
+     "id": 1766,
+     "qte": 1
+    },
+    {
+     "id": 1769,
+     "qte": 1
+    },
+    {
+     "id": 1756,
+     "qte": 1
+    },
+    {
+     "id": 1817,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Liquide"
+  },
+  "17851": {
+   "id": 17851,
+   "nom": "Jus de poisson asphyxiant",
+   "niveau": 130,
+   "typeId": 228,
+   "iconId": 176001,
+   "recette": [
+    {
+     "id": 1827,
+     "qte": 1
+    },
+    {
+     "id": 1837,
+     "qte": 1
+    },
+    {
+     "id": 1859,
+     "qte": 1
+    },
+    {
+     "id": 16476,
+     "qte": 1
+    },
+    {
+     "id": 16478,
+     "qte": 1
+    },
+    {
+     "id": 1824,
+     "qte": 1
+    },
+    {
+     "id": 1831,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Liquide"
+  },
+  "17852": {
+   "id": 17852,
+   "nom": "Jus de poisson pestilentiel",
+   "niveau": 200,
+   "typeId": 228,
+   "iconId": 176003,
+   "recette": [
+    {
+     "id": 16484,
+     "qte": 1
+    },
+    {
+     "id": 1828,
+     "qte": 1
+    },
+    {
+     "id": 1840,
+     "qte": 1
+    },
+    {
+     "id": 16480,
+     "qte": 1
+    },
+    {
+     "id": 13276,
+     "qte": 1
+    },
+    {
+     "id": 16486,
+     "qte": 1
+    },
+    {
+     "id": 16482,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
+   "type": "Liquide"
+  },
   "17853": {
    "id": 17853,
    "nom": "Jus de poisson méphitique",
    "niveau": 200,
    "typeId": 228,
    "iconId": 176002,
+   "recette": [
+    {
+     "id": 17850,
+     "qte": 1
+    },
+    {
+     "id": 17851,
+     "qte": 1
+    },
+    {
+     "id": 17852,
+     "qte": 1
+    }
+   ],
+   "metier": "Pêcheur",
    "type": "Liquide"
   },
   "17864": {
@@ -30783,6 +33062,46 @@
    "typeId": 47,
    "iconId": 47851,
    "type": "Os"
+  },
+  "17991": {
+   "id": 17991,
+   "nom": "Bois d'Aquajou",
+   "niveau": 200,
+   "typeId": 38,
+   "iconId": 38684,
+   "type": "Bois"
+  },
+  "17992": {
+   "id": 17992,
+   "nom": "Salikrone",
+   "niveau": 200,
+   "typeId": 36,
+   "iconId": 36653,
+   "type": "Plante"
+  },
+  "17993": {
+   "id": 17993,
+   "nom": "Quisnoa",
+   "niveau": 200,
+   "typeId": 34,
+   "iconId": 34560,
+   "type": "Céréale"
+  },
+  "17994": {
+   "id": 17994,
+   "nom": "Patelle",
+   "niveau": 200,
+   "typeId": 41,
+   "iconId": 41419,
+   "type": "Poisson"
+  },
+  "17995": {
+   "id": 17995,
+   "nom": "Écume de mer",
+   "niveau": 200,
+   "typeId": 39,
+   "iconId": 39399,
+   "type": "Minerai"
   },
   "18318": {
    "id": 18318,
@@ -31448,6 +33767,14 @@
    "iconId": 47867,
    "type": "Os"
   },
+  "21268": {
+   "id": 21268,
+   "nom": "Dent du Kharnozor",
+   "niveau": 100,
+   "typeId": 47,
+   "iconId": 47870,
+   "type": "Os"
+  },
   "22046": {
    "id": 22046,
    "nom": "Plume de Misère",
@@ -31704,6 +34031,38 @@
    "iconId": 164641,
    "type": "Ressource des Songes"
   },
+  "23824": {
+   "id": 23824,
+   "nom": "Tulipe en papier",
+   "niveau": 200,
+   "typeId": 35,
+   "iconId": 164832,
+   "type": "Fleur"
+  },
+  "23825": {
+   "id": 23825,
+   "nom": "Pichon d'encre",
+   "niveau": 200,
+   "typeId": 41,
+   "iconId": 41420,
+   "type": "Poisson"
+  },
+  "23902": {
+   "id": 23902,
+   "nom": "Cristal liquide",
+   "niveau": 200,
+   "typeId": 39,
+   "iconId": 39402,
+   "type": "Minerai"
+  },
+  "23903": {
+   "id": 23903,
+   "nom": "Cristal pliable",
+   "niveau": 200,
+   "typeId": 39,
+   "iconId": 39401,
+   "type": "Minerai"
+  },
   "23957": {
    "id": 23957,
    "nom": "Pétale de Papier",
@@ -31822,6 +34181,25 @@
    "niveau": 200,
    "typeId": 183,
    "iconId": 164833,
+   "recette": [
+    {
+     "id": 23902,
+     "qte": 10
+    },
+    {
+     "id": 23903,
+     "qte": 10
+    },
+    {
+     "id": 23824,
+     "qte": 10
+    },
+    {
+     "id": 23825,
+     "qte": 10
+    }
+   ],
+   "metier": "Bûcheron",
    "type": "Substrat"
   },
   "25176": {
@@ -31943,6 +34321,14 @@
    "typeId": 266,
    "iconId": 176051,
    "type": "Ressource des Anomalies Temporelles"
+  },
+  "27375": {
+   "id": 27375,
+   "nom": "Bois de Pin",
+   "niveau": 90,
+   "typeId": 38,
+   "iconId": 38686,
+   "type": "Bois"
   },
   "27397": {
    "id": 27397,
@@ -32071,6 +34457,14 @@
    "typeId": 15,
    "iconId": 165067,
    "type": "Ressource diverse"
+  },
+  "27621": {
+   "id": 27621,
+   "nom": "Cendrepierre",
+   "niveau": 180,
+   "typeId": 39,
+   "iconId": 39403,
+   "type": "Minerai"
   },
   "27736": {
    "id": 27736,
@@ -32552,12 +34946,47 @@
    "iconId": 24536,
    "type": "Ressource diverse"
   },
+  "34537": {
+   "id": 34537,
+   "nom": "Ambre des profondeurs",
+   "niveau": 200,
+   "typeId": 50,
+   "iconId": 164094,
+   "type": "Pierre précieuse"
+  },
   "34538": {
    "id": 34538,
    "nom": "Enduit sufokien",
    "niveau": 200,
    "typeId": 15,
    "iconId": 15394,
+   "recette": [
+    {
+     "id": 17995,
+     "qte": 10
+    },
+    {
+     "id": 17994,
+     "qte": 10
+    },
+    {
+     "id": 17992,
+     "qte": 10
+    },
+    {
+     "id": 17991,
+     "qte": 10
+    },
+    {
+     "id": 17993,
+     "qte": 10
+    },
+    {
+     "id": 34537,
+     "qte": 1
+    }
+   ],
+   "metier": "Bricoleur",
    "type": "Ressource diverse"
   }
  }

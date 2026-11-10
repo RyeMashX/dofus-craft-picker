@@ -22,13 +22,15 @@ export function genererListeAchat(ctx) {
     crafts: ev.lignes.map(l => ({ id: l.id, nom: l.nom, iconId: l.iconId, n: l.n })),
     achats: ev.achats.map(a => ({
       id: a.id, nom: a.nom, type: a.type, hdv: a.hdv, iconId: a.iconId, q: a.q,
-      pour: a.pour.map(x => ({ nom: x.nom, q: x.q, iconId: ev.lignes.find(l => l.nom === x.nom)?.iconId })),
+      pour: a.pour.map(x => ({ nom: x.nom, q: x.q, iconId: x.iconId ?? ev.lignes.find(l => l.nom === x.nom)?.iconId })),
       plan: a.plan && {
         lots: a.plan.lots, surplus: a.plan.surplus, cout: a.plan.cout, nbLots: a.plan.nbLots,
         prixUnitaire: a.plan.prixUnitaire, alerte: a.plan.alerte,
         prixLot: Object.fromEntries(TAILLES.filter(t => a.plan.lots[t]).map(t => [t, S.base.ressources[a.id]?.lots?.valeurs?.[t] ?? null])),
       },
     })),
+    // ressources moins chères à crafter (alliages…) : leurs composants sont dans les achats
+    sousCrafts: (ev.sousCrafts ?? []).map(s => ({ id: s.id, nom: s.nom, iconId: s.iconId, metier: s.metier, q: s.q, cout: s.cout, achat: s.achat, composants: s.composants, pour: s.pour })),
   };
   S.etat.achetes = {};
   ctx.sauverEtat();
@@ -108,6 +110,31 @@ export function renderAchats(ctx) {
       <div class="ac">${g.lignes.map(ligne).join('')}</div></div>`;
   }).join('');
 
+  // À crafter avant les items : une ligne par ressource craftée, détail = composants et économie
+  const sc = L.sousCrafts ?? [];
+  const faitC = s => !!coches[`c${s.id}`];
+  const ligneC = s => {
+    const ouvert = ouverts.has(`c${s.id}`);
+    return `<div class="ac-l${faitC(s) ? ' fini' : ''}${ouvert ? ' ouvert' : ''}">
+      <div class="ac-ligne" data-ouvrir="c${s.id}" title="${esc(s.nom)} : clique pour le détail">
+        <span class="chev" aria-hidden="true"></span><span></span>
+        ${icone(s.iconId)}
+        <span class="n">${esc(s.nom)}</span>
+        <span class="c-q">${fmt(s.q)}</span>
+        <span class="c-t">${fmtK(s.cout)}</span>
+        <span class="c-pu">${fmtK(s.cout / s.q)}</span>
+        <label class="coche" title="Crafté"><input type="checkbox" data-achat="c${s.id}"${faitC(s) ? ' checked' : ''}><span></span></label>
+      </div>
+      ${ouvert ? `<div class="ac-det">
+        <div class="ac-det-l"><span class="muted">Avec</span><span class="ac-pour">${s.composants.map(c => `<span class="pour" title="${esc(c.nom)} : ${fmt(c.q)}">${icone(c.iconId)}<b>${fmt(c.q)}</b></span>`).join('')}</span></div>
+        <div class="ac-det-l"><span class="muted">Achat</span><span>${s.achat == null ? 'introuvable à l\'HDV' : `${fmtK(s.achat)} à l'HDV, soit ${fmtK(s.achat - s.cout)} d'économie`}</span></div>
+        ${s.metier ? `<div class="ac-det-l"><span class="muted">Métier</span><span>${esc(s.metier)}</span></div>` : ''}
+        <div class="ac-det-l"><span class="muted">Pour</span><span class="ac-pour">${pour(s)}</span></div>
+      </div>` : ''}</div>`;
+  };
+  const blocCraft = sc.length ? `<h3>À crafter</h3><div class="ac-tete"><span></span><span class="c-q">qté</span><span class="c-t">coût</span><span class="c-pu">prix/u</span><span></span></div>
+    <div class="grp${sc.every(faitC) ? ' fini' : ''}"><div class="ac">${sc.map(ligneC).join('')}</div></div>` : '';
+
   $('#achats').innerHTML = `
     <div class="row"><h2>Liste d'achat</h2><span class="muted small">générée le ${dateCourte(L.date)}</span><div class="spacer"></div>
       <button id="ac-gen" class="regen${perime ? ' on' : ''}" title="Recalculer la liste à partir du plan de craft actuel"><svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 1.8v3h-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Régénérer</span></button></div>
@@ -120,12 +147,13 @@ export function renderAchats(ctx) {
     </div>
     <div class="crafts-l">${L.crafts.map(c => `<span class="craft-c" title="${esc(c.nom)}">${icone(c.iconId)}<span class="n">${esc(c.nom)}</span><b>×${c.n}</b></span>`).join('')}</div>
     ${corps}
+    ${blocCraft}
     <div class="row"><button id="ac-raz" class="link small">tout décocher</button></div>`;
 
   $$('#achats input[data-achat]').forEach(c => c.onchange = () => { if (c.checked) coches[c.dataset.achat] = true; else delete coches[c.dataset.achat]; ctx.sauverEtat(); ctx.renderTout(); });
   $$('#achats [data-ouvrir]').forEach(el => el.onclick = e => {
     if (e.target.closest('button, label, input')) return;
-    const id = +el.dataset.ouvrir;
+    const id = el.dataset.ouvrir.startsWith('c') ? el.dataset.ouvrir : +el.dataset.ouvrir;
     if (ouverts.has(id)) ouverts.delete(id); else ouverts.add(id);
     ctx.renderTout();
   });

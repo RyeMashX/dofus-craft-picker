@@ -13,8 +13,9 @@
 // Puis présentation : HDV Équipements, puis HDV Ressources ; groupes de catégories (filtres HDV) ; tri Dofus.
 
 import { itemsFocus, estimerItem } from './entonnoir.js';
-import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus, compareCategorie, hdvDe, ORDRE_HDV, FRAICHEUR } from './fraicheur.js';
+import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, niveauLigne, compareDofus, compareCategorie, hdvDe, ORDRE_HDV, FRAICHEUR } from './fraicheur.js';
 import { JOUR } from './base.js';
+import { ingredients } from './catalogue.js';
 import { estExclu, estEnVente } from './statut.js';
 
 const POIDS_NIVEAU = { noir: 3, rouge: 2.5, orange: 2, jaune: 1, vert: 0 }; // rouge entre noir et orange
@@ -27,16 +28,23 @@ const poids = (niveau, date, seuils, maintenant) => niveau !== 'vert' ? POIDS_NI
   : 0.6 * Math.min(1, Math.max(0, (maintenant - (date ?? maintenant)) / (seuils.jaune * JOUR)));
 
 // Tâches nécessaires pour qu'un item devienne prêt (sans celles déjà prévues)
-function tachesPourPret(it, etat, base) {
-  const t = [];
+// Une ressource craftable (alliage…) pas à jour : on relève son prix d'achat ET ses composants, pour comparer.
+const mauvais = n => n === 'noir' || n === 'rouge' || n === 'orange';
+function tachesPourPret(it, etat, base, maintenant = Date.now()) {
+  const t = [], vus = new Set();
+  const res1 = id => { if (!vus.has(id)) { vus.add(id); t.push({ kind: 'ressource', id }); } };
+  const ligne = (r, prof = 0) => {
+    if (mauvais(niveauRessource(base.ressources[r.id], maintenant))) res1(r.id);
+    if (r.recette && prof < 6) for (const c of r.recette) if (mauvais(niveauLigne(c, base, maintenant))) ligne(c, prof + 1);
+  };
   if (etat.volume === 'noir' || etat.volume === 'orange') t.push({ kind: 'volume', id: it.id });
   if (etat.prix !== 'vert') t.push({ kind: 'prixItem', id: it.id });
   const res = etat.ressources;
-  for (const r of res) if (r.niveau === 'noir' || r.niveau === 'rouge' || r.niveau === 'orange') t.push({ kind: 'ressource', id: r.id });
+  it.recette.forEach((r, i) => { if (mauvais(res[i].niveau)) ligne(r); });
   // au plus 2 jaunes : on rafraîchit les plus anciennes au-delà
   const jaunes = res.filter(r => r.niveau === 'jaune')
     .sort((a, b) => (base.ressources[a.id]?.lots?.date ?? 0) - (base.ressources[b.id]?.lots?.date ?? 0));
-  for (const r of jaunes.slice(0, Math.max(0, jaunes.length - 2))) t.push({ kind: 'ressource', id: r.id });
+  for (const r of jaunes.slice(0, Math.max(0, jaunes.length - 2))) res1(r.id);
   return t;
 }
 
@@ -55,7 +63,7 @@ function importances(focus, base, p) {
   const demande = new Map(); // ressource → ventes/jour cumulées des items ≥ seuil qui l'utilisent
   for (const it of focus) {
     if ((base.items[it.id]?.volume?.valeur ?? 0) < p.volumeMin) continue;
-    for (const r of it.recette) demande.set(r.id, (demande.get(r.id) ?? 0) + volJour(it.id));
+    for (const r of ingredients(it.recette)) demande.set(r.id, (demande.get(r.id) ?? 0) + volJour(it.id));
   }
   return {
     volume: it => {
@@ -83,7 +91,7 @@ export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(
   // ---- 1. préparer le craft ----
   const etats = new Map(focus.map(it => [it.id, etatItem(it, base, maintenant)]));
   const candidats = focus
-    .map(it => ({ it, valeur: valeurItem(it, base, p), taches: tachesPourPret(it, etats.get(it.id), base) }))
+    .map(it => ({ it, valeur: valeurItem(it, base, p), taches: tachesPourPret(it, etats.get(it.id), base, maintenant) }))
     // un item déjà en vente ne sera pas recrafté : inutile de préparer son dossier
     .filter(c => c.valeur > 0 && c.taches.length && !etats.get(c.it.id).pret && !estEnVente(base, c.it.id));
   const budgetCraft = budget * partCraft;
@@ -116,7 +124,7 @@ export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(
     } else if (b?.volume && b.volume.valeur < p.volumeMin) {
       veille.push({ kind: 'prixItem', id: it.id, score: poids(niveauPrixItem(b, maintenant), b?.prix?.date, FRAICHEUR.prixItem, maintenant) });
     }
-    for (const r of it.recette) if (!imp.demande.has(r.id)) resVeille.add(r.id);
+    for (const r of ingredients(it.recette)) if (!imp.demande.has(r.id)) resVeille.add(r.id);
   }
   for (const id of resVeille) {
     const r = base.ressources[id];
@@ -143,7 +151,7 @@ export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(
       const np = niveauPrixItem(b, maintenant);
       ent.push({ kind: 'prixItem', id: it.id, score: poids(np, b?.prix?.date, FRAICHEUR.prixItem, maintenant) * imp.prixItem(it) });
     }
-    it.recette.forEach(r => idsRes.add(r.id));
+    ingredients(it.recette).forEach(r => idsRes.add(r.id));
   }
   for (const id of idsRes) {
     if (!imp.demande.has(id)) continue; // ressource d'aucun item vendable
@@ -164,7 +172,7 @@ export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(
   const pretsApres = focus.filter(it => {
     const e = etats.get(it.id);
     if (e.pret) return true;
-    const manque = tachesPourPret(it, e, base);
+    const manque = tachesPourPret(it, e, base, maintenant);
     return manque.length && manque.every(t => choisies.has(cleTache(t)));
   }).length;
 

@@ -167,6 +167,8 @@ function voletCraft(ctx, f, n, p) {
   const margeU = craftU == null || venteU == null ? null : venteU - taxeU - craftU - fmU;
   const rdt = margeU == null || !craftU ? null : margeU / (craftU + fmU);
   const det = f.aVerifier ?? [];
+  // ressource craftée (alliage…) : ses composants en dessous, en retrait
+  const ligneRecette = (l, prof = 0) => `<tr class="${prof ? 'vo-sous' : ''}"><td class="tn">${prof ? `<i class="retrait" style="width:${prof * 14}px"></i>` : ''}${icone(l.iconId)}<span>${esc(l.nom)}</span>${pastille(l.niveau)}${l.source === 'craft' ? `<span class="tag-craft" title="Moins cher à crafter${l.achat ? ` qu'à acheter (${fmtK(l.achat / n)} pour 1 craft)` : ' : introuvable à l\'HDV'}">à crafter</span>` : ''}</td><td class="r">${fmt(l.q / n)}</td><td class="r">${prix(l)}</td><td class="r">${l.cout == null ? '–' : fmtK(l.cout / n)}</td></tr>${(l.composants ?? []).map(c => ligneRecette(c, prof + 1)).join('')}`;
   const prix = l => l.prixUnitaire == null ? '<span class="bad">?</span>' : `${fmtK(l.prixUnitaire)}${l.source === 'moyen' ? '<sup title="prix moyen HDV, lots non relevés">m</sup>' : ''}`;
   return `<div class="volet">
     <div class="vo-u">
@@ -178,7 +180,7 @@ function voletCraft(ctx, f, n, p) {
     <p class="vo-note muted">Par craft, taxe de ${pct(p.taxeVente)} déduite${fs ? `, FM : moyenne de ${fs.n} vente${fs.n > 1 ? 's' : ''}` : ''}.</p>
     <p class="vo-conf">${confHtml(f.confiance)} ${det.length ? `<span class="muted">À vérifier :</span> ${det.map(esc).join(' · ')}` : '<span class="muted">Toutes les données sont à jour.</span>'}</p>
     <table class="vo-t"><thead><tr><th></th><th class="r">qté</th><th class="r">prix/u</th><th class="r">coût</th></tr></thead><tbody>
-    ${d.lignes.map(l => `<tr><td class="tn">${icone(l.iconId)}<span>${esc(l.nom)}</span>${pastille(l.niveau)}</td><td class="r">${fmt(l.q / n)}</td><td class="r">${prix(l)}</td><td class="r">${l.cout == null ? '–' : fmtK(l.cout / n)}</td></tr>`).join('')}
+    ${d.lignes.map(l => ligneRecette(l)).join('')}
     </tbody><tfoot><tr><td colspan="3">Coût pour 1 craft</td><td class="r"><b>${fmtK(craftU)}</b></td></tr>
       ${n > 1 ? `<tr><td colspan="3">Coût pour ${n} crafts</td><td class="r"><b>${fmtK(d.total)}</b></td></tr>` : ''}</tfoot></table>
     ${n > 1 ? `<p class="vo-note muted">Prix unitaires payés en achetant pour ${n} crafts.</p>` : ''}

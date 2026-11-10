@@ -41,5 +41,6 @@ export const PARAMS = {
   inclureFm: true,          // la marge déduit la FM estimée (moyenne des ventes : voir coutFmEstime dans ventes.js)
   coutFmDefaut: 0,          // sans vente renseignée, pas de coût de FM
   coutEffortParCraft: 300000, // "prix" d'un craft+FM en plus, en kamas (arbitrage effort)
-  pasBudget: 100000,        // granularité du calcul d'allocation
+  pasBudget: 100000,
+  gainMinSousCraft: 0.05,   // une ressource craftable (alliage…) n'est craftée que si c'est ≥ 5 % moins cher que de l'acheter        // granularité du calcul d'allocation
 };

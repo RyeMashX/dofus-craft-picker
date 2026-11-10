@@ -4,7 +4,7 @@
 import { itemsFocus, estimerItem } from './entonnoir.js';
 import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus, compareCategorie, NIVEAUX } from './fraicheur.js';
 import { majVolume, majPrixItem, majPrixMoyenItem, majRessource, majPrixMoyenRessource, estIndispo } from './base.js';
-import { planAchat } from './lots.js';
+import { detailCraft } from './craft-plan.js';
 import { icone } from './vue-plan.js';
 import { exclusion, exclure, reintegrer, finDeJournee, lotsEnVente } from './statut.js';
 import { vendues } from './ventes.js';
@@ -39,12 +39,17 @@ function lignesEquipements(S, p) {
 function lignesRessources(S, p) {
   const focus = itemsFocus(S.catalogue, p);
   const usages = new Map();
-  for (const it of focus) for (const r of it.recette) {
+  // composants des sous-crafts (alliages…) compris, avec la quantité pour 1 item
+  const parcourir = (it, recette, mult, via, prof = 0) => { for (const r of recette) {
     const u = usages.get(r.id) ?? { items: [], vendables: 0 };
-    u.items.push({ it, qte: r.qte });
-    if ((S.base.items[it.id]?.volume?.valeur ?? -1) >= p.volumeMin) u.vendables++;
+    if (!u.items.some(x => x.it === it)) {
+      u.items.push({ it, qte: r.qte * mult, via });
+      if ((S.base.items[it.id]?.volume?.valeur ?? -1) >= p.volumeMin) u.vendables++;
+    }
     usages.set(r.id, u);
-  }
+    if (r.recette && prof < 6) parcourir(it, r.recette, r.qte * mult, S.catalogue.ressources[r.id]?.nom, prof + 1);
+  } };
+  for (const it of focus) parcourir(it, it.recette, 1, null);
   return [...usages.entries()].map(([id, u]) => {
     const res = S.catalogue.ressources[id] ?? { nom: `#${id}` };
     const b = S.base.ressources[id] ?? {};
@@ -166,16 +171,14 @@ export function renderDonnees(ctx) {
   const detail = x => {
     if (onglet === 'equipements') {
       return `${barreExclusion(x)}<table class="rt sous"><thead><tr><th>Ressource</th><th class="r">Qté</th><th class="r">Prix unit.</th><th class="r">Coût</th><th>Relevé</th></tr></thead><tbody>
-        ${x.it.recette.map(r => {
-          const res = S.catalogue.ressources[r.id] ?? { nom: `#${r.id}` }, b = S.base.ressources[r.id] ?? {};
-          const plan = b.lots ? planAchat(r.qte, b.lots.valeurs, p) : null;
-          const cout = plan ? plan.cout : b.prixMoyen ? r.qte * b.prixMoyen.valeur : null;
-          return `<tr><td class="nom">${icone(res.iconId)} ${esc(res.nom)}</td><td class="r">${fmt(r.qte)}</td><td class="r">${fmt(cout != null ? cout / r.qte : null)}${plan ? '' : b.prixMoyen ? ' <span class="muted small">moy.</span>' : ''}</td>
-            <td class="r">${fmtK(cout)}</td><td>${pastille(niveauRessource(b))} <span class="muted small">${ctx.age(estIndispo(b) ? b.indispo.date : b.lots?.date)}</span></td></tr>`;
-        }).join('')}</tbody></table>`;
+        ${(() => { const ligne = (l, prof) => {
+          const b = S.base.ressources[l.id] ?? {};
+          return `<tr${prof ? ' class="sous-l"' : ''}><td class="nom">${prof ? `<span class="retrait" style="width:${prof * 16}px"></span>` : ''}${icone(l.iconId)} ${esc(l.nom)}${l.source === 'craft' ? ' <span class="tag-craft">à crafter</span>' : ''}</td><td class="r">${fmt(l.q)}</td><td class="r">${fmt(l.prixUnitaire)}${l.source === 'moyen' ? ' <span class="muted small">moy.</span>' : ''}</td>
+            <td class="r">${fmtK(l.cout)}</td><td>${pastille(niveauRessource(b))} <span class="muted small">${ctx.age(estIndispo(b) ? b.indispo.date : b.lots?.date)}</span></td></tr>${(l.composants ?? []).map(c => ligne(c, prof + 1)).join('')}`;
+        }; return detailCraft(x.it, S.catalogue, S.base, p, 1).lignes.map(l => ligne(l, 0)).join(''); })()}</tbody></table>`;
     }
     return `<table class="rt sous"><thead><tr><th>Utilisée par</th><th class="r">Qté</th><th class="r">Vendus 30 j</th></tr></thead><tbody>
-      ${[...x.usages].sort((a, b) => (S.base.items[b.it.id]?.volume?.valeur ?? -1) - (S.base.items[a.it.id]?.volume?.valeur ?? -1)).map(u => `<tr><td class="nom">${icone(u.it.iconId)} ${esc(u.it.nom)}</td><td class="r">${fmt(u.qte)}</td>
+      ${[...x.usages].sort((a, b) => (S.base.items[b.it.id]?.volume?.valeur ?? -1) - (S.base.items[a.it.id]?.volume?.valeur ?? -1)).map(u => `<tr><td class="nom">${icone(u.it.iconId)} ${esc(u.it.nom)}${u.via ? ` <span class="muted small">via ${esc(u.via)}</span>` : ''}</td><td class="r">${fmt(u.qte)}</td>
         <td class="r">${fmt(S.base.items[u.it.id]?.volume?.valeur)} ${pastille(niveauVolume(S.base.items[u.it.id]))}</td></tr>`).join('')}</tbody></table>`;
   };
 

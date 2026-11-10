@@ -8,7 +8,7 @@ Aucune lecture réseau du client, aucun clic automatisé : uniquement des captur
 ## État
 
 Étape 1 : moteur de calcul, testé (`npm test`, Node 20+).
-Étape 2 : catalogue DofusDB (`data/catalogue.json`, régénéré par `node scripts/catalogue.mjs`) : 642 équipements craftables 190-200, 538 ressources ; 554 craftables avec les métiers actuels (Forgeron 190).
+Étape 2 : catalogue DofusDB (`data/catalogue.json`, régénéré par `node scripts/catalogue.mjs`) : 642 équipements craftables 190-200, 704 ressources dont 59 craftables (alliages, substrats, potions… et leurs composants) ; 554 craftables avec les métiers actuels (Forgeron 190).
 Étape 3 : base de prix horodatée, base d'évaluation, listes de scan priorisées et plan de scan. Focus actuel : items niveau 200 (364 craftables).
 Étape 4 : lecture OCR des quatre écrans HDV (liste, annonces d'un équipement, lots d'une ressource, courbe 30 jours), validée sur de vraies captures (`npm run test:ocr`).
 Étape 5 : interface (onglets Scan, Données, Craft, Achats, Ventes ; réglages via ⚙), fenêtre flottante, capture du jeu et scan en un clic.
@@ -152,6 +152,14 @@ Ces paramètres sont des hypothèses de départ : le journal servira à les cali
 - L'outil maximise `marge totale − coût d'effort × nombre de crafts` sous la contrainte du budget. Le coût d'effort (300 000 kamas par craft par défaut) traduit ta préférence : à 30 M, 6 crafts à 25 % (7,5 M) battent 12 crafts à 30 % (9 M) dès que l'effort vaut plus de 250 000 par craft.
 - Le budget n'est pas forcément dépensé en entier.
 
+### Sous-crafts (alliages, substrats…)
+
+- Une ressource craftable s'achète à l'HDV ou se crafte à partir de ses composants, récursivement. On la crafte seulement si c'est **au moins 5 % moins cher** que de l'acheter (`gainMinSousCraft`), ou si elle est introuvable à l'HDV. Le temps de craft n'entre pas dans la marge.
+- Fraîcheur : une ressource craftable est à jour si son prix d'achat l'est, ou si tous ses composants le sont.
+- Plan de scan : pour préparer un item, une ressource craftable pas à jour fait relever son prix d'achat et ses composants. L'entretien et la veille couvrent aussi les composants.
+- Plan de craft (détail) et Données : la ressource craftée porte « à crafter », ses composants en dessous.
+- Liste d'achat : décidée sur la quantité totale du plan ; les composants s'ajoutent aux achats et la ressource passe dans « À crafter » (les plus profondes d'abord).
+
 ## Limites connues (V1)
 
 - Deux items qui partagent une ressource sont calculés comme s'ils l'achetaient séparément (la profondeur n'est pas partagée).
@@ -174,6 +182,7 @@ src/fraicheur.js   niveaux de fraîcheur, état prêt / utilisable, ordre alphab
 src/plan.js        plan de scan : choix des scans, groupes HDV / filtres
 src/vue-plan.js    onglet Scan
 src/vue-donnees.js onglet Données
+src/souscraft.js   sous-crafts : acheter ou crafter une ressource craftable
 src/craft-plan.js  crafts viables, confiance, recommandation, plan modifiable, achats regroupés
 src/statut.js      liste noire
 src/ventes.js      ventes (une ligne par exemplaire), import OCR, bilan

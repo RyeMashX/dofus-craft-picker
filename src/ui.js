@@ -3,6 +3,7 @@
 import { PARAMS } from './params.js';
 import { creerBase, majVolume, majPrixItem, majRessource, majIndispo, exporter, importer, JOUR, NB_PRIX } from './base.js';
 import { itemsFocus } from './entonnoir.js';
+import { lierSousRecettes } from './catalogue.js';
 import { renderPlanScan, tempsMesures } from './vue-plan.js';
 import { renderDonnees } from './vue-donnees.js';
 import { etatItem } from './fraicheur.js';
@@ -736,7 +737,7 @@ window.__craft = { S, renderTout, verifierVersion }; // accès pour les tests au
 brancher();
 renderTout();
 fetch('data/catalogue.json').then(r => r.json()).then(c => {
-  S.catalogue = c;
+  S.catalogue = lierSousRecettes(c);
   if (S.base.enVente) { migrerVentes(S.base, id => coutEstime(c, S.base, params(), id)); sauverBase(); } // ancien format « en vente »
   renderTout();
 })

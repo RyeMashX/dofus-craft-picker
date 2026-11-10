@@ -51,6 +51,38 @@ for (const r of recettes) {
   });
 }
 
+// Sous-crafts : les ressources qui se craftent elles-mêmes (alliages, substrats…), et leurs composants, récursivement.
+// ressources[id].recette = [{ id, qte }], ressources[id].metier
+async function recettesDe(ids) {
+  const out = [];
+  for (let i = 0; i < ids.length; i += 40) {
+    const q = ids.slice(i, i + 40).map(id => `resultId[$in][]=${id}`).join('&');
+    for (let skip = 0; ; skip += 50) {
+      const r = await fetch(`${API}/recipes?$limit=50&$skip=${skip}&${q}`);
+      const { data, total } = await r.json();
+      out.push(...data);
+      if (skip + 50 >= total) break;
+    }
+  }
+  return out;
+}
+let aVoir = Object.keys(ressources).map(Number);
+const vus = new Set(aVoir);
+while (aVoir.length) {
+  const nouveaux = [];
+  for (const r of await recettesDe(aVoir)) {
+    const res = ressources[r.resultId];
+    if (!res || res.recette) continue;
+    res.recette = r.ingredientIds.map((id, i) => ({ id, qte: r.quantities[i] }));
+    res.metier = r.job?.name?.fr ?? null;
+    for (const ing of r.ingredients) {
+      ressources[ing.id] ??= { id: ing.id, nom: ing.name.fr, niveau: ing.level, typeId: ing.typeId, iconId: ing.iconId };
+      if (!vus.has(ing.id)) { vus.add(ing.id); nouveaux.push(ing.id); }
+    }
+  }
+  aVoir = nouveaux;
+}
+
 // Nom des catégories de ressources (celles des filtres de l'HDV ressources : Aile, Alliage, Bois…)
 const typeIds = [...new Set(Object.values(ressources).map(r => r.typeId))];
 const types = {};

@@ -388,3 +388,7 @@ body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
 .pi-t th { font-size: 10px; color: var(--muted); font-weight: 600; text-align: left; }
 .pi-t td { padding: 2px 4px; border-top: 1px solid #22252c; width: auto !important; }
 .pi-t .r { text-align: right; }
+/* sous-crafts (alliages…) */
+.tag-craft { flex: none !important; font-size: 9px; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 4px; margin-left: 2px; white-space: nowrap; }
+.vo-t tr.vo-sous td { color: var(--muted); border-top-style: dashed; }
+.retrait { display: inline-block; flex: none; }
