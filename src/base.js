@@ -32,6 +32,10 @@ export function majPrixItem(base, itemId, prix, date = Date.now()) {
   return base;
 }
 
+// Aucun exemplaire en vente à l'HDV : relevé daté, sans prix (le prix de vente retombe sur le prix moyen)
+export const majAucuneAnnonce = (base, itemId, date = Date.now()) => majPrixItem(base, itemId, [], date);
+export const aucuneAnnonce = b => !!b?.prix && !b.prix.valeurs.length;
+
 export function majPrixMoyenItem(base, itemId, prixMoyen, date = Date.now()) {
   item(base, itemId).prixMoyen = { valeur: prixMoyen, date };
   return base;

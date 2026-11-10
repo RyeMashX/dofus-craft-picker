@@ -117,3 +117,15 @@ test('recommandation dans le budget : le plan regroupé ne dépasse jamais le bu
     assert.ok(evaluerPlan(plan, liste, offres, cat, p, b).capital <= budget);
   }
 });
+
+test('aucun exemplaire en vente : prix relevé à jour, prix de vente visé = prix moyen', async () => {
+  const { majAucuneAnnonce, majPrixMoyenItem } = await import('../src/base.js');
+  const { etatItem } = await import('../src/fraicheur.js');
+  const b = base();
+  majAucuneAnnonce(b, 1, T);
+  assert.equal(etatItem(cat.items[0], b, T).prix, 'vert');
+  assert.equal(viables(cat, b, p, T).liste.find(v => v.id === 1), undefined); // sans prix moyen : prix manquant
+  majPrixMoyenItem(b, 1, 1_632_654, T);
+  const v = viables(cat, b, p, T).liste.find(x => x.id === 1);
+  assert.equal(v.prixVente, 1_632_654);
+});

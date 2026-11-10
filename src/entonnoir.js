@@ -21,7 +21,7 @@ export function itemsFocus(catalogue, p) {
 export function estimerItem(it, base, p) {
   const b = base.items[it.id] ?? {};
   let prixVente = null, sourceVente = null;
-  if (b.prix) { prixVente = prixVenteEstime(b.prix.valeurs, p).estime; sourceVente = 'scan'; }
+  if (b.prix?.valeurs.length) { prixVente = prixVenteEstime(b.prix.valeurs, p).estime; sourceVente = 'scan'; }
   else if (b.prixMoyen) { prixVente = b.prixMoyen.valeur; sourceVente = 'moyen'; }
 
   let cout = 0, nbScan = 0, nbMoyen = 0, manquantes = 0;
@@ -62,7 +62,7 @@ export function baseEvaluation(catalogue, base, p, maintenant = Date.now()) {
     const etat = etatItem(it, base, maintenant);
     if (!etat.utilisable) continue;
     const b = base.items[it.id];
-    const prixVente = prixVenteEstime(b.prix.valeurs, p).estime;
+    const prixVente = prixVenteEstime(b.prix.valeurs, p).estime ?? b.prixMoyen?.valeur ?? null;
     const m = versMoteur(it, catalogue, { volumeMois: b.volume.valeur, prixVente });
     m.avertissement = etat.pret ? null : avertissement(etat);
     items.push(m);

@@ -126,6 +126,8 @@ On ne se fie ni au prix moyen ni au médian : un item à 2 M peut se vendre 10 M
 
 **Ressource introuvable** : quand l'HDV n'a aucun lot d'une ressource (légendes…), le scan échoue ; « Aucun lot disponible » (bouton de la carte de lecture en modification, ou de la saisie manuelle en mode lots) la marque introuvable. Elle passe en **rouge** (introuvable : priorité de scan entre noir et orange), n'a plus de prix, et aucun craft qui en a besoin n'est proposé (raison affichée dans le plan). Elle peut revenir dès le prochain plan de scan ; le prochain relevé de lots la rétablit. Étiquette « introuvable » dans Données.
 
+**Équipement sans annonce** : « Aucun item en vente » (mêmes endroits, en mode annonces) enregistre un relevé de prix daté mais vide. La donnée est à jour (pas redemandée avant le seuil habituel) et le prix de vente visé devient le prix moyen ; sans prix moyen, l'item reste en « prix manquant ». Données affiche « aucun » dans Prix min.
+
 ### Règle des lots (achat des ressources)
 
 Pour une quantité `q` d'une ressource, l'outil teste toutes les combinaisons de lots x1/x10/x100/x1000 et garde la moins chère :

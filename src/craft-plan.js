@@ -53,7 +53,8 @@ export function offresToutes(base) {
 export function ficheItem(it, catalogue, base, p, offres, maintenant = Date.now()) {
   const b = base.items[it.id] ?? {};
   const etat = etatItem(it, base, maintenant);
-  const prixVente = b.prix ? prixVenteEstime(b.prix.valeurs, p).estime : b.prixMoyen?.valeur ?? null;
+  // aucune annonce en vente : pas de concurrent, on vise le prix moyen
+  const prixVente = (b.prix ? prixVenteEstime(b.prix.valeurs, p).estime : null) ?? b.prixMoyen?.valeur ?? null;
   const fm = coutFmEstime(base, it.id);
   const m = { ...versMoteur(it, catalogue, { volumeMois: b.volume?.valeur ?? 0, prixVente }), coutFm: fm?.valeur ?? 0 };
   const ev = evaluerItem(m, offres, p, 1);
