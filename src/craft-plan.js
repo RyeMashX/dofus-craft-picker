@@ -67,12 +67,20 @@ export function ficheItem(it, catalogue, base, p, offres, maintenant = Date.now(
     : ev.rendement < p.margeAcceptable ? 'marge trop faible' : null;
   return {
     id: it.id, nom: it.nom, type: it.type, iconId: it.iconId, item: m,
+    risque: ev.risque, margePessimiste: ev.margePessimiste, couts: ev.craft.couts, risquees: risquees(ev.craft),
     volume: b.volume?.valeur ?? 0, prixVente, cout: ev.coutCraft, fm: ev.coutFm, fmSource: fm, marge: ev.marge, rendement: ev.rendement,
     niveau: ev.rendement != null && ev.rendement >= p.margeMin ? 'cible' : 'acceptable',
     confiance: confiance(it, base, offres, p, maintenant),
     pret: etat.pret, aVerifier: aVerifier(it, catalogue, base, maintenant), maxCrafts: maxCrafts(b.volume?.valeur ?? 0, p),
     enVente: lotsEnVente(base, it.id), raison,
   };
+}
+
+// Ressources à risque d'un craft (lignes qui peuvent se vider), la plus coûteuse en cas de dérapage d'abord
+export function risquees(craft) {
+  return craft.lignes.filter(l => l.plan && l.plan.risque !== 'faible')
+    .map(l => ({ nom: l.nom, risque: l.plan.risque, penurie: !!l.plan.penurie, enJeu: l.plan.enJeu ?? 0 }))
+    .sort((a, b) => b.enJeu - a.enJeu);
 }
 
 // Ce qui n'est pas vert dans les données d'un item (détail de la confiance) : ['prix de vente jaune', 'Étoffe jaune', …]
@@ -130,6 +138,7 @@ export function detailCraft(it, catalogue, base, p, n = 1, maintenant = Date.now
     return {
       id: r.id, nom: cat.nom, iconId: cat.iconId, q, cout: x.cout, prixUnitaire: x.cout / q,
       source: x.mode === 'craft' ? 'craft' : x.source, niveau,
+      risque: x.risque ?? 'faible', penurie: !!x.penurie, coutOptimiste: x.coutOptimiste ?? x.cout, coutStandard: x.coutStandard ?? x.cout, coutPessimiste: x.coutPessimiste ?? x.cout,
       achat: x.mode === 'craft' && x.achat ? x.achat.cout : null,
       composants: x.mode === 'craft' ? x.composants.map(c => ligne(c, c.q, c.res)) : null,
     };
@@ -174,7 +183,8 @@ export function evaluerPlan(plan, liste, offres, catalogue, p, base = null) {
     }
     if (!v) continue;
     const ev = evaluerItem(v.item, toutes, p, n);
-    lignes.push({ ...v, n, coutN: ev.capital, craftN: ev.coutCraft, fmN: ev.coutFm, revenuN: ev.revenu ?? 0, margeN: ev.marge ?? 0, rendementN: ev.rendement, depasse: n > v.maxCrafts });
+    lignes.push({ ...v, n, coutN: ev.capital, craftN: ev.coutCraft, fmN: ev.coutFm, revenuN: ev.revenu ?? 0, margeN: ev.marge ?? 0, rendementN: ev.rendement, depasse: n > v.maxCrafts,
+      risqueN: ev.risque, margePessimisteN: ev.margePessimiste, coutsN: ev.craft.couts, risquees: risquees(ev.craft) });
   }
   lignes.sort((a, b) => (b.rendementN ?? -Infinity) - (a.rendementN ?? -Infinity)); // % de marge décroissant
   const { achats, sousCrafts } = achatsConsolides(lignes, toutes, catalogue, p);

@@ -9,7 +9,7 @@ import { viables, evaluerPlan, detailCraft } from '../src/craft-plan.js';
 import { calculerPlan } from '../src/plan.js';
 
 const T = Date.now();
-const p = { ...PARAMS, metiers: { Forgeron: 200 }, profondeur: { 1: Infinity, 10: Infinity, 100: Infinity, 1000: Infinity }, tempsScan: { volume: 10, prixItem: 10, ressource: 10 } };
+const p = { ...PARAMS, metiers: { Forgeron: 200 }, hausseParLot: 0, tempsScan: { volume: 10, prixItem: 10, ressource: 10 } };
 // Épée : 2 Alliage (200) + 1 Bois (101). Alliage = 3 Minerai (201) + 1 Minerai rare (202).
 const catalogue = () => lierSousRecettes({
   items: [{ id: 1, nom: 'Épée', niveau: 200, type: 'Épée', metier: 'Forgeron', recette: [{ id: 200, qte: 2 }, { id: 101, qte: 1 }] }],

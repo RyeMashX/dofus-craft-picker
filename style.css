@@ -392,3 +392,11 @@ body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
 .tag-craft { flex: none !important; font-size: 9px; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 4px; margin-left: 2px; white-space: nowrap; }
 .vo-t tr.vo-sous td { color: var(--muted); border-top-style: dashed; }
 .retrait { display: inline-block; flex: none; }
+/* risque de prix (lignes de lots qui peuvent se vider) */
+.risque { display: inline-block; font-size: 10px; font-weight: 600; border-radius: 4px; padding: 0 5px; white-space: nowrap; flex: none; cursor: help; }
+.risque-moyen { color: var(--f-orange, #e8913a); border: 1px solid currentColor; }
+.risque-fort { color: #fff; background: var(--f-rouge, #e04848); }
+.risque.deficit::after { content: ' · déficit possible'; }
+.risque.mini { padding: 0 4px; margin-left: 2px; }
+.vo-couts { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--muted); margin: 2px 0 6px; }
+.vo-couts b { color: var(--text, inherit); font-weight: 600; }

@@ -21,19 +21,37 @@ test('lots : besoin de 2, x10 à peine moins cher → on reste en x1', () => {
   assert.deepEqual(r.lots, { 1: 2, 10: 0, 100: 0, 1000: 0 });
 });
 
-test('lots : besoin de 7 → un x10 (24 % moins cher) et on revend le surplus', () => {
+test('lots : besoin de 7 → 7 x1, le x10 avec surplus ne fait gagner que 19 % (seuil 20 %)', () => {
   const r = planAchat(7, etoffe, p);
-  assert.deepEqual(r.lots, { 1: 0, 10: 1, 100: 0, 1000: 0 });
-  assert.equal(r.surplus, 3);
-  assert.equal(Math.round(r.cout), 16202);
+  assert.deepEqual(r.lots, { 1: 7, 10: 0, 100: 0, 1000: 0 });
+  assert.equal(r.cout, 20118);
+  assert.equal(r.risque, 'faible');
 });
 
-test('lots : besoin de 150 → 15 x10, 2 au prix affiché et 13 à +10 %', () => {
+test('lots : besoin de 150 → 15 x10 ; trois coûts, risque fort, coût réaliste entre standard et pessimiste', () => {
   const r = planAchat(150, etoffe, p);
   assert.deepEqual(r.lots, { 1: 0, 10: 15, 100: 0, 1000: 0 });
-  assert.equal(Math.round(r.cout), 374069);
   assert.equal(r.coutOptimiste, 344235);
-  assert.equal(r.alerte, false);
+  assert.equal(r.coutStandard, 344235);
+  assert.equal(Math.round(r.coutPessimiste), 766025);          // 15 lots : +20 % par lot, plafond ×3
+  assert.equal(Math.round(r.cout), Math.round(344235 + (766025 - 344235) / 3));
+  assert.equal(r.risque, 'fort');
+});
+
+test('lots : bandeaux (x1 10 000, x10 300 000), 138 → pas 138 x1 : x10 et quelques x1, risque fort', () => {
+  const r = planAchat(138, { 1: 10000, 10: 300000 }, p);
+  assert.ok(r.lots[1] <= p.lotsCredibles && r.lots[10] >= 12);
+  assert.equal(r.coutOptimiste, 1380000);
+  assert.ok(r.coutStandard > 3.5e6 && r.cout > r.coutStandard);
+  assert.equal(r.risque, 'fort');
+  assert.equal(planAchat(3, { 1: 10000, 10: 300000 }, p).risque, 'faible');
+});
+
+test('lots : que du x1 pour 138 → pénurie possible, risque fort, coût réaliste bien au-dessus du prix affiché', () => {
+  const r = planAchat(138, { 1: 10000 }, p);
+  assert.equal(r.penurie, true);
+  assert.equal(r.risque, 'fort');
+  assert.ok(r.cout > 2e6);
 });
 
 test('lots : la revente du surplus ne rapporte jamais plus que son prix d\'achat', () => {
@@ -80,7 +98,7 @@ test('marge : taxe de 2 %, FM estimée déduite (sans FM si inclureFm est coupé
 
 // Ton exemple : 30 M, soit 6 items à 25 %, soit 12 items à 30 %.
 function exempleBudget() {
-  const pp = { ...p, profondeur: { 1: Infinity, 10: Infinity, 100: Infinity } };
+  const pp = { ...p, hausseParLot: 0, lotsCredibles: Infinity };
   const items = [
     { id: 'A', nom: 'Item A', volumeMois: 180, prixVente: 6250000 / 0.98, recette: [{ id: 'ra', nom: 'RA', qte: 1 }] },
     { id: 'B', nom: 'Item B', volumeMois: 360, prixVente: 3250000 / 0.98, recette: [{ id: 'rb', nom: 'RB', qte: 1 }] },

@@ -130,22 +130,21 @@ On ne se fie ni au prix moyen ni au médian : un item à 2 M peut se vendre 10 M
 
 ### Règle des lots (achat des ressources)
 
-Pour une quantité `q` d'une ressource, l'outil teste toutes les combinaisons de lots x1/x10/x100/x1000 et garde la moins chère :
+L'HDV ne montre que le lot le moins cher de chaque taille (x1, x10, x100, x1000), jamais combien il y en a derrière. Pour une quantité `q`, l'outil calcule trois coûts :
 
-1. **Profondeur** : le prix affiché n'est garanti que pour les premiers lots (3 lots x1, 2 lots x10, 1 lot x100, 1 lot x1000). Au-delà, chaque lot est compté **+10 %**, parce que la ligne se vide et que le prix remonte.
-2. **Surplus** : les unités en trop sont revendues à **80 %** du prix x1 à l'unité, ou à 80 % du prix x10 par paquets de 10 (le plus avantageux), taxe déduite. Une unité revendue ne compte jamais plus que ce qu'elle a coûté.
-3. **Seuil** : on n'achète plus que nécessaire que si ça fait gagner au moins **20 %** par rapport au meilleur plan sans surplus.
-4. **Alerte** : si le plan prudent coûte plus de **20 %** de plus que le plan optimiste (tout au prix affiché), la ressource est marquée **à revérifier** avant achat.
+1. **Optimiste** : tout au prix affiché, sans limite de lots (138 bandeaux = 138 × le x1).
+2. **Standard** : au prix affiché, mais au plus **20 lots** d'une même taille (`lotsCredibles`) : 138 x1 n'est pas crédible, on passe au x10 / x100. C'est le plan d'achat proposé. Si aucun plan ne tient dans cette limite (que du x1 affiché), on garde l'optimiste.
+3. **Pessimiste** : chaque lot acheté dans une taille fait monter le suivant de **20 %** du prix affiché (2e lot +20 %, 3e +40 %…), plafonné à **3 fois** ce prix ; l'outil prend le meilleur mélange de tailles dans ce scénario.
 
-Exemple réel, Étoffe sanglante (x1 2 874, x10 22 949, x100 700 012) :
+On impose optimiste ≤ standard ≤ pessimiste. Puis :
 
-| Besoin | Plan retenu | Coût compté | Commentaire |
-|---|---|---|---|
-| 2 | 2 × x1 | 5 748 | le x10 (4 957 en revendant 8 unités) ne fait gagner que 14 %, sous le seuil de 20 % |
-| 7 | 1 × x10 | 16 202 | 24 % moins cher que 21 268 en x1 |
-| 150 | 15 × x10 | 374 069 | 2 lots au prix affiché, 13 à +10 % ; optimiste 344 235 (écart 9 %, pas d'alerte) |
+- **Risque** = (pessimiste − optimiste) / standard : faible sous 30 %, **moyen** dès 30 % (environ 4 lots d'une taille), **fort** dès 60 % (environ 7 lots). **Pénurie possible** quand il faudrait plus de 20 lots de la plus grande taille affichée : risque fort d'office.
+- **Coût retenu** = standard + ⅓ × (pessimiste − standard). C'est lui qui entre dans le coût du craft, la marge, le budget et la liste d'achat.
+- **Surplus** : les unités en trop sont revendues à 80 % du prix x1 à l'unité, ou du prix x10 par paquets de 10, taxe déduite, jamais plus cher que payé ; on n'achète du surplus que s'il fait gagner au moins 20 %.
 
-Ces paramètres sont des hypothèses de départ : le journal servira à les calibrer.
+Affichage : pastille « risque » / « risque fort » sur les items du plan de craft et des crafts viables (au survol : lignes concernées et marge si elles se vident), « ! » sur les ressources concernées dans le détail et la liste d'achat, avec les trois coûts. La liste d'achat commence par un bloc **À acheter en premier** : les lignes à risque, triées par kamas en jeu (pessimiste − standard).
+
+Réglages : nombre de lots crédibles, hausse par lot, plafond, part de l'écart retenue. Ce sont des hypothèses de départ, à caler sur les achats réels.
 
 ### Allocation du budget
 
@@ -164,7 +163,7 @@ Ces paramètres sont des hypothèses de départ : le journal servira à les cali
 
 ## Limites connues (V1)
 
-- Deux items qui partagent une ressource sont calculés comme s'ils l'achetaient séparément (la profondeur n'est pas partagée).
+- Dans le plan de craft, deux items qui partagent une ressource sont chiffrés comme s'ils l'achetaient séparément ; la liste d'achat, elle, additionne les quantités avant de calculer les trois coûts.
 - Vendre 2 exemplaires du même item suppose qu'ils partent au même prix.
 - Le coût de FM est une moyenne de tes ventes passées : il ne tient pas compte des jets visés.
 - Le prix de vente ne tient pas encore compte du jet (V2).

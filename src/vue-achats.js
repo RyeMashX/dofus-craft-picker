@@ -25,7 +25,8 @@ export function genererListeAchat(ctx) {
       pour: a.pour.map(x => ({ nom: x.nom, q: x.q, iconId: x.iconId ?? ev.lignes.find(l => l.nom === x.nom)?.iconId })),
       plan: a.plan && {
         lots: a.plan.lots, surplus: a.plan.surplus, cout: a.plan.cout, nbLots: a.plan.nbLots,
-        prixUnitaire: a.plan.prixUnitaire, alerte: a.plan.alerte,
+        prixUnitaire: a.plan.prixUnitaire, risque: a.plan.risque, penurie: a.plan.penurie, enJeu: a.plan.enJeu,
+        coutOptimiste: a.plan.coutOptimiste, coutStandard: a.plan.coutStandard, coutPessimiste: a.plan.coutPessimiste,
         prixLot: Object.fromEntries(TAILLES.filter(t => a.plan.lots[t]).map(t => [t, S.base.ressources[a.id]?.lots?.valeurs?.[t] ?? null])),
       },
     })),
@@ -80,7 +81,7 @@ export function renderAchats(ctx) {
         <span class="chev" aria-hidden="true"></span>
         ${ctx.boutonCopier(a.nom, 'ressource')}
         ${icone(a.iconId)}
-        <span class="n">${esc(a.nom)}${a.plan?.alerte ? ' <span class="warn" title="À revérifier à l\'HDV">⚠</span>' : ''}</span>
+        <span class="n">${a.plan?.risque && a.plan.risque !== 'faible' ? `<span class="risque risque-${a.plan.risque} mini" title="Risque ${a.plan.risque}${a.plan.penurie ? ', pénurie possible' : ''} : le prix peut monter pendant l'achat">!</span> ` : ''}${esc(a.nom)}</span>
         <span class="c-q">${fmt(a.q)}</span>
         <span class="c-t">${a.plan ? fmtK(a.plan.cout) : '<span class="bad">?</span>'}</span>
         <span class="c-pu">${a.plan ? fmtK(a.plan.prixUnitaire) : '–'}</span>
@@ -89,13 +90,20 @@ export function renderAchats(ctx) {
       ${ouvert ? `<div class="ac-det">
         <div class="ac-det-l"><span class="muted">Lots</span><span class="ac-lots">${lots(a)}</span></div>
         ${a.plan?.surplus ? `<div class="ac-det-l"><span class="muted">Surplus</span><span>${fmt(a.plan.surplus)} en trop, revendu ~80 %</span></div>` : ''}
-        <div class="ac-det-l"><span class="muted">Relevé</span><span>${pastille(niveauRessource(r))} ${ctx.age(estIndispo(r) ? r.indispo.date : r?.lots?.date ?? r?.prixMoyen?.date)}${a.plan?.alerte ? ' · <span class="warn">le prix risque de remonter en vidant les lots affichés : regarde l\'HDV avant d\'acheter</span>' : ''}</span></div>
+        <div class="ac-det-l"><span class="muted">Relevé</span><span>${pastille(niveauRessource(r))} ${ctx.age(estIndispo(r) ? r.indispo.date : r?.lots?.date ?? r?.prixMoyen?.date)}</span></div>
+        ${a.plan?.coutPessimiste != null && a.plan.coutPessimiste - a.plan.coutOptimiste >= 1 ? `<div class="ac-det-l"><span class="muted">Coûts</span><span>optimiste ${fmtK(a.plan.coutOptimiste)} · standard ${fmtK(a.plan.coutStandard)} · pessimiste ${fmtK(a.plan.coutPessimiste)} · retenu ${fmtK(a.plan.cout)}${a.plan.penurie ? ' · <span class="bad">pénurie possible</span>' : ''}</span></div>` : ''}
         <div class="ac-det-l"><span class="muted">Pour</span><span class="ac-pour">${pour(a)}</span></div>
       </div>` : ''}</div>`;
   };
 
+  // À acheter en premier : lignes qui peuvent se vider, les plus coûteuses en cas de dérapage d'abord
+  const risquees = achats.filter(a => a.plan?.risque && a.plan.risque !== 'faible').sort((x, y) => (y.plan.enJeu ?? 0) - (x.plan.enJeu ?? 0));
+  const enTete = new Set(risquees.map(a => a.id));
+  const blocRisque = risquees.length ? `<h3>À acheter en premier</h3><p class="muted small">Les lignes qui peuvent se vider : si le prix part, tu t'arrêtes avant d'avoir payé le reste.</p>
+    <div class="ac-tete"><span></span><span class="c-q">qté</span><span class="c-t">total</span><span class="c-pu">prix/u</span><span></span></div>
+    <div class="grp${risquees.every(fait) ? ' fini' : ''}"><div class="ac">${risquees.map(ligne).join('')}</div></div>` : '';
   const groupes = [];
-  for (const a of achats) {
+  for (const a of achats.filter(a => !enTete.has(a.id))) {
     const g = groupes.at(-1);
     if (g && g.hdv === a.hdv && g.type === a.type) g.lignes.push(a);
     else groupes.push({ hdv: a.hdv, type: a.type, lignes: [a] });
@@ -146,6 +154,7 @@ export function renderAchats(ctx) {
       <div class="kpi"><div class="v">${achats.reduce((s, a) => s + (a.plan?.nbLots ?? 0), 0)}</div><div class="l">lots</div></div>
     </div>
     <div class="crafts-l">${L.crafts.map(c => `<span class="craft-c" title="${esc(c.nom)}">${icone(c.iconId)}<span class="n">${esc(c.nom)}</span><b>×${c.n}</b></span>`).join('')}</div>
+    ${blocRisque}
     ${corps}
     ${blocCraft}
     <div class="row"><button id="ac-raz" class="link small">tout décocher</button></div>`;

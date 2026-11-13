@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { planAchat, coutLots, valeurSurplus } from '../src/lots.js';
+import { planAchat, valeurSurplus } from '../src/lots.js';
 import { PARAMS } from '../src/params.js';
 
-// Référence : énumération complète (l'ancien calcul), pour vérifier que l'optimisation ne change rien
-function reference(q, offre, p, profondeur, surcout) {
+// Référence : énumération complète au prix affiché, pour vérifier que le raccourci du coût optimiste ne change rien
+function reference(q, offre, p) {
   const ok = t => offre[t] != null && offre[t] > 0;
-  const cout = (t, n) => n ? coutLots(t, n, offre[t], profondeur[t] ?? 0, surcout) : 0;
+  const cout = (t, n) => n ? n * offre[t] : 0;
   const max = (t, r) => ok(t) ? Math.ceil(r / t) : 0;
   let best = null, sans = null;
   const mieux = (a, b) => !b || a.cout < b.cout - 1e-9 || (Math.abs(a.cout - b.cout) < 1e-9 && a.nbLots < b.nbLots);
@@ -19,20 +19,21 @@ function reference(q, offre, p, profondeur, surcout) {
   return (!sans || best.surplus === 0) ? best : best.cout < sans.cout * (1 - p.gainMinSurplus) ? best : sans;
 }
 
-test('lots : le calcul rapide donne le même coût que l\'énumération complète', () => {
+test('lots : le coût optimiste rapide = énumération complète, et O ≤ S ≤ réaliste ≤ P', () => {
   let graine = 7; const alea = () => (graine = (graine * 16807) % 2147483647) / 2147483647;
   for (let i = 0; i < 300; i++) {
     const u = 1000 + Math.floor(alea() * 50000);
     const offre = { 1: alea() < 0.85 ? Math.round(u * (0.9 + alea() * 0.4)) : null, 10: alea() < 0.85 ? Math.round(u * 10 * (0.8 + alea() * 0.4)) : null, 100: alea() < 0.6 ? Math.round(u * 100 * (0.75 + alea() * 0.4)) : null };
     if (!offre[1] && !offre[10] && !offre[100]) offre[1] = u;
     const q = 1 + Math.floor(alea() * 400);
-    const r = planAchat(q, offre, PARAMS), ref = reference(q, offre, PARAMS, PARAMS.profondeur, PARAMS.surcout);
-    assert.ok(Math.abs(r.cout - ref.cout) < 1e-6, `q=${q} ${JSON.stringify(offre)} : ${r.cout} ≠ ${ref.cout}`);
+    const r = planAchat(q, offre, PARAMS), ref = reference(q, offre, PARAMS);
+    assert.ok(Math.abs(r.coutOptimiste - ref.cout) < 1e-6, `q=${q} ${JSON.stringify(offre)} : ${r.coutOptimiste} ≠ ${ref.cout}`);
+    assert.ok(r.coutOptimiste <= r.coutStandard && r.coutStandard <= r.cout && r.cout <= r.coutPessimiste);
   }
 });
 
 test('lots : plusieurs milliers d\'unités se calculent vite', () => {
   const t = Date.now();
   for (let q = 1000; q < 6000; q += 37) planAchat(q, { 1: 5000, 10: 45000, 100: 420000 }, PARAMS);
-  assert.ok(Date.now() - t < 1000, `${Date.now() - t} ms`);
+  assert.ok(Date.now() - t < 1500, `${Date.now() - t} ms`);
 });

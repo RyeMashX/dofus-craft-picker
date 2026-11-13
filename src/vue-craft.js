@@ -12,6 +12,13 @@ const pctConf = c => c == null ? '–' : `${Math.round(c * 100)} %`;
 // Confiance : fraîcheur des données (volume 15 %, prix de vente 35 %, ressources 50 % pondérées par leur coût).
 // Le détail de ce qui n'est pas vert s'affiche au survol. N'affecte pas la marge.
 export const confHtml = c => c == null ? '' : `<span class="conf conf-${niveauConfiance(c)}" title="Confiance dans les données : ${niveauConfiance(c)}. Détail au clic sur le nom.">${pctConf(c)}</span>`;
+// Risque de prix : les lignes de lots peuvent se vider pendant l'achat (voir lots.js). Pastille seulement si moyen ou fort.
+export const risqueHtml = (ctx, risque, risquees = [], margePess = null) => {
+  if (!risque || risque === 'faible') return '';
+  const det = risquees.map(r => `${r.nom} (${r.risque}${r.penurie ? ', pénurie possible' : ''})`).join(', ');
+  const title = `Risque ${risque} : le prix peut monter pendant l'achat.${det ? ` Lignes concernées : ${det}.` : ''}${margePess != null ? ` Marge si elles se vident : ${ctx.fmtK(margePess)}.` : ''}`;
+  return `<span class="risque risque-${risque}${margePess != null && margePess < 0 ? ' deficit' : ''}" title="${ctx.esc(title)}">${risque === 'fort' ? 'risque fort' : 'risque'}</span>`;
+};
 const tagNiveau = n => n === 'cible' ? '<span class="tag ok-tag">cible</span>' : '<span class="tag faire">acceptable</span>';
 export const signaturePlan = plan => JSON.stringify(Object.entries(plan ?? {}).filter(([, n]) => n > 0).sort((a, b) => a[0] - b[0]));
 const dateCourte = t => new Date(t).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
@@ -58,7 +65,7 @@ export function renderCraft(ctx) {
   const depasseBudget = ev.capital > budget;
   const ouverts = (S.craftOuverts ??= new Set());
   const lignePlan = l => `<div class="cp-l${l.raison || l.enVente ? ' alerte' : ''}${ouverts.has(`p${l.id}`) ? ' ouvert' : ''}" data-volet="p${l.id}">
-      <div class="cp-nom"><span class="chev" aria-hidden="true"></span>${icone(l.iconId)} <span class="n">${esc(l.nom)}</span> ${l.raison ? '' : tagNiveau(l.niveau)} ${confHtml(l.confiance)}</div>
+      <div class="cp-nom"><span class="chev" aria-hidden="true"></span>${icone(l.iconId)} <span class="n">${esc(l.nom)}</span> ${l.raison ? '' : tagNiveau(l.niveau)} ${confHtml(l.confiance)} ${risqueHtml(ctx, l.risqueN, l.risquees, l.margePessimisteN)}</div>
       <div class="cp-chiffres">
         <span class="stepper"><button data-moins="${l.id}" title="Un craft de moins">−</button><b>${l.n}</b><button data-plus="${l.id}" title="Un craft de plus">+</button></span>
         <span class="muted small">coût</span> ${fmtK(l.coutN)}
@@ -109,7 +116,7 @@ export function renderCraft(ctx) {
   const ligneViable = v => {
     const dans = plan[v.id] ?? 0;
     return `<div class="cv-l${dans ? ' dans' : ''}${ouverts.has(`v${v.id}`) ? ' ouvert' : ''}" data-volet="v${v.id}">
-      <div class="cp-nom"><span class="chev" aria-hidden="true"></span>${icone(v.iconId)} <span class="n">${esc(v.nom)}</span> ${tagNiveau(v.niveau)} ${confHtml(v.confiance)}
+      <div class="cp-nom"><span class="chev" aria-hidden="true"></span>${icone(v.iconId)} <span class="n">${esc(v.nom)}</span> ${tagNiveau(v.niveau)} ${confHtml(v.confiance)} ${risqueHtml(ctx, v.risque, v.risquees, v.margePessimiste)}
         ${v.enVente ? `<span class="tag tard" title="Déjà en vente : pas recommandé">en vente ${v.enVente}</span>` : ''}</div>
       <div class="cp-chiffres">
         <span class="muted small">vente</span> ${fmtK(v.prixVente)} <span class="muted small">craft</span> ${fmtK(v.cout)}
@@ -154,6 +161,20 @@ export function renderCraft(ctx) {
   });
 }
 
+// Trois coûts du craft (par craft) : on retient le réaliste, entre standard et pessimiste
+function couts(ctx, f, n, venteU, taxeU, fmU) {
+  const { fmtK } = ctx, c = n > 1 ? f.coutsN : f.couts;
+  if (!c || c.coutPessimiste - c.coutOptimiste < 1) return '';
+  const mp = venteU == null ? null : venteU - taxeU - fmU - c.coutPessimiste / n;
+  return `<div class="vo-couts">
+    <span title="Tout au prix affiché, sans limite de lots">optimiste <b>${fmtK(c.coutOptimiste / n)}</b></span>
+    <span title="Prix affichés, au plus ${ctx.params().lotsCredibles} lots d'une même taille">standard <b>${fmtK(c.coutStandard / n)}</b></span>
+    <span title="Chaque lot acheté fait monter le suivant">pessimiste <b>${fmtK(c.coutPessimiste / n)}</b></span>
+    <span title="Coût retenu : standard + ⅓ de l'écart vers le pessimiste">retenu <b>${fmtK(c.cout / n)}</b></span>
+    ${mp != null ? `<span title="Marge si les lignes se vident">marge pessimiste <b class="${mp >= 0 ? 'ok' : 'bad'}">${fmtK(mp)}</b></span>` : ''}
+  </div>`;
+}
+
 // ---------- détail d'un craft (volet dépliable) ----------
 // Prix unitaires (par craft) en tête, confiance et données à vérifier, puis la recette chiffrée.
 function voletCraft(ctx, f, n, p) {
@@ -168,7 +189,7 @@ function voletCraft(ctx, f, n, p) {
   const rdt = margeU == null || !craftU ? null : margeU / (craftU + fmU);
   const det = f.aVerifier ?? [];
   // ressource craftée (alliage…) : ses composants en dessous, en retrait
-  const ligneRecette = (l, prof = 0) => `<tr class="${prof ? 'vo-sous' : ''}"><td class="tn">${prof ? `<i class="retrait" style="width:${prof * 14}px"></i>` : ''}${icone(l.iconId)}<span>${esc(l.nom)}</span>${pastille(l.niveau)}${l.source === 'craft' ? `<span class="tag-craft" title="Moins cher à crafter${l.achat ? ` qu'à acheter (${fmtK(l.achat / n)} pour 1 craft)` : ' : introuvable à l\'HDV'}">à crafter</span>` : ''}</td><td class="r">${fmt(l.q / n)}</td><td class="r">${prix(l)}</td><td class="r">${l.cout == null ? '–' : fmtK(l.cout / n)}</td></tr>${(l.composants ?? []).map(c => ligneRecette(c, prof + 1)).join('')}`;
+  const ligneRecette = (l, prof = 0) => `<tr class="${prof ? 'vo-sous' : ''}"><td class="tn">${prof ? `<i class="retrait" style="width:${prof * 14}px"></i>` : ''}${icone(l.iconId)}<span>${esc(l.nom)}</span>${pastille(l.niveau)}${l.risque && l.risque !== 'faible' ? `<span class="risque risque-${l.risque} mini" title="${esc(`Risque ${l.risque}${l.penurie ? ', pénurie possible' : ''} pour ${fmt(l.q)} : optimiste ${fmtK(l.coutOptimiste / n)}, standard ${fmtK(l.coutStandard / n)}, pessimiste ${fmtK(l.coutPessimiste / n)} par craft`)}">!</span>` : ''}${l.source === 'craft' ? `<span class="tag-craft" title="Moins cher à crafter${l.achat ? ` qu'à acheter (${fmtK(l.achat / n)} pour 1 craft)` : ' : introuvable à l\'HDV'}">à crafter</span>` : ''}</td><td class="r">${fmt(l.q / n)}</td><td class="r">${prix(l)}</td><td class="r">${l.cout == null ? '–' : fmtK(l.cout / n)}</td></tr>${(l.composants ?? []).map(c => ligneRecette(c, prof + 1)).join('')}`;
   const prix = l => l.prixUnitaire == null ? '<span class="bad">?</span>' : `${fmtK(l.prixUnitaire)}${l.source === 'moyen' ? '<sup title="prix moyen HDV, lots non relevés">m</sup>' : ''}`;
   return `<div class="volet">
     <div class="vo-u">
@@ -178,6 +199,7 @@ function voletCraft(ctx, f, n, p) {
       <div><span>Marge</span><b class="${margeU == null ? '' : margeU >= 0 ? 'ok' : 'bad'}">${fmtK(margeU)}</b><em>${pct(rdt)}</em></div>
     </div>
     <p class="vo-note muted">Par craft, taxe de ${pct(p.taxeVente)} déduite${fs ? `, FM : moyenne de ${fs.n} vente${fs.n > 1 ? 's' : ''}` : ''}.</p>
+    ${couts(ctx, f, n, venteU, taxeU, fmU)}
     <p class="vo-conf">${confHtml(f.confiance)} ${det.length ? `<span class="muted">À vérifier :</span> ${det.map(esc).join(' · ')}` : '<span class="muted">Toutes les données sont à jour.</span>'}</p>
     <table class="vo-t"><thead><tr><th></th><th class="r">qté</th><th class="r">prix/u</th><th class="r">coût</th></tr></thead><tbody>
     ${d.lignes.map(l => ligneRecette(l)).join('')}

@@ -29,6 +29,8 @@ export function evaluerItem(item, offres, p, n = 1) {
   const revenu = item.prixVente != null ? item.prixVente * (1 - p.taxeVente) * n : null;
   const marge = revenu != null ? revenu - capital : null;
   const rendement = marge != null && capital > 0 ? marge / capital : null;
+  // si les lignes se vident : coût pessimiste des ressources
+  const margePessimiste = revenu != null ? revenu - (craft.couts.coutPessimiste + coutFm) : null;
 
   const raisons = [];
   if (item.volumeMois < p.volumeMin) raisons.push(`volume ${item.volumeMois}/mois < ${p.volumeMin}`);
@@ -40,7 +42,7 @@ export function evaluerItem(item, offres, p, n = 1) {
   return {
     id: item.id, nom: item.nom, n,
     coutCraft: craft.total, coutFm, capital, revenu, marge, rendement,
-    alertes: craft.alertes, craft,
+    alertes: craft.alertes, craft, risque: craft.couts.risque, margePessimiste,
     eligible: raisons.length === 0, raisons,
   };
 }

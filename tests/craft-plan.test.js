@@ -7,7 +7,7 @@ import { exclure } from '../src/statut.js';
 import { ajouterVente } from '../src/ventes.js';
 
 const T = Date.now();
-const p = { ...PARAMS, metiers: { Bijoutier: 200 }, profondeur: { 1: Infinity, 10: Infinity, 100: Infinity, 1000: Infinity } };
+const p = { ...PARAMS, metiers: { Bijoutier: 200 }, hausseParLot: 0, lotsCredibles: Infinity };
 // A : cible (rendement ≈ 60 %), B : acceptable (≈ 18 %), C : sous 15 %. A et B partagent la ressource 100.
 const cat = {
   items: [

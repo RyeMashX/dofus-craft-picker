@@ -35,6 +35,7 @@ const ZONES_DEFAUT = {
 const REGLAGES_DEFAUT = {
   volumeMin: PARAMS.volumeMin, margeMin: PARAMS.margeMin * 100, margeAcceptable: PARAMS.margeAcceptable * 100, modePrixVente: PARAMS.modePrixVente,
   forgeron: PARAMS.metiers.Forgeron, effort: PARAMS.coutEffortParCraft / 1000, partCraft: 70, partVeille: 10,
+  hausseParLot: PARAMS.hausseParLot * 100, plafondHausse: PARAMS.plafondHausse, partPessimiste: Math.round(PARAMS.partPessimiste * 100), lotsCredibles: PARAMS.lotsCredibles,
 };
 
 const S = {
@@ -63,6 +64,8 @@ function params() {
     metiers: { ...PARAMS.metiers, Forgeron: +r.forgeron },
     partCraft: (+r.partCraft || 70) / 100,
     partVeille: (r.partVeille ?? 10) / 100,
+    hausseParLot: (+r.hausseParLot >= 0 ? +r.hausseParLot : 20) / 100, plafondHausse: +r.plafondHausse >= 1 ? +r.plafondHausse : 3,
+    partPessimiste: (+r.partPessimiste >= 0 ? +r.partPessimiste : 33) / 100, lotsCredibles: +r.lotsCredibles >= 1 ? +r.lotsCredibles : 20,
     ...(({ tempsScan, mesures }) => ({ tempsScan, tempsMesures: mesures }))(tempsMesures(S.etat.journal, PARAMS.tempsScan)),
   };
 }
@@ -512,7 +515,11 @@ function renderBase(cat, p) {
     <span>Effort par craft (k kamas)</span><input class="num" data-reg="effort" value="${r.effort}">
     <span>Niveau Forgeron</span><input class="num" data-reg="forgeron" value="${r.forgeron}">
     <span>Plan de scan : part pour le craft (%)</span><input class="num" data-reg="partCraft" value="${r.partCraft}">
-    <span>Plan de scan : part pour la veille (%), le reste en entretien</span><input class="num" data-reg="partVeille" value="${r.partVeille ?? 10}">`;
+    <span>Plan de scan : part pour la veille (%), le reste en entretien</span><input class="num" data-reg="partVeille" value="${r.partVeille ?? 10}">
+    <span>Lots : nombre crédible d'une même taille au prix affiché</span><input class="num" data-reg="lotsCredibles" value="${r.lotsCredibles}">
+    <span>Lots : hausse par lot acheté, scénario pessimiste (%)</span><input class="num" data-reg="hausseParLot" value="${r.hausseParLot}">
+    <span>Lots : plafond de la hausse (× prix affiché)</span><input class="num" data-reg="plafondHausse" value="${r.plafondHausse}">
+    <span>Coût retenu : part de l'écart vers le pessimiste (%)</span><input class="num" data-reg="partPessimiste" value="${r.partPessimiste}">`;
   $$('#reglages [data-reg]').forEach(el => el.onchange = () => { S.etat.reglages[el.dataset.reg] = el.value; sauverEtat(); renderTout(); });
 }
 

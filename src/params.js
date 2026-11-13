@@ -14,11 +14,13 @@ export const PARAMS = {
   joursParMois: 30,         // max de crafts d'un même item = volume / 30 (1 jour de vente)
 
   // Achat des ressources par lots (voir README, "Règle des lots")
-  profondeur: { 1: 3, 10: 2, 100: 1, 1000: 1 }, // nb de lots supposés dispo au prix affiché
-  surcout: 0.10,            // au-delà, chaque lot est compté +10 %
+  lotsCredibles: 20,        // coût standard : au plus 20 lots d'une même taille au prix affiché ; au-delà, pénurie possible
+  hausseParLot: 0.20,       // coût pessimiste : chaque lot acheté fait monter le suivant de 20 % du prix affiché…
+  plafondHausse: 3,         // … jusqu'à 3 fois ce prix
+  partPessimiste: 1 / 3,    // coût réaliste = standard + 1/3 de l'écart standard → pessimiste
+  seuilsRisque: { moyen: 0.3, fort: 0.6 }, // risque = (pessimiste − optimiste) / standard : moyen dès 4 lots d'une taille, fort dès 7
   revalorisationSurplus: 0.8, // surplus revendu à 80 % du prix x1 (ou du prix x10 par paquets de 10)
   gainMinSurplus: 0.20,     // on n'achète "trop" que si ça fait gagner au moins 20 %
-  ecartAlerte: 0.20,        // alerte "à revérifier" si plan prudent > optimiste de +20 %
 
   // Périmètre et fraîcheur des relevés
   focusNiveaux: [200, 200], // on commence par les items niveau 200

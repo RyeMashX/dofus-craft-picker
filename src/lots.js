@@ -1,24 +1,23 @@
-// Achat d'une quantité q d'une ressource à l'HDV, par lots de 1, 10 et 100.
+// Achat d'une quantité q d'une ressource à l'HDV, par lots de 1, 10, 100 et 1000.
 //
 // offre = { 1: prix du lot x1, 10: prix du lot x10, 100: prix du lot x100, 1000: prix du lot x1000 }
-// (une taille absente ou null = pas de lot affiché)
+// (une taille absente ou null = pas de lot affiché). L'HDV ne montre que le lot le moins cher de chaque
+// taille, jamais combien il y en a derrière : on calcule donc trois coûts (cf. README, « Règle des lots »).
 //
-// Règle (cf. README) :
-// - chaque taille de lot n'est garantie au prix affiché que pour `profondeur[taille]` lots ;
-//   au-delà on compte chaque lot avec un surcoût (le prix remonte quand on vide la ligne) ;
-// - si on achète plus que nécessaire, le surplus est revendu à 80 % du prix x1 à l'unité,
-//   ou à 80 % du prix x10 par paquets de 10, taxe déduite, sans jamais valoir plus
-//   que ce qu'on l'a payé (pas de "bénéfice" fictif sur la revente) ;
-// - on n'achète du surplus que si le gain dépasse `gainMinSurplus` par rapport
-//   au meilleur plan sans surplus ;
-// - on calcule aussi le coût "optimiste" (profondeur infinie) : un gros écart = alerte.
+// - Optimiste (O) : tout au prix affiché, sans limite de lots.
+// - Standard (S) : au prix affiché, mais au plus `lotsCredibles` lots d'une même taille (138 x1 à 10 000
+//   n'est pas crédible : on passe au x10, au x100…). C'est le plan d'achat proposé.
+// - Pessimiste (P) : chaque lot acheté dans une taille fait monter le suivant de `hausseParLot` du prix
+//   affiché (2e lot +20 %, 3e +40 %…), plafonné à `plafondHausse` fois ce prix ; meilleur mélange de tailles.
+// On impose O ≤ S ≤ P.
+// - Risque = (P − O) / S : faible, moyen, fort (`seuilsRisque`). Pénurie possible quand il faudrait plus de
+//   `lotsCredibles` lots de la plus grande taille affichée : risque fort d'office.
+// - Coût réaliste = S + `partPessimiste` × (P − S) : c'est lui qui entre dans le coût du craft et la marge.
+//
+// Surplus : les unités en trop sont revendues à 80 % du prix x1 à l'unité, ou du prix x10 par paquets de 10,
+// taxe déduite, jamais plus cher que payé ; on n'achète du surplus que s'il fait gagner `gainMinSurplus`.
 
 export const TAILLES = [1, 10, 100, 1000];
-
-export function coutLots(taille, n, prixLot, profondeur, surcout) {
-  const auPrix = Math.min(n, profondeur);
-  return auPrix * prixLot + (n - auPrix) * prixLot * (1 + surcout);
-}
 
 function dispo(offre, t) {
   return offre && offre[t] != null && offre[t] > 0;
@@ -42,24 +41,34 @@ export function valeurSurplus(s, offre, plafond, p) {
   return best * (1 - p.taxeVente);
 }
 
-function meilleursPlans(q, offre, p, profondeur, surcout) {
+// Coût de n lots d'une taille au prix affiché prixLot quand chaque lot fait monter le suivant :
+// lot k au prix × min(plafond, 1 + hausse × (k − 1)).
+export function coutLotsHausse(n, prixLot, hausse, plafond) {
+  if (n <= 0) return 0;
+  if (!hausse) return n * prixLot;
+  const avant = Math.min(n, Math.ceil((plafond - 1) / hausse)); // lots sous le plafond
+  return prixLot * (avant + hausse * avant * (avant - 1) / 2 + (n - avant) * plafond);
+}
+
+// Meilleur plan pour couvrir q unités. coutTaille(t, n) = coût de n lots de taille t ; maxLots borne le nombre
+// de lots par taille (Infinity = pas de borne). Coûts linéaires : on ne teste que les cassures pour n10.
+function meilleursPlans(q, offre, p, coutTaille, maxLots, lineaire) {
   let best = null, sansSurplus = null;
   const mieux = (a, b) => !b || a.cout < b.cout - 1e-9 || (Math.abs(a.cout - b.cout) < 1e-9 && a.nbLots < b.nbLots);
-  const cout = (t, n) => n ? coutLots(t, n, offre[t], profondeur[t] ?? 0, surcout) : 0;
-  const max = (t, reste) => dispo(offre, t) ? Math.ceil(reste / t) : 0;
+  const max = (t, reste) => dispo(offre, t) ? Math.min(Math.ceil(reste / t), maxLots) : 0;
 
   for (let n1000 = 0; n1000 <= max(1000, q); n1000++) {
     const r1000 = Math.max(0, q - 1000 * n1000);
     for (let n100 = 0; n100 <= max(100, r1000); n100++) {
       const r100 = Math.max(0, r1000 - 100 * n100);
-      // Le coût en fonction de n10 est linéaire par morceaux : le minimum est sur une cassure (profondeur des
-      // lots x10, profondeur des lots x1, besoin couvert sans x1, besoin dépassé). On ne teste que celles-là :
-      // des milliers d'unités ne font plus des milliers d'essais.
-      for (const n10 of candidatsX10(r100, max(10, r100), profondeur, dispo(offre, 1))) {
+      const m10 = max(10, r100);
+      const candidats = lineaire ? [...new Set([0, Math.floor(r100 / 10), m10].filter(n => n >= 0 && n <= m10))] : null;
+      for (let i = 0, n10; lineaire ? i < candidats.length : i <= m10; i++) {
+        n10 = lineaire ? candidats[i] : i;
         const n1 = Math.max(0, r100 - 10 * n10);
-        if (n1 > 0 && !dispo(offre, 1)) continue;
+        if (n1 > 0 && (!dispo(offre, 1) || n1 > maxLots)) continue;
 
-        const brut = cout(1000, n1000) + cout(100, n100) + cout(10, n10) + cout(1, n1);
+        const brut = coutTaille(1000, n1000) + coutTaille(100, n100) + coutTaille(10, n10) + coutTaille(1, n1);
         const achete = 1000 * n1000 + 100 * n100 + 10 * n10 + n1;
         const surplus = achete - q;
         const credit = valeurSurplus(surplus, offre, brut / achete, p);
@@ -70,16 +79,7 @@ function meilleursPlans(q, offre, p, profondeur, surcout) {
       }
     }
   }
-  return { best, sansSurplus };
-}
-
-function candidatsX10(r, max, profondeur, avecX1) {
-  const c = new Set([0, max]);
-  const ajoute = x => { for (const v of [Math.floor(x), Math.ceil(x)]) for (const d of [-1, 0, 1]) { const n = v + d; if (n >= 0 && n <= max) c.add(n); } };
-  ajoute(r / 10);                                                         // plus besoin de x1 / début du surplus
-  if (Number.isFinite(profondeur[10])) ajoute(profondeur[10]);           // les x10 deviennent plus chers
-  if (avecX1 && Number.isFinite(profondeur[1])) ajoute((r - profondeur[1]) / 10); // les x1 deviennent plus chers
-  return [...c].sort((a, b) => a - b);
+  return best && { best, sansSurplus };
 }
 
 function choisir({ best, sansSurplus }, p) {
@@ -91,7 +91,7 @@ function choisir({ best, sansSurplus }, p) {
 // (l'onglet Données et le plan de scan refont souvent les mêmes calculs).
 const cache = new Map();
 export function planAchat(q, offre, p) {
-  const cle = `${q}|${offre?.[1]}|${offre?.[10]}|${offre?.[100]}|${offre?.[1000]}|${JSON.stringify(p.profondeur)}|${p.surcout}|${p.revalorisationSurplus}|${p.gainMinSurplus}|${p.ecartAlerte}|${p.taxeVente}`;
+  const cle = `${q}|${offre?.[1]}|${offre?.[10]}|${offre?.[100]}|${offre?.[1000]}|${p.lotsCredibles}|${p.hausseParLot}|${p.plafondHausse}|${p.partPessimiste}|${p.seuilsRisque?.moyen}|${p.seuilsRisque?.fort}|${p.revalorisationSurplus}|${p.gainMinSurplus}|${p.taxeVente}`;
   if (cache.has(cle)) return cache.get(cle);
   const r = calculerPlanAchat(q, offre, p);
   if (cache.size > 20000) cache.clear();
@@ -99,21 +99,51 @@ export function planAchat(q, offre, p) {
   return r;
 }
 
+export const RANG_RISQUE = { faible: 0, moyen: 1, fort: 2 };
+export function niveauRisque(ecart, penurie, p) {
+  if (penurie || ecart >= p.seuilsRisque.fort) return 'fort';
+  return ecart >= p.seuilsRisque.moyen ? 'moyen' : 'faible';
+}
+
 function calculerPlanAchat(q, offre, p) {
-  if (q <= 0) return { q, lots: { 1: 0, 10: 0, 100: 0, 1000: 0 }, achete: 0, surplus: 0, coutBrut: 0, cout: 0, nbLots: 0, coutOptimiste: 0, ecart: 0, alerte: false };
+  if (q <= 0) return { q, lots: { 1: 0, 10: 0, 100: 0, 1000: 0 }, achete: 0, surplus: 0, coutBrut: 0, cout: 0, nbLots: 0, prixUnitaire: 0,
+    coutOptimiste: 0, coutStandard: 0, coutPessimiste: 0, ecartRisque: 0, penurie: false, risque: 'faible', enJeu: 0, alerte: false };
   if (prixUnitaireMin(offre) == null) return null; // aucun prix connu
 
-  const prudent = choisir(meilleursPlans(q, offre, p, p.profondeur, p.surcout), p);
-  const inf = { 1: Infinity, 10: Infinity, 100: Infinity, 1000: Infinity };
-  const optimiste = choisir(meilleursPlans(q, offre, p, inf, 0), p);
-  const ecart = optimiste.cout > 0 ? prudent.cout / optimiste.cout - 1 : 0;
+  const affiche = (t, n) => n ? n * offre[t] : 0;
+  const optimiste = choisir(meilleursPlans(q, offre, p, affiche, Infinity, true), p);
+  // standard : si aucun plan ne tient dans la limite de lots (que du x1 pour 138), on garde le plan optimiste
+  const std = meilleursPlans(q, offre, p, affiche, p.lotsCredibles, false);
+  const standard = std ? choisir(std, p) : optimiste;
+  const pess = choisir(meilleursPlans(q, offre, p, (t, n) => coutLotsHausse(n, offre[t], p.hausseParLot, p.plafondHausse), Infinity, false), p);
+
+  const O = optimiste.cout, S = Math.max(standard.cout, O), P = Math.max(pess.cout, S);
+  const tMax = Math.max(...TAILLES.filter(t => dispo(offre, t)));
+  const penurie = q > p.lotsCredibles * tMax;
+  const ecartRisque = S > 0 ? (P - O) / S : 0;
+  const risque = niveauRisque(ecartRisque, penurie, p);
+  const cout = S + p.partPessimiste * (P - S);
 
   return {
-    q,
-    ...prudent,
-    prixUnitaire: prudent.cout / q,
-    coutOptimiste: optimiste.cout,
-    ecart,
-    alerte: ecart > p.ecartAlerte,
+    q, ...standard, cout, prixUnitaire: cout / q,
+    coutOptimiste: O, coutStandard: S, coutPessimiste: P,
+    ecartRisque, penurie, risque, enJeu: P - S,
+    alerte: risque !== 'faible',
   };
+}
+
+// Somme de plusieurs achats (lignes d'une recette, composants d'un sous-craft) : les trois coûts s'additionnent,
+// le risque se recalcule sur les totaux (une petite ressource risquée ne rend pas tout le craft risqué),
+// sauf une pénurie possible, qui reste un risque fort.
+export function agreger(plans, p) {
+  const t = { coutOptimiste: 0, coutStandard: 0, coutPessimiste: 0, cout: 0, penurie: false };
+  for (const x of plans) {
+    t.coutOptimiste += x.coutOptimiste ?? x.cout; t.coutStandard += x.coutStandard ?? x.cout;
+    t.coutPessimiste += x.coutPessimiste ?? x.cout; t.cout += x.cout; t.penurie ||= !!x.penurie;
+  }
+  t.enJeu = t.coutPessimiste - t.coutStandard;
+  t.ecartRisque = t.coutStandard > 0 ? (t.coutPessimiste - t.coutOptimiste) / t.coutStandard : 0;
+  t.risque = niveauRisque(t.ecartRisque, t.penurie, p);
+  t.alerte = t.risque !== 'faible';
+  return t;
 }
