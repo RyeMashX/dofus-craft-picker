@@ -269,3 +269,13 @@ export function achatsConsolides(lignes, offres, catalogue, p) {
   sousCrafts.sort((x, y) => prof.get(y.id) - prof.get(x.id) || compareDofus(x.nom, y.nom));
   return { achats, sousCrafts };
 }
+
+// Fin des achats : la dépense réelle est répartie entre les crafts au prorata de leur coût de craft estimé
+// (sous-crafts compris). crafts = [{ id, n, craftN }] → [{ id, n, coutU }] (coût réel d'un exemplaire)
+export function repartirDepense(crafts, reel) {
+  const estime = crafts.reduce((s, c) => s + (c.craftN ?? 0), 0);
+  return crafts.map(c => ({ id: c.id, n: c.n, coutU: estime > 0 ? Math.round(reel * (c.craftN ?? 0) / estime / c.n) : null }));
+}
+
+// Pendant l'achat : items du plan devenus non rentables avec les derniers relevés (seuil : rendement acceptable)
+export const itemsStop = (ev, p) => ev.lignes.filter(l => l.rendementN != null && l.rendementN < p.margeAcceptable);

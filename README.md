@@ -161,6 +161,12 @@ Réglages : nombre de lots crédibles, hausse par lot, plafond, part de l'écart
 - Chaque ligne du plan de craft garde son rendement de référence (à la génération ou à l'ajout) : un écart d'au moins 1 point s'affiche (▼ / ▲, détail au survol).
 - Générer la liste d'achat alors que des prix ne sont pas bleus demande une confirmation.
 
+### Pendant et après l'achat
+
+- **Âge de la liste** : au-delà d'une heure, un avertissement demande de refaire une capture des lignes à risque avant de les acheter.
+- **Capture pendant l'achat** : une ressource relevée après la génération affiche l'écart de coût sur sa ligne (+300 %…). Si un item du plan passe sous le rendement acceptable avec ces relevés, un bandeau **STOP** le signale et ses ressources qui ne servent qu'à lui sont suspendues.
+- **Terminer les achats** : tu saisis la dépense réelle (par défaut, l'estimé des lignes cochées). Elle est répartie entre les items au prorata de leur coût de craft estimé (sous-crafts compris) ; chaque exemplaire passe en draft dans Ventes avec ce coût corrigé, la FM estimée quand elle existe et le prix visé, et sort du plan de craft.
+
 ### Sous-crafts (alliages, substrats…)
 
 - Une ressource craftable s'achète à l'HDV ou se crafte à partir de ses composants, récursivement. On la crafte seulement si c'est **au moins 5 % moins cher** que de l'acheter (`gainMinSousCraft`), ou si elle est introuvable à l'HDV. Le temps de craft n'entre pas dans la marge.

@@ -129,3 +129,9 @@ test('aucun exemplaire en vente : prix relevé à jour, prix de vente visé = pr
   const v = viables(cat, b, p, T).liste.find(x => x.id === 1);
   assert.equal(v.prixVente, 1_632_654);
 });
+
+test('fin des achats : la dépense réelle se répartit au prorata du coût de craft estimé', async () => {
+  const { repartirDepense } = await import('../src/craft-plan.js');
+  const r = repartirDepense([{ id: 1, n: 2, craftN: 6e6 }, { id: 2, n: 1, craftN: 2e6 }], 10e6);
+  assert.deepEqual(r, [{ id: 1, n: 2, coutU: 3_750_000 }, { id: 2, n: 1, coutU: 2_500_000 }]);
+});

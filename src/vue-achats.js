@@ -6,6 +6,8 @@ import { etatCraft, signaturePlan } from './vue-craft.js';
 import { niveauRessource, affiche, bleuRessource } from './fraicheur.js';
 import { estIndispo } from './base.js';
 import { pastille } from './vue-donnees.js';
+import { repartirDepense, itemsStop } from './craft-plan.js';
+import { ajouterVente } from './ventes.js';
 import { icone } from './vue-plan.js';
 
 const HDV = { equipements: 'HDV Équipements', ressources: 'HDV Ressources', consommables: 'HDV Consommables' };
@@ -19,7 +21,7 @@ export function genererListeAchat(ctx) {
   S.etat.listeAchat = {
     date: Date.now(),
     signature: signaturePlan(plan),
-    crafts: ev.lignes.map(l => ({ id: l.id, nom: l.nom, iconId: l.iconId, n: l.n })),
+    crafts: ev.lignes.map(l => ({ id: l.id, nom: l.nom, iconId: l.iconId, n: l.n, craftN: l.craftN, fmU: l.fmSource ? Math.round(l.fmN / l.n) : null, prixVente: l.prixVente })),
     achats: ev.achats.map(a => ({
       id: a.id, nom: a.nom, type: a.type, hdv: a.hdv, iconId: a.iconId, q: a.q,
       pour: a.pour.map(x => ({ nom: x.nom, q: x.q, iconId: x.iconId ?? ev.lignes.find(l => l.nom === x.nom)?.iconId })),
@@ -64,6 +66,20 @@ export function renderAchats(ctx) {
   const reste = achats.filter(a => !fait(a)).reduce((s, a) => s + (a.plan?.cout ?? 0), 0);
   const nbFaits = achats.filter(fait).length;
   const perime = L.signature !== signaturePlan(plan);
+  const ageH = (Date.now() - L.date) / 3600e3;
+  // STOP : avec les relevés faits depuis (captures pendant l'achat), un item du plan n'est plus rentable.
+  // Ses ressources qui ne servent qu'à lui sont suspendues.
+  const p = ctx.params();
+  const stops = L.terminee ? [] : itemsStop(ev, p).filter(l => L.crafts.some(c => c.id === l.id));
+  const nomsStop = new Set(stops.map(l => l.nom));
+  const suspendue = a => !fait(a) && a.pour.length > 0 && a.pour.every(x => nomsStop.has(x.nom));
+  // prix relevé après la liste : nouveau coût de la ligne
+  const reprix = a => {
+    const r = S.base.ressources[a.id];
+    if (!a.plan || !r?.lots || r.lots.date <= L.date) return null;
+    const x = ev.achats.find(y => y.id === a.id)?.plan;
+    return x ? x.cout / a.plan.cout - 1 : null;
+  };
 
   // Lots : cartouche « x10 » + nombre de lots + prix unitaire de ce lot
   const lots = a => !a.plan ? '<span class="bad small">prix inconnu</span>'
@@ -76,7 +92,8 @@ export function renderAchats(ctx) {
   const ouverts = (S.achatsOuverts ??= new Set());
   const ligne = a => {
     const r = S.base.ressources[a.id], ouvert = ouverts.has(a.id);
-    return `<div class="ac-l${fait(a) ? ' fini' : ''}${ouvert ? ' ouvert' : ''}">
+    const d = reprix(a);
+    return `<div class="ac-l${fait(a) ? ' fini' : ''}${suspendue(a) ? ' suspendue' : ''}${ouvert ? ' ouvert' : ''}">
       <div class="ac-ligne" data-ouvrir="${a.id}" title="${esc(a.nom)} : clique pour le détail">
         <span class="chev" aria-hidden="true"></span>
         ${ctx.boutonCopier(a.nom, 'ressource')}
@@ -84,7 +101,7 @@ export function renderAchats(ctx) {
         <span class="n">${a.plan?.risque && a.plan.risque !== 'faible' ? `<span class="risque risque-${a.plan.risque} mini" title="Risque ${a.plan.risque}${a.plan.penurie ? ', pénurie possible' : ''} : le prix peut monter pendant l'achat">!</span> ` : ''}${esc(a.nom)}</span>
         <span class="c-q">${fmt(a.q)}</span>
         <span class="c-t">${a.plan ? fmtK(a.plan.cout) : '<span class="bad">?</span>'}</span>
-        <span class="c-pu">${a.plan ? fmtK(a.plan.prixUnitaire) : '–'}</span>
+        <span class="c-pu">${a.plan ? fmtK(a.plan.prixUnitaire) : '–'}${d != null && Math.abs(d) >= 0.05 ? `<em class="${d > 0 ? 'bad' : 'ok'}" title="Relevé après la liste : nouveau coût ${fmtK(a.plan.cout * (1 + d))}">${d > 0 ? '+' : ''}${Math.round(d * 100)} %</em>` : ''}</span>
         <label class="coche" title="Acheté"><input type="checkbox" data-achat="${a.id}"${fait(a) ? ' checked' : ''}><span></span></label>
       </div>
       ${ouvert ? `<div class="ac-det">
@@ -143,10 +160,20 @@ export function renderAchats(ctx) {
   const blocCraft = sc.length ? `<h3>À crafter</h3><div class="ac-tete"><span></span><span class="c-q">qté</span><span class="c-t">coût</span><span class="c-pu">prix/u</span><span></span></div>
     <div class="grp${sc.every(faitC) ? ' fini' : ''}"><div class="ac">${sc.map(ligneC).join('')}</div></div>` : '';
 
+  // Fin des achats : dépense réelle → coût de craft corrigé, exemplaires en draft dans Ventes
+  const estCoches = achats.filter(fait).reduce((s, a) => s + (a.plan?.cout ?? 0), 0);
+  const nonCoches = achats.length - nbFaits;
+  const finHtml = L.terminee
+    ? `<div class="fin-achats ok-bloc"><b>Achats terminés le ${dateCourte(L.terminee.date)}</b><span class="muted small">Dépensé ${fmtK(L.terminee.reel)} pour ${fmtK(L.terminee.estime)} estimés (${L.terminee.reel >= L.terminee.estime ? '+' : ''}${ctx.pct(L.terminee.reel / L.terminee.estime - 1)}). ${L.terminee.exemplaires} exemplaires en draft dans Ventes.</span></div>`
+    : `<div class="fin-achats"><div><b>Terminer les achats</b><span class="muted small">Dépense réelle : le coût de craft de chaque item est corrigé au prorata, puis ses exemplaires passent en draft dans Ventes.${nonCoches ? ` ${nonCoches} ligne${nonCoches > 1 ? 's' : ''} non cochée${nonCoches > 1 ? 's' : ''}.` : ''}</span></div>
+        <div class="row"><input id="ac-reel" class="num milliers" inputmode="numeric" placeholder="${fmt(Math.round(estCoches || total))}"><button id="ac-fin" class="primary small">Terminer</button></div></div>`;
+
   $('#achats').innerHTML = `
     <div class="row"><h2>Liste d'achat</h2><span class="muted small">générée le ${dateCourte(L.date)}</span><div class="spacer"></div>
       <button id="ac-gen" class="regen${perime ? ' on' : ''}" title="Recalculer la liste à partir du plan de craft actuel"><svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 1.8v3h-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Régénérer</span></button></div>
     ${perime ? '<p class="small warn alerte-bloc">Le plan de craft a changé depuis cette liste. Régénère-la pour la mettre à jour.</p>' : ''}
+    ${!L.terminee && ageH >= 1 ? `<p class="small warn alerte-bloc">Liste générée il y a ${ageH < 2 ? 'plus d\'une heure' : `${Math.floor(ageH)} heures`} : les prix ont pu bouger. Refais une capture des lignes à risque avant de les acheter.</p>` : ''}
+    ${stops.map(l => `<p class="small stop-bloc"><b>STOP · ${esc(l.nom)}</b> n'est plus rentable avec les derniers relevés (rendement ${ctx.pct(l.rendementN)}, marge ${fmtK(l.margeN)}). N'achète plus ses ressources : celles qui ne servent qu'à lui sont suspendues.</p>`).join('')}
     <div class="kpis kpis4">
       <div class="kpi"><div class="v">${fmtK(total)}</div><div class="l">à dépenser</div></div>
       <div class="kpi"><div class="v">${fmtK(reste)}</div><div class="l">reste à acheter</div></div>
@@ -157,6 +184,7 @@ export function renderAchats(ctx) {
     ${blocRisque}
     ${corps}
     ${blocCraft}
+    ${finHtml}
     <div class="row"><button id="ac-raz" class="link small">tout décocher</button></div>`;
 
   $$('#achats input[data-achat]').forEach(c => c.onchange = () => { if (c.checked) coches[c.dataset.achat] = true; else delete coches[c.dataset.achat]; ctx.sauverEtat(); ctx.renderTout(); });
@@ -168,5 +196,22 @@ export function renderAchats(ctx) {
   });
   $('#ac-raz').onclick = () => { S.etat.achetes = {}; ctx.sauverEtat(); ctx.renderTout(); };
   $('#ac-gen').onclick = generer;
+  const fin = $('#ac-fin');
+  if (fin) fin.onclick = async () => {
+    const saisi = ctx.nombreSaisi($('#ac-reel').value);
+    const reel = saisi > 0 ? saisi : Math.round(estCoches || total);
+    const n = L.crafts.reduce((s, c) => s + c.n, 0);
+    if (!(await ctx.confirmer(`Dépense réelle ${fmtK(reel)} (estimé ${fmtK(total)}). ${n} exemplaires passent en draft dans Ventes avec leur coût de craft corrigé, et sortent du plan de craft.`, { ok: 'Terminer' }))) return;
+    const couts = repartirDepense(L.crafts, reel);
+    const planCraft = { ...(S.etat.craftPlan ?? {}) };
+    for (const c of L.crafts) {
+      const u = couts.find(x => x.id === c.id)?.coutU ?? null;
+      for (let k = 0; k < c.n; k++) ajouterVente(S.base, { id: c.id, statut: 'draft', prix: c.prixVente ?? null, coutCraft: u, coutFm: c.fmU ?? null });
+      if (planCraft[c.id] != null) { planCraft[c.id] = Math.max(0, planCraft[c.id] - c.n); if (!planCraft[c.id]) delete planCraft[c.id]; }
+    }
+    S.etat.craftPlan = planCraft;
+    L.terminee = { date: Date.now(), reel, estime: total, exemplaires: n };
+    ctx.sauverBase(); ctx.sauverEtat(); ctx.toast(`${n} exemplaires en draft dans Ventes ✓`); ctx.renderTout();
+  };
   ctx.brancherCopier('#achats');
 }
