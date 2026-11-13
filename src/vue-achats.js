@@ -3,7 +3,7 @@
 // Ressources classées comme à l'HDV, quantités additionnées sur tous les crafts.
 
 import { etatCraft, signaturePlan } from './vue-craft.js';
-import { niveauRessource } from './fraicheur.js';
+import { niveauRessource, affiche, bleuRessource } from './fraicheur.js';
 import { estIndispo } from './base.js';
 import { pastille } from './vue-donnees.js';
 import { icone } from './vue-plan.js';
@@ -90,7 +90,7 @@ export function renderAchats(ctx) {
       ${ouvert ? `<div class="ac-det">
         <div class="ac-det-l"><span class="muted">Lots</span><span class="ac-lots">${lots(a)}</span></div>
         ${a.plan?.surplus ? `<div class="ac-det-l"><span class="muted">Surplus</span><span>${fmt(a.plan.surplus)} en trop, revendu ~80 %</span></div>` : ''}
-        <div class="ac-det-l"><span class="muted">Relevé</span><span>${pastille(niveauRessource(r))} ${ctx.age(estIndispo(r) ? r.indispo.date : r?.lots?.date ?? r?.prixMoyen?.date)}</span></div>
+        <div class="ac-det-l"><span class="muted">Relevé</span><span>${pastille(affiche(niveauRessource(r), bleuRessource(r)))} ${ctx.age(estIndispo(r) ? r.indispo.date : r?.lots?.date ?? r?.prixMoyen?.date)}</span></div>
         ${a.plan?.coutPessimiste != null && a.plan.coutPessimiste - a.plan.coutOptimiste >= 1 ? `<div class="ac-det-l"><span class="muted">Coûts</span><span>optimiste ${fmtK(a.plan.coutOptimiste)} · standard ${fmtK(a.plan.coutStandard)} · pessimiste ${fmtK(a.plan.coutPessimiste)} · retenu ${fmtK(a.plan.cout)}${a.plan.penurie ? ' · <span class="bad">pénurie possible</span>' : ''}</span></div>` : ''}
         <div class="ac-det-l"><span class="muted">Pour</span><span class="ac-pour">${pour(a)}</span></div>
       </div>` : ''}</div>`;

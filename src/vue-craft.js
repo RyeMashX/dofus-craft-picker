@@ -2,11 +2,14 @@
 // crafts viables en dessous (toujours visibles). La marge affichée est la marge réelle :
 // ni la confiance ni l'effort ne la modifient.
 
-import { viables, recommanderDansBudget, evaluerPlan, niveauConfiance, detailCraft } from './craft-plan.js';
+import { viables, recommanderDansBudget, evaluerPlan, niveauConfiance, detailCraft, tachesConfirmation } from './craft-plan.js';
 import { pastille } from './vue-donnees.js';
 import { ajouterVente } from './ventes.js';
 import { estExclu } from './statut.js';
 import { icone } from './vue-plan.js';
+import { tacheFaite } from './plan.js';
+
+const pastilleBleue = '<i class="pt pt-bleu"></i>';
 
 const pctConf = c => c == null ? '–' : `${Math.round(c * 100)} %`;
 // Confiance : fraîcheur des données (volume 15 %, prix de vente 35 %, ressources 50 % pondérées par leur coût).
@@ -51,6 +54,7 @@ export function renderCraft(ctx) {
   const generer = async () => {
     if (genere && Object.keys(plan).length && !(await ctx.confirmer('Remplacer le plan de craft actuel par une nouvelle recommandation ?', { ok: 'Régénérer' }))) return;
     S.etat.craftGenere = { date: Date.now(), budget: S.etat.budget };
+    S.etat.craftRef = {}; // marges de référence : reprises au prochain affichage
     fixer(recommanderDansBudget(liste, offres, budget, p, S.catalogue, S.base));
     ctx.toast('Plan de craft généré ✓');
   };
@@ -63,13 +67,29 @@ export function renderCraft(ctx) {
 
   // ---- plan ----
   const depasseBudget = ev.capital > budget;
+  // Marge de référence de chaque ligne : celle du premier affichage après génération ou ajout. Un écart d'au moins
+  // 1 point de rendement s'affiche (prix relevés entre-temps, confirmation…).
+  const ref = (S.etat.craftRef ??= {});
+  let refNeuve = false;
+  for (const l of ev.lignes) if (!ref[l.id] && l.rendementN != null) { ref[l.id] = { rdt: l.rendementN, margeU: l.margeN / l.n }; refNeuve = true; }
+  if (refNeuve) ctx.sauverEtat();
+  const delta = l => {
+    const r = ref[l.id];
+    if (!r || l.rendementN == null) return '';
+    const d = Math.round((l.rendementN - r.rdt) * 100);
+    if (Math.abs(d) < 1) return '';
+    return `<span class="delta ${d < 0 ? 'bad' : 'ok'}" title="Rendement à la génération : ${pct(r.rdt)} (${fmtK(r.margeU)} par craft), maintenant ${pct(l.rendementN)} (${fmtK(l.margeN / l.n)})">${d < 0 ? '▼' : '▲'} ${Math.abs(d)} pts</span>`;
+  };
+  // Confirmation : tout ce que le plan utilise doit avoir été relevé il y a moins d'une heure (bleu)
+  const aConfirmer = genere ? tachesConfirmation(plan, S.catalogue, S.base) : [];
+  const secConf = aConfirmer.reduce((s, t) => s + (p.tempsScan?.[t.kind] ?? 10), 0);
   const ouverts = (S.craftOuverts ??= new Set());
   const lignePlan = l => `<div class="cp-l${l.raison || l.enVente ? ' alerte' : ''}${ouverts.has(`p${l.id}`) ? ' ouvert' : ''}" data-volet="p${l.id}">
       <div class="cp-nom"><span class="chev" aria-hidden="true"></span>${icone(l.iconId)} <span class="n">${esc(l.nom)}</span> ${l.raison ? '' : tagNiveau(l.niveau)} ${confHtml(l.confiance)} ${risqueHtml(ctx, l.risqueN, l.risquees, l.margePessimisteN)}</div>
       <div class="cp-chiffres">
         <span class="stepper"><button data-moins="${l.id}" title="Un craft de moins">−</button><b>${l.n}</b><button data-plus="${l.id}" title="Un craft de plus">+</button></span>
         <span class="muted small">coût</span> ${fmtK(l.coutN)}
-        <span class="muted small">marge</span> <b class="${l.margeN >= 0 ? 'ok' : 'bad'}">${fmtK(l.margeN)}</b> <span class="muted small">${pct(l.rendementN)}</span>
+        <span class="muted small">marge</span> <b class="${l.margeN >= 0 ? 'ok' : 'bad'}">${fmtK(l.margeN)}</b> <span class="muted small">${pct(l.rendementN)}</span> ${delta(l)}
         <span class="cp-act"><button class="secondary small" data-vendre="${l.id}" title="Mettre 1 exemplaire en vente (ligne « draft » dans Ventes, retiré du plan)">🏷 vente</button>
         <button class="retirer" data-retirer="${l.id}" title="Retirer du plan">✕</button></span>
       </div>
@@ -99,8 +119,12 @@ export function renderCraft(ctx) {
     </div>
     ${depasseBudget ? '<p class="small bad">Le plan dépasse le budget.</p>' : ''}
     ${ev.lignes.length ? `<div class="cp">${ev.lignes.map(lignePlan).join('')}</div>
+      ${aConfirmer.length
+        ? `<div class="confirm-bloc"><div><b>Prix à confirmer avant d'acheter</b><span class="muted small">${aConfirmer.length} relevé${aConfirmer.length > 1 ? 's' : ''} de plus d'une heure, ≈ ${Math.max(1, Math.ceil(secConf / 60))} min</span></div>
+          <button id="cp-confirmer" class="primary small" title="Plan de scan avec les prix des items du plan et les lots de leurs ressources qui ne sont pas bleus">Confirmer les prix</button></div>`
+        : `<p class="small conf-ok">${pastilleBleue} Tous les prix du plan ont moins d'une heure.</p>`}
       <div class="row">
-        <button id="cp-achats" class="primary small">${achatsAJour ? 'Voir la liste d\'achat →' : 'Générer la liste d\'achat →'}</button>
+        <button id="cp-achats" class="${aConfirmer.length ? 'secondary' : 'primary'} small">${achatsAJour ? 'Voir la liste d\'achat →' : 'Générer la liste d\'achat →'}</button>
         <button id="cp-tout-vendre" class="secondary small" title="Chaque exemplaire du plan devient une ligne « draft » dans Ventes">🏷 Tout mettre en vente</button></div>
       ${S.etat.listeAchat && !achatsAJour ? '<p class="small warn">Le plan a changé depuis la dernière liste d\'achat.</p>' : ''}
       <p class="muted small">Marge nette de la taxe et de la FM estimée ; achats regroupés entre crafts.</p>`
@@ -138,7 +162,20 @@ export function renderCraft(ctx) {
 
   $('#budget').onchange = e => { S.etat.budget = Math.max(0, Number(String(e.target.value).replace(',', '.')) || 0); ctx.sauverEtat(); ctx.renderTout(); };
   $('#cp-generer').onclick = generer;
-  const ach = $('#cp-achats'); if (ach) ach.onclick = () => { if (!achatsAJour) ctx.genererListeAchat(); S.etat.vue = 'achats'; ctx.sauverEtat(); ctx.renderTout(); };
+  const ach = $('#cp-achats');
+  if (ach) ach.onclick = async () => {
+    if (!achatsAJour && aConfirmer.length && !(await ctx.confirmer(`${aConfirmer.length} prix du plan ont plus d'une heure : la liste risque d'être fausse. Générer quand même ?`, { ok: 'Générer quand même', annuler: 'Annuler' }))) return;
+    if (!achatsAJour) ctx.genererListeAchat();
+    S.etat.vue = 'achats'; ctx.sauverEtat(); ctx.renderTout();
+  };
+  const conf = $('#cp-confirmer');
+  if (conf) conf.onclick = async () => {
+    const encours = S.etat.plan && S.etat.plan.taches.some(t => !tacheFaite(t.kind, t.id, S.base, S.etat.plan.cree));
+    if (encours && !(await ctx.confirmer('Un plan de scan est en cours. Le remplacer par la confirmation des prix du plan de craft ?', { ok: 'Remplacer' }))) return;
+    S.etat.plan = { cree: Date.now(), confirmation: true, taches: aConfirmer, pretsAvant: null, pretsApres: null };
+    S.faits = null; S.groupeOuvert = null; S.etat.vue = 'scan';
+    ctx.sauverEtat(); ctx.renderTout();
+  };
   const tout = $('#cp-tout-vendre');
   if (tout) tout.onclick = async () => {
     if (!(await ctx.confirmer(`Mettre en vente les ${ev.crafts} exemplaires du plan ? Ils passeront dans Ventes (statut « draft ») et sortiront du plan.`, { ok: "Mettre en vente" }))) return;

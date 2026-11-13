@@ -2,14 +2,14 @@
 // avec recherche, filtres, tri, édition directe des valeurs et détail dépliable (recette / utilisations).
 
 import { itemsFocus, estimerItem } from './entonnoir.js';
-import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus, compareCategorie, NIVEAUX } from './fraicheur.js';
+import { etatItem, niveauVolume, niveauPrixItem, niveauRessource, compareDofus, compareCategorie, NIVEAUX, affiche, bleuPrixItem, bleuRessource } from './fraicheur.js';
 import { majVolume, majPrixItem, majPrixMoyenItem, majRessource, majPrixMoyenRessource, estIndispo, aucuneAnnonce } from './base.js';
 import { detailCraft } from './craft-plan.js';
 import { icone } from './vue-plan.js';
 import { exclusion, exclure, reintegrer, finDeJournee, lotsEnVente } from './statut.js';
 import { vendues } from './ventes.js';
 
-const NOM_NIV = { noir: 'aucune info', rouge: 'introuvable', orange: 'périmé', jaune: 'à risque', vert: 'à jour' };
+const NOM_NIV = { noir: 'aucune info', rouge: 'introuvable', orange: 'périmé', jaune: 'à risque', vert: 'à jour', bleu: 'relevé il y a moins d\'une heure' };
 export const pastille = n => `<i class="pt pt-${n}" title="${NOM_NIV[n]}"></i>`;
 
 // ---------- données calculées ----------
@@ -143,7 +143,7 @@ export function renderDonnees(ctx) {
   };
   const rendEq = x => ({
     nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>`, categorie: esc(x.categorie), niveau: x.niveau,
-    vendus: `${fmt(x.vendus)} ${pastille(x.nVol)}`, prixMin: `${x.aucune ? '<span class="muted small" title="Aucun exemplaire en vente au dernier relevé">aucun</span>' : fmtK(x.prixMin)} ${pastille(x.nPrix)}`, prixMoyen: fmtK(x.prixMoyen),
+    vendus: `${fmt(x.vendus)} ${pastille(x.nVol)}`, prixMin: `${x.aucune ? '<span class="muted small" title="Aucun exemplaire en vente au dernier relevé">aucun</span>' : fmtK(x.prixMin)} ${pastille(affiche(x.nPrix, bleuPrixItem(S.base.items[x.id])))}`, prixMoyen: fmtK(x.prixMoyen),
     cout: fmtK(x.cout), rendement: x.rendement == null ? '–' : `<span class="${x.rendement >= p.margeMin ? 'ok' : x.rendement < 0 ? 'bad' : ''}">${pct(x.rendement)}</span>`,
     resVertes: `<span title="${x.compte.vert} vertes, ${x.compte.jaune} jaunes, ${x.compte.orange} orange, ${x.compte.rouge} introuvables, ${x.compte.noir} sans info">${x.resVertes}/${x.resTotal}</span> ${pastille(x.compte.noir ? 'noir' : x.compte.rouge ? 'rouge' : x.compte.orange ? 'orange' : x.compte.jaune ? 'jaune' : 'vert')}`,
     mesVentes: x.mesVentes ? `<span title="Exemplaires vendus (onglet Bilan)">${x.mesVentes}</span>` : '<span class="muted">–</span>',
@@ -156,7 +156,7 @@ export function renderDonnees(ctx) {
   const rendRs = x => ({
     nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>`, categorie: esc(x.categorie), niveau: x.niveau,
     x1: fmt(x.x1), x10: fmt(x.x10), x100: fmt(x.x100), x1000: fmt(x.x1000), prixMoyen: fmt(x.prixMoyen),
-    vendables: `${x.vendables} <span class="muted">/ ${x.utilisations}</span>`, date: `${ctx.age(x.date)} ${pastille(x.nRes)}`,
+    vendables: `${x.vendables} <span class="muted">/ ${x.utilisations}</span>`, date: `${ctx.age(x.date)} ${pastille(affiche(x.nRes, bleuRessource(S.base.ressources[x.id])))}`,
   });
   const rend = onglet === 'equipements' ? rendEq : rendRs;
   const cols = COLS[onglet];
@@ -174,7 +174,7 @@ export function renderDonnees(ctx) {
         ${(() => { const ligne = (l, prof) => {
           const b = S.base.ressources[l.id] ?? {};
           return `<tr${prof ? ' class="sous-l"' : ''}><td class="nom">${prof ? `<span class="retrait" style="width:${prof * 16}px"></span>` : ''}${icone(l.iconId)} ${esc(l.nom)}${l.source === 'craft' ? ' <span class="tag-craft">à crafter</span>' : ''}</td><td class="r">${fmt(l.q)}</td><td class="r">${fmt(l.prixUnitaire)}${l.source === 'moyen' ? ' <span class="muted small">moy.</span>' : ''}</td>
-            <td class="r">${fmtK(l.cout)}</td><td>${pastille(niveauRessource(b))} <span class="muted small">${ctx.age(estIndispo(b) ? b.indispo.date : b.lots?.date)}</span></td></tr>${(l.composants ?? []).map(c => ligne(c, prof + 1)).join('')}`;
+            <td class="r">${fmtK(l.cout)}</td><td>${pastille(affiche(niveauRessource(b), bleuRessource(b)))} <span class="muted small">${ctx.age(estIndispo(b) ? b.indispo.date : b.lots?.date)}</span></td></tr>${(l.composants ?? []).map(c => ligne(c, prof + 1)).join('')}`;
         }; return detailCraft(x.it, S.catalogue, S.base, p, 1).lignes.map(l => ligne(l, 0)).join(''); })()}</tbody></table>`;
     }
     return `<table class="rt sous"><thead><tr><th>Utilisée par</th><th class="r">Qté</th><th class="r">Vendus 30 j</th></tr></thead><tbody>

@@ -132,10 +132,10 @@ function renderDeroule(ctx) {
 
   const termine = !restant.length;
   $('#plan').innerHTML = `
-    <div class="row small"><b>${faits} / ${total} scans</b><span class="muted">· ≈ ${Math.ceil(secRest / 60)} min restantes · prêts visés ${plan.pretsApres}</span>
+    <div class="row small"><b>${faits} / ${total} scans</b><span class="muted">· ≈ ${Math.ceil(secRest / 60)} min restantes · ${plan.confirmation ? 'confirmation du plan de craft' : `prêts visés ${plan.pretsApres}`}</span>
       <div class="spacer"></div><button id="plan-neuf" class="link small">nouveau plan</button></div>
     <div class="bar"><i style="width:${pct}%"></i></div>
-    ${termine ? `<div class="fin"><b>Plan terminé ✓</b><p class="small">Les données sont à jour pour le plan de craft.</p><button id="plan-craft" class="primary small">Voir le plan de craft</button></div>` : ''}
+    ${termine ? `<div class="fin"><b>Plan terminé ✓</b><p class="small">${plan.confirmation ? 'Prix confirmés : vérifie les marges du plan de craft, puis génère la liste d\'achat.' : 'Les données sont à jour pour le plan de craft.'}</p><button id="plan-craft" class="primary small">Voir le plan de craft</button></div>` : ''}
     ${hdvsTries.map(h => `<div class="hdv${etatHdv.get(h.hdv) ? ' fini' : ''}">
       <h3>${HDV[h.hdv]}${etatHdv.get(h.hdv) ? ' <span class="ok">✓</span>' : ''}</h3>
       ${h.groupes.map(g => groupeHtml(h, g)).join('')}</div>`).join('')}`;

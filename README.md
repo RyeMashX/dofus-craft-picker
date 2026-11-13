@@ -153,6 +153,14 @@ Réglages : nombre de lots crédibles, hausse par lot, plafond, part de l'écart
 - L'outil maximise `marge totale − coût d'effort × nombre de crafts` sous la contrainte du budget. Le coût d'effort (300 000 kamas par craft par défaut) traduit ta préférence : à 30 M, 6 crafts à 25 % (7,5 M) battent 12 crafts à 30 % (9 M) dès que l'effort vaut plus de 250 000 par craft.
 - Le budget n'est pas forcément dépensé en entier.
 
+### Confirmation avant achat (statut bleu)
+
+- **Bleu** : relevé de moins d'une heure. Ce n'est pas un niveau de fraîcheur de plus : une donnée bleue compte comme verte partout ailleurs. La pastille s'affiche en bleu dans Données, le détail des crafts et la liste d'achat.
+- Process : plan de scan (opportunités) → plan de craft → **Confirmer les prix** → ajustement du plan si une marge a bougé → liste d'achat.
+- **Confirmer les prix** (onglet Craft, sous le plan) : plan de scan avec le prix de vente des items du plan et les lots de leurs ressources qui ne sont pas bleus, rangé comme d'habitude (HDV, catégories). Une ressource craftable non bleue fait relever son prix d'achat et ses composants non bleus. Le volume de ventes n'est pas redemandé.
+- Chaque ligne du plan de craft garde son rendement de référence (à la génération ou à l'ajout) : un écart d'au moins 1 point s'affiche (▼ / ▲, détail au survol).
+- Générer la liste d'achat alors que des prix ne sont pas bleus demande une confirmation.
+
 ### Sous-crafts (alliages, substrats…)
 
 - Une ressource craftable s'achète à l'HDV ou se crafte à partir de ses composants, récursivement. On la crafte seulement si c'est **au moins 5 % moins cher** que de l'acheter (`gainMinSousCraft`), ou si elle est introuvable à l'HDV. Le temps de craft n'entre pas dans la marge.

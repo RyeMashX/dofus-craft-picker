@@ -8,7 +8,7 @@
 //
 // Seuils (en jours) : voir FRAICHEUR ci-dessous.
 
-import { JOUR } from './base.js';
+import { JOUR, estIndispo } from './base.js';
 
 export const FRAICHEUR = {
   volume: { jaune: 30, orange: 60 },     // volume sur 30 jours
@@ -47,6 +47,20 @@ export function niveauLigne(r, base, maintenant = Date.now(), prof = 0) {
   const craft = r.recette.map(c => niveauLigne(c, base, maintenant, prof + 1)).reduce((a, b) => rang(b) < rang(a) ? b : a, 'vert');
   return rang(craft) > rang(propre) ? craft : propre;
 }
+
+// Bleu : relevé de moins d'une heure, exigé avant d'acheter (confirmation du plan de craft).
+// Ce n'est pas un niveau de plus : une donnée bleue est verte pour tout le reste (plan de scan, prêt…).
+export const BLEU_MS = 3600e3;
+const recent = (d, maintenant) => d != null && maintenant - d < BLEU_MS;
+export const bleuPrixItem = (b, maintenant = Date.now()) => recent(b?.prix?.date, maintenant);
+export const bleuRessource = (r, maintenant = Date.now()) => recent(estIndispo(r) ? r.indispo.date : r?.lots?.date, maintenant);
+// ressource craftable : bleue si son prix d'achat l'est, ou tous ses composants
+export function bleuLigne(r, base, maintenant = Date.now(), prof = 0) {
+  if (bleuRessource(base.ressources[r.id], maintenant)) return true;
+  return !!r.recette?.length && prof < 6 && r.recette.every(c => bleuLigne(c, base, maintenant, prof + 1));
+}
+// niveau à afficher : un vert de moins d'une heure s'affiche en bleu
+export const affiche = (niveau, bleu) => niveau === 'vert' && bleu ? 'bleu' : niveau;
 
 // État complet d'un item du catalogue
 //   pret       : volume vert ou jaune, prix vert, ressources sans orange ni noir et au plus 2 jaunes

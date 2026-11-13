@@ -69,3 +69,16 @@ test('sous-craft : le plan de scan relève l\'alliage et ses composants', () => 
   assert.deepEqual(res, [200, 201, 202]);
   assert.deepEqual(ingredients(cat.items[0].recette).map(r => r.id), [200, 201, 202, 101]);
 });
+
+test('confirmation : prix de l\'item et lots pas bleus (moins d\'une heure) ; ressource craftable : achat + composants', async () => {
+  const { tachesConfirmation } = await import('../src/craft-plan.js');
+  const cat = catalogue(), b = base(400_000);
+  // tout vient d'être relevé (T) : rien à confirmer
+  assert.deepEqual(tachesConfirmation({ 1: 2 }, cat, b, T + 10 * 60e3), []);
+  // 2 h plus tard : prix de l'épée, bois, alliage et ses deux minerais
+  const t = tachesConfirmation({ 1: 2 }, cat, b, T + 2 * 3600e3).map(x => `${x.kind}:${x.id}`).sort();
+  assert.deepEqual(t, ['prixItem:1', 'ressource:101', 'ressource:200', 'ressource:201', 'ressource:202']);
+  // minerais relevés à nouveau : l'alliage est bleu par ses composants
+  majRessource(b, 201, { 1: 50_000 }, T + 2 * 3600e3); majRessource(b, 202, { 1: 100_000 }, T + 2 * 3600e3);
+  assert.deepEqual(tachesConfirmation({ 1: 2 }, cat, b, T + 2.5 * 3600e3).map(x => x.id).sort(), [1, 101]);
+});

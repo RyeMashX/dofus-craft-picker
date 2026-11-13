@@ -10,7 +10,7 @@
 
 import { itemsFocus } from './entonnoir.js';
 import { versMoteur } from './catalogue.js';
-import { etatItem, niveauRessource, niveauLigne, niveauVolume, niveauPrixItem, compareDofus, compareCategorie, hdvDe, ORDRE_HDV } from './fraicheur.js';
+import { etatItem, niveauRessource, niveauLigne, affiche, bleuLigne, bleuPrixItem, bleuRessource, niveauVolume, niveauPrixItem, compareDofus, compareCategorie, hdvDe, ORDRE_HDV } from './fraicheur.js';
 import { prixVenteEstime, evaluerItem, maxCrafts } from './marge.js';
 import { allouer } from './allocation.js';
 import { planAchat } from './lots.js';
@@ -76,6 +76,27 @@ export function ficheItem(it, catalogue, base, p, offres, maintenant = Date.now(
   };
 }
 
+// Confirmation avant achat : tout ce que le plan de craft utilise doit être bleu (relevé de moins d'une heure) :
+// le prix de vente de chaque item et les lots de ses ressources. Une ressource craftable pas bleue fait relever son
+// prix d'achat et ses composants pas bleus. Le volume de ventes n'est pas redemandé (il ne bouge pas en une heure).
+export function tachesConfirmation(plan, catalogue, base, maintenant = Date.now()) {
+  const taches = [], vus = new Set();
+  const ajouter = (kind, id) => { const k = `${kind}:${id}`; if (!vus.has(k)) { vus.add(k); taches.push({ kind, id, raison: 'confirmation' }); } };
+  const ligne = (r, prof = 0) => {
+    if (bleuLigne(r, base, maintenant)) return;
+    if (!bleuRessource(base.ressources[r.id], maintenant)) ajouter('ressource', r.id);
+    if (prof < 6) (r.recette ?? []).forEach(c => ligne(c, prof + 1));
+  };
+  for (const [id, n] of Object.entries(plan ?? {})) {
+    if (!(n > 0)) continue;
+    const it = catalogue.items.find(i => i.id === Number(id));
+    if (!it) continue;
+    if (!bleuPrixItem(base.items[it.id], maintenant)) ajouter('prixItem', it.id);
+    it.recette.forEach(r => ligne(r));
+  }
+  return taches;
+}
+
 // Ressources à risque d'un craft (lignes qui peuvent se vider), la plus coûteuse en cas de dérapage d'abord
 export function risquees(craft) {
   return craft.lignes.filter(l => l.plan && l.plan.risque !== 'faible')
@@ -133,7 +154,7 @@ export function detailCraft(it, catalogue, base, p, n = 1, maintenant = Date.now
   const acheter = achatBase(base, p);
   const ligne = (r, q, x) => {
     const res = base.ressources[r.id] ?? {}, cat = catalogue.ressources[r.id] ?? { nom: `#${r.id}` };
-    const niveau = niveauLigne(r, base, maintenant);
+    const niveau = affiche(niveauLigne(r, base, maintenant), bleuLigne(r, base, maintenant));
     if (!x) return { id: r.id, nom: cat.nom, iconId: cat.iconId, q, cout: null, prixUnitaire: null, source: estIndispo(res) ? 'indispo' : null, niveau };
     return {
       id: r.id, nom: cat.nom, iconId: cat.iconId, q, cout: x.cout, prixUnitaire: x.cout / q,

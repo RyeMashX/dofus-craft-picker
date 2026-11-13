@@ -400,3 +400,8 @@ body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
 .risque.mini { padding: 0 4px; margin-left: 2px; }
 .vo-couts { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--muted); margin: 2px 0 6px; }
 .vo-couts b { color: var(--text, inherit); font-weight: 600; }
+:root { --f-bleu: #3a9be8; } i.pt-bleu { background: var(--f-bleu); }
+.delta { font-size: 11px; font-weight: 600; white-space: nowrap; }
+.confirm-bloc { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--f-bleu); border-radius: 8px; padding: 8px 10px; margin: 8px 0; }
+.confirm-bloc > div { display: flex; flex-direction: column; gap: 2px; }
+.conf-ok { color: var(--f-bleu); }
