@@ -94,8 +94,9 @@ export function importerCapture(base, identifie, coutDe, maintenant = Date.now()
 
 // Résolution : fusion = l'annonce suivie a changé de prix à l'HDV (+ 1 % du nouveau prix si la ligne est validée)
 export const fusionner = (base, u, prix, maintenant = Date.now()) => changerPrix(base, u, prix, maintenant);
-export const nouvelleLigne = (base, id, prix, coutDe, maintenant = Date.now()) =>
-  ajouterVente(base, { id, statut: 'valide', prix, coutCraft: coutDe(id), coutFm: fmDe(base, id), date: maintenant });
+// statut : 'valide' pour une annonce lue à l'HDV, 'draft' pour un ajout à la main (à vérifier avant de valider)
+export const nouvelleLigne = (base, id, prix, coutDe, maintenant = Date.now(), statut = 'valide') =>
+  ajouterVente(base, { id, statut, prix, coutCraft: coutDe(id), coutFm: fmDe(base, id), date: maintenant });
 
 // Ancienne liste « en vente » (simples compteurs) → lignes validées sans prix
 export function migrerVentes(base, coutDe = () => null) {

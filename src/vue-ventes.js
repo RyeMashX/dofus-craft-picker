@@ -143,9 +143,11 @@ export function renderVentes(ctx) {
     <div class="row">
       <button id="vt-cap" class="cta-cap small${cap.enCours() ? ' on' : ''}">${cap.enCours() ? 'Capture en cours' : 'Capturer le jeu'}</button>
       <button id="vt-scan" class="primary small"${cap.enCours() ? '' : ' disabled'} title="Lit l'écran « Vente » de l'HDV (liste de tes annonces)">Scanner mes ventes</button>
-      <button id="vt-zone" class="link small"${cap.enCours() ? '' : ' disabled'}>zone</button></div>
+      <button id="vt-zone" class="link small"${cap.enCours() ? '' : ' disabled'}>zone</button>
+      <span class="spacer"></span>
+      <button id="vt-plus" class="regen${S.vtAjout ? ' on' : ''}" title="Ajouter un exemplaire à la main (en draft)"><svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
     ${carteReleve(ctx)}
-    <div class="ac"><input id="vt-nom" placeholder="Ajouter un exemplaire en vente…" autocomplete="off" spellcheck="false"><div id="vt-ac" class="ac-liste hidden"></div></div>
+    ${S.vtAjout ? '<div class="ac vt-ajout"><input id="vt-nom" placeholder="Nom de l\'item à ajouter…" autocomplete="off" spellcheck="false"><div id="vt-ac" class="ac-liste hidden"></div></div>' : ''}
     ${toutes.length ? `<div class="vt-filtres">
       <input id="vt-q" type="search" placeholder="Filtrer par nom…" value="${esc(F.q ?? '')}" autocomplete="off" spellcheck="false">
       <div id="vt-statut" class="seg small">${[['tous', 'tous'], ['draft', 'draft'], ['valide', 'validé']].map(([k, l]) => `<button data-st="${k}" class="${F.statut === k ? 'on' : ''}">${l}</button>`).join('')}</div>
@@ -153,7 +155,7 @@ export function renderVentes(ctx) {
       <select id="vt-tri" title="Tri">${[['nom', 'tri : nom'], ['ancien', 'tri : plus anciennes'], ['recent', 'tri : plus récentes'], ['prix', 'tri : prix ↓'], ['marge', 'tri : marge ↓'], ['rendement', 'tri : rendement ↓'], ['rendementAsc', 'tri : rendement ↑']].map(([k, l]) => `<option value="${k}"${F.tri === k ? ' selected' : ''}>${l}</option>`).join('')}</select>
       ${filtre ? '<button id="vt-raz" class="link small">tout afficher</button>' : ''}
     </div>` : ''}
-    ${lignes.length ? `<div class="cp">${lignes.map(ligne).join('')}</div>` : toutes.length ? '<p class="muted small">Aucune ligne pour ces filtres.</p>' : '<p class="muted small">Rien en vente. Mets des crafts en vente depuis l\'onglet Craft, scanne ta liste à l\'HDV ou ajoute-les à la main.</p>'}
+    ${lignes.length ? `<div class="cp">${lignes.map(ligne).join('')}</div>` : toutes.length ? '<p class="muted small">Aucune ligne pour ces filtres.</p>' : '<p class="muted small">Rien en vente. Mets des crafts en vente depuis l\'onglet Craft, scanne ta liste à l\'HDV ou ajoute-les à la main avec « + ».</p>'}
     <p class="muted small">Marge = prix − craft − mise en vente − FM. Mise en vente : 2 % du prix, recalculés tant que la ligne est en draft, figés une fois validée ; « Prix modifié » ajoute 1 % du nouveau prix. Les lignes venues du Craft sont en « draft » : vérifie leurs chiffres puis passe-les en « validé ». Un item en vente n'est pas proposé dans le plan de craft.</p>`;
 
   const p = ctx.params(), coutDe = id => coutEstime(S.catalogue, S.base, p, id);
@@ -184,10 +186,17 @@ export function renderVentes(ctx) {
   $('#vt-cap').onclick = async () => { await cap.basculer(); ctx.renderTout(); };
   $('#vt-scan').onclick = async e => { e.target.classList.add('busy'); e.target.disabled = true; try { await releverVentes(ctx); } finally { ctx.renderTout(); } };
   $('#vt-zone').onclick = () => cap.zone();
-  ctx.autocompletion($('#vt-nom'), $('#vt-ac'), 'annonces', nom => {
-    const it = S.catalogue.items.find(i => i.nom === nom);
-    if (!it) return;
-    nouvelleLigne(S.base, it.id, null, coutDe);
-    ctx.sauverBase(); ctx.toast(`${it.nom} ajouté : indique son prix`); ctx.renderTout();
-  });
+  $('#vt-plus').onclick = () => { S.vtAjout = !S.vtAjout; ctx.renderTout(); };
+  const nom = $('#vt-nom');
+  if (nom) {
+    nom.focus();
+    nom.onkeydown = e => { if (e.key === 'Escape') { S.vtAjout = false; ctx.renderTout(); } };
+    ctx.autocompletion(nom, $('#vt-ac'), 'annonces', n => {
+      const it = S.catalogue.items.find(i => i.nom === n);
+      if (!it) return;
+      nouvelleLigne(S.base, it.id, null, coutDe, Date.now(), 'draft');
+      S.vtAjout = false;
+      ctx.sauverBase(); ctx.toast(`${it.nom} ajouté en draft : indique son prix`); ctx.renderTout();
+    });
+  }
 }
