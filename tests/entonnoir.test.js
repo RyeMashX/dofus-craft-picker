@@ -27,8 +27,8 @@ test('base : export / import', () => {
   assert.throws(() => importer('{"a":1}'));
 });
 
-test('focus : 364 items niveau 200 craftables', () => {
-  assert.equal(focus.length, 364);
+test('focus : 430 items niveau 200 craftables (tous les métiers 200)', () => {
+  assert.equal(focus.length, 430);
 });
 
 test('estimation : prix moyens seuls → précision "moyen", puis "scan" une fois tout relevé', () => {

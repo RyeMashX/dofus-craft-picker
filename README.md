@@ -8,7 +8,7 @@ Aucune lecture réseau du client, aucun clic automatisé : uniquement des captur
 ## État
 
 Étape 1 : moteur de calcul, testé (`npm test`, Node 20+).
-Étape 2 : catalogue DofusDB (`data/catalogue.json`, régénéré par `node scripts/catalogue.mjs`) : 642 équipements craftables 190-200, 704 ressources dont 59 craftables (alliages, substrats, potions… et leurs composants) ; 554 craftables avec les métiers actuels (Forgeron 190).
+Étape 2 : catalogue DofusDB (`data/catalogue.json`, régénéré par `node scripts/catalogue.mjs`) : 642 équipements craftables 190-200, 704 ressources dont 59 craftables (alliages, substrats, potions… et leurs composants) ; tous craftables (tous les métiers au niveau 200).
 Étape 3 : base de prix horodatée, base d'évaluation, listes de scan priorisées et plan de scan. Focus actuel : items niveau 200 (364 craftables).
 Étape 4 : lecture OCR des quatre écrans HDV (liste, annonces d'un équipement, lots d'une ressource, courbe 30 jours), validée sur de vraies captures (`npm run test:ocr`).
 Étape 5 : interface (onglets Scan, Données, Craft, Achats, Ventes ; réglages via ⚙), fenêtre flottante, capture du jeu et scan en un clic.

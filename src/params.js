@@ -25,7 +25,7 @@ export const PARAMS = {
   // Périmètre et fraîcheur des relevés
   focusNiveaux: [200, 200], // on commence par les items niveau 200
   metiers: {                // niveaux de métier du joueur
-    Bijoutier: 200, Cordonnier: 200, Tailleur: 200, Sculpteur: 200, 'Façonneur': 200, Forgeron: 190,
+    Bijoutier: 200, Cordonnier: 200, Tailleur: 200, Sculpteur: 200, 'Façonneur': 200, Forgeron: 200,
   },
   validite: {               // durée de validité d'un relevé, en jours
     volume: 14,             // volume de ventes : rafraîchi toutes les 2 semaines

@@ -11,8 +11,8 @@ test('catalogue : recette du Jugement de Thanatena conforme au jeu', () => {
   assert.deepEqual(j.recette.map(r => r.qte), [1, 5000, 4, 4, 15, 25, 4, 2]);
 });
 
-test('métiers : Forgeron 190 → pas de Jugement de Thanatena (niv. 200)', () => {
-  const noms = itemsCraftables(cat).map(i => i.nom);
+test('métiers : Forgeron 190 → pas de Jugement de Thanatena (niv. 200), Forgeron 200 → oui', () => {
+  const noms = itemsCraftables(cat, { Forgeron: 190 }).map(i => i.nom);
   assert.ok(!noms.includes('Jugement de Thanatena'));
   const forgeron200 = itemsCraftables(cat, { Forgeron: 200 }).map(i => i.nom);
   assert.ok(forgeron200.includes('Jugement de Thanatena'));

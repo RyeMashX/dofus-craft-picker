@@ -34,7 +34,7 @@ const ZONES_DEFAUT = {
 };
 const REGLAGES_DEFAUT = {
   volumeMin: PARAMS.volumeMin, margeMin: PARAMS.margeMin * 100, margeAcceptable: PARAMS.margeAcceptable * 100, modePrixVente: PARAMS.modePrixVente,
-  forgeron: PARAMS.metiers.Forgeron, effort: PARAMS.coutEffortParCraft / 1000, partCraft: 70, partVeille: 10,
+  effort: PARAMS.coutEffortParCraft / 1000, partCraft: 70, partVeille: 10,
   hausseParLot: PARAMS.hausseParLot * 100, plafondHausse: PARAMS.plafondHausse, partPessimiste: Math.round(PARAMS.partPessimiste * 100), lotsCredibles: PARAMS.lotsCredibles,
 };
 
@@ -47,6 +47,7 @@ const S = {
   copies: new Set(), // noms déjà copiés pendant la session (repère visuel)
 };
 S.etat.reglages = { ...REGLAGES_DEFAUT, ...(S.etat.reglages ?? {}) };
+delete S.etat.reglages.forgeron; // tous les métiers sont 200 (réglage retiré)
 if (S.base.version !== 2) S.base = creerBase();
 if (S.etat.mode === 'ventes') S.etat.mode = 'courbe'; // « Mes ventes » se scanne depuis l'onglet Ventes
 S.etat.zones = { ...ZONES_DEFAUT, ...S.etat.zones }; // zones ajoutées depuis (ex. « Mes ventes »)
@@ -61,7 +62,7 @@ function params() {
     ...PARAMS,
     volumeMin: +r.volumeMin, margeMin: +r.margeMin / 100, margeAcceptable: +r.margeAcceptable / 100, modePrixVente: r.modePrixVente,
     coutEffortParCraft: +r.effort * 1000,
-    metiers: { ...PARAMS.metiers, Forgeron: +r.forgeron },
+    metiers: PARAMS.metiers,
     partCraft: (+r.partCraft || 70) / 100,
     partVeille: (r.partVeille ?? 10) / 100,
     hausseParLot: (+r.hausseParLot >= 0 ? +r.hausseParLot : 20) / 100, plafondHausse: +r.plafondHausse >= 1 ? +r.plafondHausse : 3,
@@ -513,7 +514,6 @@ function renderBase(cat, p) {
     <span>Rendement acceptable (%)</span><input class="num" data-reg="margeAcceptable" value="${r.margeAcceptable}">
     <span>Prix de vente visé</span><select data-reg="modePrixVente"><option value="min" ${r.modePrixVente === 'min' ? 'selected' : ''}>annonce la moins chère</option><option value="moy3" ${r.modePrixVente === 'moy3' ? 'selected' : ''}>moyenne des 3 moins chères</option></select>
     <span>Effort par craft (k kamas)</span><input class="num" data-reg="effort" value="${r.effort}">
-    <span>Niveau Forgeron</span><input class="num" data-reg="forgeron" value="${r.forgeron}">
     <span>Plan de scan : part pour le craft (%)</span><input class="num" data-reg="partCraft" value="${r.partCraft}">
     <span>Plan de scan : part pour la veille (%), le reste en entretien</span><input class="num" data-reg="partVeille" value="${r.partVeille ?? 10}">
     <span>Lots : nombre crédible d'une même taille au prix affiché</span><input class="num" data-reg="lotsCredibles" value="${r.lotsCredibles}">
