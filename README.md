@@ -136,13 +136,15 @@ L'HDV ne montre que le lot le moins cher de chaque taille (x1, x10, x100, x1000)
 2. **Standard** : au prix affiché, mais au plus **20 lots** d'une même taille (`lotsCredibles`) : 138 x1 n'est pas crédible, on passe au x10 / x100. C'est le plan d'achat proposé. Si aucun plan ne tient dans cette limite (que du x1 affiché), on garde l'optimiste.
 3. **Pessimiste** : chaque lot acheté dans une taille fait monter le suivant de **20 %** du prix affiché (2e lot +20 %, 3e +40 %…), plafonné à **3 fois** ce prix ; l'outil prend le meilleur mélange de tailles dans ce scénario.
 
+**Lot bradé** : une taille dont le prix unitaire est sous la moitié de celui des autres tailles (x100 à 1 240/u quand x1 et x10 sont à 7 000/u) est un lot isolé qui part vite. Le standard n'en compte qu'un (jusqu'à 10 pour un x1), le pessimiste suppose qu'il a déjà disparu.
+
 On impose optimiste ≤ standard ≤ pessimiste. Puis :
 
 - **Risque** = (pessimiste − optimiste) / standard : faible sous 30 %, **moyen** dès 30 % (environ 4 lots d'une taille), **fort** dès 60 % (environ 7 lots). **Pénurie possible** quand il faudrait plus de 20 lots de la plus grande taille affichée : risque fort d'office.
 - **Coût retenu** = standard + ⅓ × (pessimiste − standard). C'est lui qui entre dans le coût du craft, la marge, le budget et la liste d'achat.
 - **Surplus** : les unités en trop sont revendues à 80 % du prix x1 à l'unité, ou du prix x10 par paquets de 10, taxe déduite, jamais plus cher que payé ; on n'achète du surplus que s'il fait gagner au moins 20 %.
 
-Affichage : pastille « risque » / « risque fort » sur les items du plan de craft et des crafts viables (au survol : lignes concernées et marge si elles se vident), « ! » sur les ressources concernées dans le détail et la liste d'achat, avec les trois coûts. La liste d'achat commence par un bloc **À acheter en premier** : les lignes à risque, triées par kamas en jeu (pessimiste − standard).
+Affichage : « ! » orange (moyen) ou rouge (fort, ou déficit possible) sur les items du plan de craft et des crafts viables (au survol : lignes concernées et marge si elles se vident), « ! » sur les ressources concernées dans le détail et la liste d'achat, avec les trois coûts. La liste d'achat commence par un bloc **À acheter en premier** : les lignes à risque, triées par kamas en jeu (pessimiste − standard).
 
 Réglages : nombre de lots crédibles, hausse par lot, plafond, part de l'écart retenue. Ce sont des hypothèses de départ, à caler sur les achats réels.
 
@@ -155,7 +157,7 @@ Réglages : nombre de lots crédibles, hausse par lot, plafond, part de l'écart
 
 ### Confirmation avant achat (statut bleu)
 
-- **Bleu** : relevé de moins d'une heure. Ce n'est pas un niveau de fraîcheur de plus : une donnée bleue compte comme verte partout ailleurs. La pastille s'affiche en bleu dans Données, le détail des crafts et la liste d'achat.
+- **Bleu** : relevé de moins d'une heure. Dans l'onglet Craft, le pourcentage de confiance passe en bleu quand tous les prix d'un item ont moins d'une heure. Ce n'est pas un niveau de fraîcheur de plus : une donnée bleue compte comme verte partout ailleurs. La pastille s'affiche en bleu dans Données, le détail des crafts et la liste d'achat.
 - Process : plan de scan (opportunités) → plan de craft → **Confirmer les prix** → ajustement du plan si une marge a bougé → liste d'achat.
 - **Confirmer les prix** (onglet Craft, sous le plan) : plan de scan avec le prix de vente des items du plan et les lots de leurs ressources qui ne sont pas bleus, rangé comme d'habitude (HDV, catégories). Une ressource craftable non bleue fait relever son prix d'achat et ses composants non bleus. Le volume de ventes n'est pas redemandé.
 - Chaque ligne du plan de craft garde son rendement de référence (à la génération ou à l'ajout) : un écart d'au moins 1 point s'affiche (▼ / ▲, détail au survol).

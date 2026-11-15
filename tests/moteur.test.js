@@ -44,7 +44,7 @@ test('lots : bandeaux (x1 10 000, x10 300 000), 138 → pas 138 x1 : x10 et quel
   assert.equal(r.coutOptimiste, 1380000);
   assert.ok(r.coutStandard > 3.5e6 && r.cout > r.coutStandard);
   assert.equal(r.risque, 'fort');
-  assert.equal(planAchat(3, { 1: 10000, 10: 300000 }, p).risque, 'faible');
+  assert.equal(planAchat(3, { 1: 10000, 10: 300000 }, p).lots[1], 3);   // x1 bradé : jusqu'à 10 lots
 });
 
 test('lots : que du x1 pour 138 → pénurie possible, risque fort, coût réaliste bien au-dessus du prix affiché', () => {
@@ -126,4 +126,14 @@ test('lots : x1000 retenu pour un gros besoin quand il est le moins cher', () =>
   const r = planAchat(2000, pepite, p);
   assert.equal(r.lots[1000], 2);
   assert.equal(r.surplus, 0);
+});
+
+test('lots : un x100 bradé (6× moins cher que x1 et x10) ne compte qu\'une fois, le pessimiste suppose qu\'il est parti', () => {
+  const meche = { 1: 7524, 10: 69999, 100: 124002 };
+  const r = planAchat(168, meche, p);
+  assert.deepEqual(r.bradees, [100]);
+  assert.equal(r.lots[100], 1);                        // un seul x100, le reste en x10 / x1
+  assert.ok(r.coutStandard > 450_000);
+  assert.ok(r.coutPessimiste > 1_000_000);             // sans le x100 : ~7 000/u et plus
+  assert.equal(r.risque, 'fort');
 });

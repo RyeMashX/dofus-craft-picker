@@ -9,6 +9,10 @@
 //   n'est pas crédible : on passe au x10, au x100…). C'est le plan d'achat proposé.
 // - Pessimiste (P) : chaque lot acheté dans une taille fait monter le suivant de `hausseParLot` du prix
 //   affiché (2e lot +20 %, 3e +40 %…), plafonné à `plafondHausse` fois ce prix ; meilleur mélange de tailles.
+// Lot bradé : une taille dont le prix unitaire est sous la moitié de celui des autres tailles (x100 à 1 240/u quand
+// x1 et x10 sont à 7 000/u). C'est un lot isolé qui part vite : le standard n'en compte qu'un, le pessimiste
+// suppose qu'il a déjà disparu. Exception pour le x1 bradé : on en compte jusqu'à 10 (ce sont souvent plusieurs
+// annonces à l'unité).
 // On impose O ≤ S ≤ P.
 // - Risque = (P − O) / S : faible, moyen, fort (`seuilsRisque`). Pénurie possible quand il faudrait plus de
 //   `lotsCredibles` lots de la plus grande taille affichée : risque fort d'office.
@@ -55,7 +59,8 @@ export function coutLotsHausse(n, prixLot, hausse, plafond) {
 function meilleursPlans(q, offre, p, coutTaille, maxLots, lineaire) {
   let best = null, sansSurplus = null;
   const mieux = (a, b) => !b || a.cout < b.cout - 1e-9 || (Math.abs(a.cout - b.cout) < 1e-9 && a.nbLots < b.nbLots);
-  const max = (t, reste) => dispo(offre, t) ? Math.min(Math.ceil(reste / t), maxLots) : 0;
+  const limite = t => typeof maxLots === 'function' ? maxLots(t) : maxLots;
+  const max = (t, reste) => dispo(offre, t) ? Math.min(Math.ceil(reste / t), limite(t)) : 0;
 
   for (let n1000 = 0; n1000 <= max(1000, q); n1000++) {
     const r1000 = Math.max(0, q - 1000 * n1000);
@@ -66,7 +71,7 @@ function meilleursPlans(q, offre, p, coutTaille, maxLots, lineaire) {
       for (let i = 0, n10; lineaire ? i < candidats.length : i <= m10; i++) {
         n10 = lineaire ? candidats[i] : i;
         const n1 = Math.max(0, r100 - 10 * n10);
-        if (n1 > 0 && (!dispo(offre, 1) || n1 > maxLots)) continue;
+        if (n1 > 0 && (!dispo(offre, 1) || n1 > limite(1))) continue;
 
         const brut = coutTaille(1000, n1000) + coutTaille(100, n100) + coutTaille(10, n10) + coutTaille(1, n1);
         const achete = 1000 * n1000 + 100 * n100 + 10 * n10 + n1;
@@ -99,6 +104,15 @@ export function planAchat(q, offre, p) {
   return r;
 }
 
+// Tailles bradées : prix unitaire sous la moitié du moins cher des autres tailles affichées
+export function lotsBrades(offre) {
+  const tailles = TAILLES.filter(t => dispo(offre, t));
+  return new Set(tailles.filter(t => {
+    const autres = tailles.filter(u => u !== t).map(u => offre[u] / u);
+    return autres.length && offre[t] / t < 0.5 * Math.min(...autres);
+  }));
+}
+
 export const RANG_RISQUE = { faible: 0, moyen: 1, fort: 2 };
 export function niveauRisque(ecart, penurie, p) {
   if (penurie || ecart >= p.seuilsRisque.fort) return 'fort';
@@ -111,11 +125,13 @@ function calculerPlanAchat(q, offre, p) {
   if (prixUnitaireMin(offre) == null) return null; // aucun prix connu
 
   const affiche = (t, n) => n ? n * offre[t] : 0;
+  const bradees = lotsBrades(offre);
   const optimiste = choisir(meilleursPlans(q, offre, p, affiche, Infinity, true), p);
   // standard : si aucun plan ne tient dans la limite de lots (que du x1 pour 138), on garde le plan optimiste
-  const std = meilleursPlans(q, offre, p, affiche, p.lotsCredibles, false);
+  const std = meilleursPlans(q, offre, p, affiche, t => bradees.has(t) ? (t === 1 ? 10 : 1) : p.lotsCredibles, false);
   const standard = std ? choisir(std, p) : optimiste;
-  const pess = choisir(meilleursPlans(q, offre, p, (t, n) => coutLotsHausse(n, offre[t], p.hausseParLot, p.plafondHausse), Infinity, false), p);
+  const sansBrades = Object.fromEntries(TAILLES.filter(t => dispo(offre, t) && !bradees.has(t)).map(t => [t, offre[t]]));
+  const pess = choisir(meilleursPlans(q, sansBrades, p, (t, n) => coutLotsHausse(n, sansBrades[t], p.hausseParLot, p.plafondHausse), Infinity, false), p);
 
   const O = optimiste.cout, S = Math.max(standard.cout, O), P = Math.max(pess.cout, S);
   const tMax = Math.max(...TAILLES.filter(t => dispo(offre, t)));
@@ -127,7 +143,7 @@ function calculerPlanAchat(q, offre, p) {
   return {
     q, ...standard, cout, prixUnitaire: cout / q,
     coutOptimiste: O, coutStandard: S, coutPessimiste: P,
-    ecartRisque, penurie, risque, enJeu: P - S,
+    ecartRisque, penurie, risque, enJeu: P - S, bradees: [...bradees],
     alerte: risque !== 'faible',
   };
 }
