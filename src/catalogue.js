@@ -56,3 +56,11 @@ export function ingredients(recette, vus = new Set(), prof = 0) {
   }
   return out;
 }
+
+// Ressource vendue à l'unité comme un équipement (une épée dans la recette d'une autre épée) : à l'HDV Équipements,
+// une annonce par exemplaire, pas de lots x10 / x100.
+export function venduALUnite(res, catalogue) {
+  if (!res) return false;
+  catalogue._typesEquip ??= new Set(catalogue.items.map(i => i.type));
+  return catalogue._typesEquip.has(res.type);
+}

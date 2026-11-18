@@ -1,12 +1,13 @@
 // Rapproche une lecture OCR du catalogue et l'enregistre dans la base de prix.
 
 import { trouver } from './correspondance.js';
+import { venduALUnite } from '../catalogue.js';
 import { majVolume, majPrixItem, majPrixMoyenItem, majRessource, majPrixMoyenRessource } from '../base.js';
 
 function candidats(catalogue) {
   return [
     ...catalogue.items.map(i => ({ id: i.id, nom: i.nom, niveau: i.niveau, genre: 'item' })),
-    ...Object.values(catalogue.ressources).map(r => ({ id: r.id, nom: r.nom, niveau: r.niveau, genre: 'ressource' })),
+    ...Object.values(catalogue.ressources).map(r => ({ id: r.id, nom: r.nom, niveau: r.niveau, genre: 'ressource', ...(venduALUnite(r, catalogue) ? { unite: true } : {}) })),
   ];
 }
 
@@ -47,7 +48,10 @@ export function identifier(type, lecture, catalogue) {
   if (!m) return { ...lecture, objet: null };
   const objet = { ...m.candidat, confiance: m.confiance };
   // ressource : lots illisibles déduits tout de suite (l'encart de lecture les affiche)
-  const annonces = type === 'detail' && objet.genre === 'ressource' ? deduireLots(lecture.annonces) : lecture.annonces;
+  // ressource vendue à l'unité (équipement) : des annonces de 1, pas des lots
+  const annonces = type !== 'detail' ? lecture.annonces
+    : objet.unite ? lecture.annonces.map(a => ({ ...a, lot: 1 }))
+    : objet.genre === 'ressource' ? deduireLots(lecture.annonces) : lecture.annonces;
   return { ...lecture, annonces, objet };
 }
 
@@ -106,6 +110,10 @@ export function appliquer(base, type, identifie, date = Date.now()) {
       // les équipements se vendent à l'unité : lot illisible = lot de 1
       const prix = identifie.annonces.filter(a => a.prix != null && (a.lot ?? 1) === 1).map(a => a.prix);
       if (prix.length) { majPrixItem(base, o.id, prix, date); enregistres.push(`${o.nom} : ${prix.length} annonces, min ${f(Math.min(...prix))}`); }
+    } else if (o.unite) {
+      // équipement utilisé comme ressource : l'annonce la moins chère fait le prix du x1
+      const prix = identifie.annonces.filter(a => a.prix != null).map(a => a.prix);
+      if (prix.length) { majRessource(base, o.id, { 1: Math.min(...prix) }, date); enregistres.push(`${o.nom} : ${prix.length} annonces, min ${f(Math.min(...prix))}`); }
     } else {
       const ok = deduireLots(identifie.annonces).filter(a => a.prix != null && a.lot != null);
       const offre = {};

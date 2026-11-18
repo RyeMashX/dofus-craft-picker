@@ -135,3 +135,15 @@ test('fin des achats : la dépense réelle se répartit au prorata du coût de c
   const r = repartirDepense([{ id: 1, n: 2, craftN: 6e6 }, { id: 2, n: 1, craftN: 2e6 }], 10e6);
   assert.deepEqual(r, [{ id: 1, n: 2, coutU: 3_750_000 }, { id: 2, n: 1, coutU: 2_500_000 }]);
 });
+
+test('équipement utilisé comme ressource (épée dans une recette) : annonces de 1, la moins chère fait le x1', async () => {
+  const { identifier, appliquer } = await import('../src/ocr/identification.js');
+  const { readFileSync } = await import('node:fs');
+  const { creerBase } = await import('../src/base.js');
+  const vrai = JSON.parse(readFileSync(new URL('../data/catalogue.json', import.meta.url)));
+  const r = identifier('detail', { titre: 'Griffe de Grizmine', niveau: 111, annonces: [{ lot: null, prix: 250000, sur: true }, { lot: 3, prix: 180000, sur: true }, { lot: null, prix: 300000, sur: true }] }, vrai);
+  assert.equal(r.objet.unite, true);
+  const b = creerBase();
+  appliquer(b, 'detail', r);
+  assert.deepEqual(b.ressources[7192].lots.valeurs, { 1: 180000 });
+});

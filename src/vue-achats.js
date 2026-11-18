@@ -6,6 +6,7 @@ import { etatCraft, signaturePlan } from './vue-craft.js';
 import { niveauRessource, affiche, bleuRessource } from './fraicheur.js';
 import { estIndispo } from './base.js';
 import { pastille } from './vue-donnees.js';
+import { venduALUnite } from './catalogue.js';
 import { repartirDepense, itemsStop } from './craft-plan.js';
 import { ajouterVente } from './ventes.js';
 import { icone } from './vue-plan.js';
@@ -96,7 +97,7 @@ export function renderAchats(ctx) {
     return `<div class="ac-l${fait(a) ? ' fini' : ''}${suspendue(a) ? ' suspendue' : ''}${ouvert ? ' ouvert' : ''}">
       <div class="ac-ligne" data-ouvrir="${a.id}" title="${esc(a.nom)} : clique pour le détail">
         <span class="chev" aria-hidden="true"></span>
-        ${ctx.boutonCopier(a.nom, 'ressource')}
+        ${ctx.boutonCopier(a.nom, venduALUnite(S.catalogue.ressources[a.id], S.catalogue) ? 'prixItem' : 'ressource')}
         ${icone(a.iconId)}
         <span class="n">${a.plan?.risque && a.plan.risque !== 'faible' ? `<span class="risque risque-${a.plan.risque} mini" title="Risque ${a.plan.risque}${a.plan.penurie ? ', pénurie possible' : ''} : le prix peut monter pendant l'achat">!</span> ` : ''}${esc(a.nom)}</span>
         <span class="c-q">${fmt(a.q)}</span>

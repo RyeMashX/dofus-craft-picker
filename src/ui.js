@@ -3,7 +3,7 @@
 import { PARAMS } from './params.js';
 import { creerBase, majVolume, majPrixItem, majRessource, majIndispo, majAucuneAnnonce, exporter, importer, JOUR, NB_PRIX } from './base.js';
 import { itemsFocus } from './entonnoir.js';
-import { lierSousRecettes } from './catalogue.js';
+import { lierSousRecettes, venduALUnite } from './catalogue.js';
 import { renderPlanScan, tempsMesures } from './vue-plan.js';
 import { renderDonnees } from './vue-donnees.js';
 import { etatItem } from './fraicheur.js';
@@ -229,7 +229,7 @@ const TITRES = { courbe: 'Courbe 30 j', liste: 'Liste HDV' };
 function titreLecture(L) {
   const r = L.identifie;
   if (L.type === 'liste') return `Liste HDV · ${r.filter(x => !x.inconnu && !x.retire).length} prix moyens`;
-  const genre = L.type === 'courbe' ? TITRES.courbe : r.objet?.genre === 'ressource' ? 'Lots' : 'Annonces';
+  const genre = L.type === 'courbe' ? TITRES.courbe : r.objet?.genre === 'ressource' && !r.objet.unite ? 'Lots' : 'Annonces';
   return `${genre} · ${r.objet ? esc(r.objet.nom) : 'objet non reconnu'}`;
 }
 
@@ -267,8 +267,9 @@ const CHAMPS_SAISIE = {
 
 function candidatsSaisie(mode) {
   const items = S.catalogue.items.map(i => ({ id: i.id, nom: i.nom, niveau: i.niveau, genre: 'item', info: `${i.niveau} · ${i.type}` }));
-  const res = Object.values(S.catalogue.ressources).map(r => ({ id: r.id, nom: r.nom, niveau: r.niveau, genre: 'ressource', info: `${r.niveau} · ressource` }));
-  return mode === 'lots' ? res : mode === 'liste' ? [...items, ...res] : items;
+  const res = Object.values(S.catalogue.ressources).map(r => ({ id: r.id, nom: r.nom, niveau: r.niveau, genre: 'ressource', info: `${r.niveau} · ressource`, ...(venduALUnite(r, S.catalogue) ? { unite: true, info: `${r.niveau} · ${r.type}, pour un craft` } : {}) }));
+  // équipements utilisés comme ressources : saisis comme des annonces d'item
+  return mode === 'lots' ? res.filter(r => !r.unite) : mode === 'liste' ? [...items, ...res] : [...items, ...res.filter(r => r.unite)];
 }
 
 // Retrouve l'objet à partir du nom tapé : nom exact (au plus haut niveau en cas d'homonymes), sinon le plus proche
@@ -593,7 +594,7 @@ async function scanner() {
       else if (L.type === 'courbe' && !L.identifie.trenteJours) L.alerte = 'Onglet 30 jours non détecté : rien n\'a été enregistré. Passe sur l\'onglet 30 jours et relance, ou corrige à la main.';
       else {
         if (mode === 'lots' && o?.genre === 'item') L.alerte = 'Mode « lots de ressource » mais l\'objet est un équipement : enregistré comme annonces.';
-        if (mode === 'annonces' && o?.genre === 'ressource') L.alerte = 'Mode « annonces d\'item » mais l\'objet est une ressource : enregistré comme lots.';
+        if (mode === 'annonces' && o?.genre === 'ressource' && !o.unite) L.alerte = 'Mode « annonces d\'item » mais l\'objet est une ressource : enregistré comme lots.';
         L.messages = enregistrer(L);
         L.enregistre = L.messages.length > 0;
       }

@@ -1,9 +1,12 @@
 // Onglet Scan : préparation du plan (temps disponible → aperçu), puis déroulé par HDV et groupes de filtres.
 
 import { calculerPlan, organiser, tacheFaite } from './plan.js';
+import { venduALUnite } from './catalogue.js';
 
 const LIB = { volume: 'Courbe', prixItem: 'Annonces', ressource: 'Lots' };
 const MODE = { volume: 'courbe', prixItem: 'annonces', ressource: 'lots' };
+// une ressource vendue à l'unité (équipement dans une recette) se scanne comme des annonces
+const modeTache = (kind, id, catalogue) => kind === 'ressource' && venduALUnite(catalogue.ressources[id], catalogue) ? 'annonces' : MODE[kind];
 const HDV = { equipements: 'HDV Équipements', ressources: 'HDV Ressources', consommables: 'HDV Consommables' };
 export const icone = id => id ? `<img class="ico" loading="lazy" alt="" src="https://api.dofusdb.fr/img/items/${id}.png">` : '<span class="ico"></span>';
 const cleGroupe = (h, g) => `${h.hdv}|${g.categories.join('+')}|${g.niveauMin}`;
@@ -94,7 +97,7 @@ function renderDeroule(ctx) {
   S.faits = new Set([...[...etatGroupes].filter(([, v]) => v).map(([k]) => 'G' + k), ...[...etatHdv].filter(([, v]) => v).map(([k]) => 'H' + k)]);
 
   // le mode de scan suit la prochaine tâche
-  if (prochaine) ctx.choisirMode(MODE[prochaine.kind]);
+  if (prochaine) ctx.choisirMode(modeTache(prochaine.kind, prochaine.id, S.catalogue));
 
   const ouvert = S.groupeOuvert ?? groupeCourant;
   const restant = plan.taches.filter(t => !fait(t.kind, t.id));
@@ -103,9 +106,9 @@ function renderDeroule(ctx) {
   const pct = total ? Math.round(100 * faits / total) : 100;
 
   const ligneHtml = l => `<tr class="${l.fait ? 'fini' : ''}">
-      <td>${ctx.boutonCopier(l.nom, l.kinds[0])}</td><td>${icone(l.iconId)}</td>
+      <td>${ctx.boutonCopier(l.nom, l.kinds[0] === 'ressource' && venduALUnite(S.catalogue.ressources[l.id], S.catalogue) ? 'prixItem' : l.kinds[0])}</td><td>${icone(l.iconId)}</td>
       <td class="nom" title="${esc(l.nom)}">${esc(l.nom)}</td>
-      <td class="r">${l.kinds.map((k, i) => `<span class="bd${l.faits[i] ? ' fait' : ''}">${l.faits[i] ? '✓ ' : ''}${LIB[k]}</span>`).join(' ')}</td></tr>`;
+      <td class="r">${l.kinds.map((k, i) => `<span class="bd${l.faits[i] ? ' fait' : ''}">${l.faits[i] ? '✓ ' : ''}${k === 'ressource' && venduALUnite(S.catalogue.ressources[l.id], S.catalogue) ? LIB.prixItem : LIB[k]}</span>`).join(' ')}</td></tr>`;
 
   const groupeHtml = (h, g) => {
     const k = cleGroupe(h, g), gFait = etatGroupes.get(k), estOuvert = k === ouvert;
