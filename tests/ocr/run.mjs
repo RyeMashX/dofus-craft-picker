@@ -67,6 +67,14 @@ const plein = img => ({ x: 0, y: 0, w: img.width, h: img.height });
   ]);
 }
 
+// 2 ter. La passe chiffres lit « 2 950 001 » comme « 2 350 001 » : l'ordre croissant des annonces départage
+{
+  const img = lire('detail-annonces-9-lu-3.png');
+  const r = identifier('detail', await lireEcran('detail', img, plein(img), reconnaitre, { echelle: 2 }), catalogue);
+  verifier('9 lu 3 : objet', r.objet?.nom, 'Anneau Crustique');
+  verifier('9 lu 3 : prix', r.annonces.map(a => a.prix), [2700000, 2950001, 2950001, 2956789, 2978999, 2999999, 2999999, 3038749, 3299000, 3499000, 3800000, 4220000, 4222222]);
+}
+
 // 3. Courbe 30 jours
 {
   const img = lire('courbe-item.png');

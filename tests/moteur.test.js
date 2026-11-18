@@ -137,3 +137,13 @@ test('lots : un x100 bradé (6× moins cher que x1 et x10) ne compte qu\'une foi
   assert.ok(r.coutPessimiste > 1_000_000);             // sans le x100 : ~7 000/u et plus
   assert.equal(r.risque, 'fort');
 });
+
+test('OCR : deux passes en désaccord, l\'ordre croissant des annonces départage', async () => {
+  const { departager } = await import('../src/ocr/lecteurs.js');
+  const a = departager([
+    { lot: 1, prix: 2700000, sur: true },
+    { lot: 1, prix: 2350001, sur: false, conflit: [2350001, 2950001] },
+    { lot: 1, prix: 2956789, sur: true },
+  ]);
+  assert.deepEqual(a.map(x => [x.prix, x.sur]), [[2700000, true], [2950001, true], [2956789, true]]);
+});

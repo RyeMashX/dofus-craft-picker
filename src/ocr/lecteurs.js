@@ -138,6 +138,21 @@ export function separerLot(rangee) {
   return { lot: null, texte: rangee.texte };
 }
 
+// L'HDV trie les annonces d'un même lot par prix croissant. Quand les deux passes ne lisent pas le même prix,
+// on garde celui qui respecte cet ordre entre la rangée sûre précédente et la suivante (même lot).
+export function departager(annonces) {
+  const memeLot = (a, b) => (a.lot ?? 1) === (b.lot ?? 1);
+  annonces.forEach((a, i) => {
+    if (!a.conflit) return;
+    const avant = annonces.slice(0, i).reverse().find(b => memeLot(a, b) && b.prix != null && b.sur);
+    const apres = annonces.slice(i + 1).find(b => memeLot(a, b) && b.prix != null && b.sur);
+    const ok = a.conflit.filter(v => (!avant || v >= avant.prix) && (!apres || v <= apres.prix));
+    if (ok.length === 1) { a.prix = ok[0]; a.sur = true; a.conflit = null; }
+  });
+  for (const a of annonces) delete a.conflit;
+  return annonces;
+}
+
 export async function lireDetail(pre, reconnaitre) {
   const lignes = rangees(await reconnaitre(pre, {}));
   const { titre, niveau } = titreEtNiveau(lignes);
@@ -191,9 +206,17 @@ export async function lireDetail(pre, reconnaitre) {
       let n = deux.texte ? nombre(deux.texte) : null;
       // secours : prix de la première passe si la seconde est vide ou incohérente
       const un = r.texte1 ? nombre(r.texte1) : null;
+      // les deux passes lisent un prix valide mais différent (un 9 lu 3…) : départagé plus bas
+      // (« 2950 001 » : espace des milliers manquée en première passe, plausible ici)
+      const unPlausible = un && (un.valide || /^\d{4}( \d{3})+$/.test(r.texte1.trim()));
+      const cands = [...new Set([n?.valide ? n.valeur : null, unPlausible ? un.valeur : null].filter(v => v != null))];
+      // passes en désaccord, ou une seule lecture plausible mais pas sûre : départagé par l'ordre des prix
+      const conflit = cands.length > 1 || (cands.length === 1 && !n?.valide) ? cands : null;
       if ((!n || !n.valide) && un?.valide) n = un;
-      return { lot: r.lot ?? deux.lot, prix: n?.valeur ?? null, sur: !!n?.valide };
+      if (conflit && !n?.valide) n = { valeur: cands[0], valide: false };
+      return { lot: r.lot ?? deux.lot, prix: n?.valeur ?? null, sur: !!n?.valide && !conflit, conflit };
     });
+    departager(annonces);
   }
   return { titre, niveau, prixMoyen: pm ? nombre(pm[1]).valeur : null, annonces };
 }
