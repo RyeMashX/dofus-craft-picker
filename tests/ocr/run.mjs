@@ -56,6 +56,17 @@ const plein = img => ({ x: 0, y: 0, w: img.width, h: img.height });
   ]);
 }
 
+// 2 bis. Annonces avec l'icône de l'objet à gauche de chaque rangée (lue comme « 3 », « 143 »), dernière rangée coupée
+{
+  const img = lire('detail-annonces-icones.png');
+  const r = identifier('detail', await lireEcran('detail', img, plein(img), reconnaitre, { echelle: 2 }), catalogue);
+  verifier('icônes : objet', r.objet?.nom, 'Ceinture du Strigide');
+  verifier('icônes : lots et prix', r.annonces.map(a => [a.lot, a.prix]), [
+    [1, 2600000], [1, 2650000], [1, 2700000], [1, 2800000], [1, 2900000], [1, 2900000], [1, 2940000],
+    [1, 2999990], [1, 2999998], [1, 2999998], [1, 2999998], [1, 2999998], [1, 2999998],
+  ]);
+}
+
 // 3. Courbe 30 jours
 {
   const img = lire('courbe-item.png');

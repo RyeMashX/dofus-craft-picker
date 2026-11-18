@@ -143,14 +143,19 @@ export async function lireDetail(pre, reconnaitre) {
   const { titre, niveau } = titreEtNiveau(lignes);
   const pm = lignes.map(l => l.texte.match(/prix\s*moyen\s*:?\s*(\d[\d  ]*)/i)).find(Boolean);
 
-  // Rangée d'annonce : [lot] [prix en groupes de 3 chiffres] ACHETER.
+  // L'icône de l'objet, à gauche de chaque rangée, peut être lue comme des chiffres (« 3 », « 143 ») :
+  // on ignore tout ce qui commence avant l'en-tête de colonne « Lot ».
+  const motLot = lignes.flatMap(l => /prix/i.test(l.texte) ? l.mots : []).find(w => /^lot/i.test(w.texte));
+  const xMin = motLot ? motLot.bbox.x0 - (motLot.bbox.y1 - motLot.bbox.y0) : -Infinity;
+
+  // Rangée d'annonce : [icône] [lot] [prix en groupes de 3 chiffres] ACHETER.
   // Le lot n'est que le PREMIER nombre de la rangée, et seulement s'il est suivi d'un grand blanc :
   // un groupe du prix (« 9 100 000 ») ne doit jamais être pris pour un lot de 100.
   const rangs = lignes.filter(l => /ACHETER/i.test(l.texte)).map(l => {
     const acheter = l.mots.find(w => /ACHETER/i.test(w.texte));
     const xAch = acheter?.bbox.x0 ?? Infinity;
     // mots qui commencent par un chiffre (un prix peut être collé à un reste d'icône : « 2299902: »)
-    const nums = l.mots.filter(w => /^\d/.test(w.texte) && w.bbox.x1 < xAch);
+    const nums = l.mots.filter(w => /^\d/.test(w.texte) && w.bbox.x1 < xAch && w.bbox.x0 >= xMin);
     const h = nums.length ? nums[0].bbox.y1 - nums[0].bbox.y0 : 0;
     // « 1 000 » peut être lu en deux mots rapprochés : on les recolle en un lot de 1000
     if (nums.length >= 2 && nums[0].texte === '1' && nums[1].texte === '000' && nums[1].bbox.x0 - nums[0].bbox.x1 < 1.2 * h) {
@@ -175,7 +180,7 @@ export async function lireDetail(pre, reconnaitre) {
       if (r.lot == null && r.premier && /^(1|10|100|1000)$/.test(r.premier.texte) && Math.abs(r.premier.bbox.x1 - xLot) < 50) r.lot = Number(r.premier.texte);
     }
     const xPrix = Math.min(...rangs.map(r => r.xPrix ?? Infinity));
-    const x0 = xLot != null ? xLot + 8 : Number.isFinite(xPrix) ? Math.max(0, xPrix - 30) : 0;
+    const x0 = Math.max(xLot != null ? xLot + 8 : Number.isFinite(xPrix) ? Math.max(0, xPrix - 30) : 0, motLot ? motLot.bbox.x1 : 0);
     const xAch = Math.min(...rangs.map(r => r.xAcheter ?? pre.width)) - 8;
     const haut = Math.max(0, rangs[0].ligne.bbox.y0 - 20);
     const chiffres = await passeChiffres(pre, { x: x0, y: haut, w: xAch - x0, h: pre.height - haut }, reconnaitre);
