@@ -71,8 +71,9 @@ export function deduireLots(annonces) {
       const logs = rangs.map((a, k) => Math.log10(a.prix / choix[k]));
       const moy = logs.reduce((s, x) => s + x, 0) / logs.length;
       const ecart = logs.reduce((s, x) => s + (x - moy) ** 2, 0);
-      const desaccords = rangs.filter((a, k) => a.lot != null && a.lot !== choix[k]).length;
-      const cout = ecart + 0.3 * desaccords;
+      // un lot vu par au moins 2 des 3 lectures pèse lourd : un x100 très cher reste un x100
+      const desaccords = rangs.reduce((s, a, k) => s + (a.lot != null && a.lot !== choix[k] ? ((a.lotN ?? 1) >= 2 ? 5 : 0.3) : 0), 0);
+      const cout = ecart + desaccords;
       if (!best || cout < best.cout) best = { cout, choix: [...choix] };
       return;
     }

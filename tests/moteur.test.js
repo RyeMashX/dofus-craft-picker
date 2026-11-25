@@ -162,3 +162,9 @@ test('OCR lots d\'une ressource : tailles dans l\'ordre 1, 10, 100, 1000, jamais
   assert.deepEqual(verifierOrdre(a), [2]);
   assert.equal(a[1].sur, false);
 });
+
+test('OCR lots : un lot lu par 2 lectures sur 3 n\'est pas « corrigé » par les prix unitaires (x100 très cher)', async () => {
+  const { deduireLots } = await import('../src/ocr/identification.js');
+  const lots = deduireLots([{ lot: 1, lotN: 3, prix: 4600 }, { lot: 10, lotN: 3, prix: 44877 }, { lot: 100, lotN: 3, prix: 3191110 }]).map(x => x.lot);
+  assert.deepEqual(lots, [1, 10, 100]);
+});

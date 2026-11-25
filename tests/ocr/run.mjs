@@ -104,6 +104,13 @@ for (const [f, nom, val, attendu] of [
   verifier('Or : deux zones', [z.objet?.nom, ...z.annonces.map(a => `${a.lot}:${a.prix}`)], ['Or', '1:135', '10:1399', '100:13000', '1000:139811']);
 }
 
+// 2 sexies. x100 très cher (7× le prix unitaire) bien lu « 100 » : il reste un x100 ; décor et reste de kama sous le panneau
+{
+  const img = lire('detail-lots-trithon-demi.png');
+  const r = identifier('detail', await lireEcran('detail', img, { nom: { x: 60, y: 15, w: 300, h: 70 }, valeur: { x: 15, y: 295, w: 420, h: 270 } }, reconnaitre, { echelle: 4 }), catalogue);
+  verifier('Trithon : x100 cher', [r.objet?.nom, ...r.annonces.map(a => `${a.lot}:${a.prix}`)], ['Peau de Trithon', '1:4600', '10:44877', '100:3191110']);
+}
+
 // 3. Courbe 30 jours
 {
   const img = lire('courbe-item.png');

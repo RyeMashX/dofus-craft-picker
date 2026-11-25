@@ -269,7 +269,8 @@ export async function lireLots(pre, reconnaitre, avecPositions = false) {
     return {
       bbox: { x0: b.x0 / k, x1: b.x1 / k, y0: b.y0 / k, y1: b.y1 / k },
       lot: /^(1|10|100|1000)$/.test(lotTxt) ? Number(lotTxt) : null,
-      prix: prixMots.map(w => w.texte.replace(/\D/g, '')).filter(Boolean).join(' '),
+      // un reste du symbole kama lu comme un chiffre en bout de prix (« 3 191 110 7 ») est retiré
+      prix: prixMots.map(w => w.texte.replace(/\D/g, '')).filter(Boolean).join(' ').replace(/^(\d{1,3}(?: \d{3})+) \d{1,2}$/, '$1'),
     };
   }).filter(r => r.prix);
   const passes = [];
@@ -288,10 +289,10 @@ export async function lireLots(pre, reconnaitre, avecPositions = false) {
     r.lus = lus;
     const prix = lus.map(x => { const n = nombre(x.prix); return n && (n.valide || /^\d{4}( \d{3})+$/.test(x.prix)) ? n.valeur : null; });
     const v = vote(prix), lots = vote(lus.map(x => x.lot));
-    const lot = lots[0]?.[0] ?? null;
-    if (!v.length) return { lot, prix: nombre(r.prix)?.valeur ?? null, sur: false, conflit: null };
-    if (v[0][1] >= 2 && (v.length === 1 || v[0][1] > v[1][1])) return { lot, prix: v[0][0], sur: true, conflit: null };
-    return { lot, prix: v[0][0], sur: false, conflit: v.map(x => x[0]) };
+    const lot = lots[0]?.[0] ?? null, lotN = lots[0]?.[1] ?? 0; // lotN : nombre de lectures qui ont vu ce lot
+    if (!v.length) return { lot, lotN, prix: nombre(r.prix)?.valeur ?? null, sur: false, conflit: null };
+    if (v[0][1] >= 2 && (v.length === 1 || v[0][1] > v[1][1])) return { lot, lotN, prix: v[0][0], sur: true, conflit: null };
+    return { lot, lotN, prix: v[0][0], sur: false, conflit: v.map(x => x[0]) };
   });
   if (avecPositions) return { annonces, bbox: rangs.map(r => r.bbox) };
   return departager(annonces);
@@ -314,7 +315,8 @@ export function garderRangees(annonces, bbox) {
   // rangée coupée par le bord du panneau : prix illisible ou nul
   const ok = annonces.map((a, i) => (a.prix > 0 ? i : -1)).filter(i => i >= 0);
   annonces = ok.map(i => annonces[i]); bbox = ok.map(i => bbox[i]);
-  const avecLot = annonces.map((a, i) => (a.lot != null ? i : -1)).filter(i => i >= 0);
+  // un lot vu par au moins 2 des 3 lectures (un « 1 » isolé dans le décor ne compte pas)
+  const avecLot = annonces.map((a, i) => (a.lot != null && (a.lotN ?? 2) >= 2 ? i : -1)).filter(i => i >= 0);
   if (!avecLot.length) return annonces;
   let garde = annonces.slice(avecLot[0], avecLot.at(-1) + 1).map((a, k) => ({ a, b: bbox[avecLot[0] + k] }));
   if (garde.length > 2) {
