@@ -1,4 +1,4 @@
-// Évaluation des items à partir de la base de prix.
+// Évaluation des équipements à partir de la base de prix.
 //
 // Deux niveaux :
 // - estimation : utilise le meilleur prix disponible, même périmé ou au prix moyen.
@@ -10,13 +10,14 @@ import { itemsCraftables, versMoteur } from './catalogue.js';
 import { etatItem, niveauRessource } from './fraicheur.js';
 import { prixVenteEstime, evaluerItem } from './marge.js';
 import { resoudre, achatBase } from './souscraft.js';
+import { coutFmEstime } from './ventes.js';
 
 export function itemsFocus(catalogue, p) {
   const [nMin, nMax] = p.focusNiveaux;
   return itemsCraftables(catalogue, p.metiers).filter(i => i.niveau >= nMin && i.niveau <= nMax);
 }
 
-// Rendement estimé d'un item avec ce qu'on a en base.
+// Rendement estimé d'un équipement avec ce qu'on a en base.
 // precision : 'scan' (annonces + lots relevés), 'mixte', 'moyen' (prix moyens seuls), null si incalculable.
 export function estimerItem(it, base, p) {
   const b = base.items[it.id] ?? {};
@@ -36,13 +37,15 @@ export function estimerItem(it, base, p) {
   if (prixVente == null || manquantes || cout <= 0) {
     return { rendement: null, prixVente, cout: null, precision: null, manquantes };
   }
-  const rendement = (prixVente * (1 - p.taxeVente) - cout) / cout;
+  // même calcul que l'onglet Craft : FM estimée (moyenne des ventes du même équipement) comprise
+  const fm = p.inclureFm ? coutFmEstime(base, it.id)?.valeur ?? 0 : 0;
+  const rendement = (prixVente * (1 - p.taxeVente) - cout - fm) / (cout + fm);
   const toutScan = sourceVente === 'scan' && nbMoyen === 0;
   const toutMoyen = sourceVente === 'moyen' && nbScan === 0;
-  return { rendement, prixVente, cout, precision: toutScan ? 'scan' : toutMoyen ? 'moyen' : 'mixte', manquantes: 0 };
+  return { rendement, prixVente, cout, fm, precision: toutScan ? 'scan' : toutMoyen ? 'moyen' : 'mixte', manquantes: 0 };
 }
 
-// Probabilité "grossière" que l'item soit rentable, entre 0 et 1.
+// Probabilité "grossière" que l'équipement soit rentable, entre 0 et 1.
 // 0 à 0 % de rendement estimé, 0,5 au seuil (25 %), 1 au double du seuil. Inconnu → 0,5.
 export function potentiel(rendement, p) {
   if (rendement == null) return 0.5;
@@ -63,7 +66,7 @@ export function baseEvaluation(catalogue, base, p, maintenant = Date.now()) {
     if (!etat.utilisable) continue;
     const b = base.items[it.id];
     const prixVente = prixVenteEstime(b.prix.valeurs, p).estime ?? b.prixMoyen?.valeur ?? null;
-    const m = versMoteur(it, catalogue, { volumeMois: b.volume.valeur, prixVente });
+    const m = { ...versMoteur(it, catalogue, { volumeMois: b.volume.valeur, prixVente }), coutFm: coutFmEstime(base, it.id)?.valeur ?? 0 };
     m.avertissement = etat.pret ? null : avertissement(etat);
     items.push(m);
     evalues.push({ ...evaluerItem(m, offres, p, 1), avertissement: m.avertissement });

@@ -123,7 +123,7 @@ export function renderCraft(ctx) {
     ${ev.lignes.length ? `<div class="cp">${ev.lignes.map(lignePlan).join('')}</div>
       ${aConfirmer.length
         ? `<div class="confirm-bloc"><div><b>Prix à confirmer avant d'acheter</b><span class="muted small">${aConfirmer.length} relevé${aConfirmer.length > 1 ? 's' : ''} de plus d'une heure, ≈ ${Math.max(1, Math.ceil(secConf / 60))} min</span></div>
-          <button id="cp-confirmer" class="primary small" title="Plan de scan avec les prix des items du plan et les lots de leurs ressources qui ne sont pas bleus">Confirmer les prix</button></div>`
+          <button id="cp-confirmer" class="primary small" title="Plan de scan avec les prix des équipements du plan et les lots de leurs ressources qui ne sont pas bleus">Confirmer les prix</button></div>`
         : `<p class="small conf-ok">${pastilleBleue} Tous les prix du plan ont moins d'une heure.</p>`}
       <div class="row">
         <button id="cp-achats" class="${aConfirmer.length ? 'secondary' : 'primary'} small">${achatsAJour ? 'Voir la liste d\'achat →' : 'Générer la liste d\'achat →'}</button>
@@ -154,7 +154,7 @@ export function renderCraft(ctx) {
   const n = C.n ?? 50;
   const viablesHtml = `
     <div class="row"><h2>Crafts viables</h2><span class="muted small">${liste.length}</span><div class="spacer"></div>
-      <div class="cv-outils"><button id="cv-sans-vente" class="toggle${C.sansVente ? ' on' : ''}" title="${C.sansVente ? 'Afficher' : 'Masquer'} les items qui ont déjà des exemplaires en vente${nExclus ? ` · ${nExclus} item${nExclus > 1 ? 's' : ''} de la liste noire, jamais affichés` : ''}">${C.sansVente ? '✓ ' : ''}hors vente${nEnVente ? ` <span class="nb">${nEnVente}</span>` : ''}</button>
+      <div class="cv-outils"><button id="cv-sans-vente" class="toggle${C.sansVente ? ' on' : ''}" title="${C.sansVente ? 'Afficher' : 'Masquer'} les équipements qui ont déjà des exemplaires en vente${nExclus ? ` · ${nExclus} équipement${nExclus > 1 ? 's' : ''} de la liste noire, jamais affichés` : ''}">${C.sansVente ? '✓ ' : ''}hors vente${nEnVente ? ` <span class="nb">${nEnVente}</span>` : ''}</button>
       <div id="cv-filtre" class="seg">${[['tous', 'tous'], ['cible', '≥ ' + Math.round(p.margeMin * 100) + ' %'], ['acceptable', Math.round(p.margeAcceptable * 100) + '–' + Math.round(p.margeMin * 100) + ' %']].map(([k, l]) => `<button data-f="${k}" class="${C.filtre === k ? 'on' : ''}">${l}</button>`).join('')}</div></div></div>
     ${rows.length ? `<div class="cp">${rows.slice(0, n).map(ligneViable).join('')}</div>${rows.length > n ? `<p class="small"><button id="cv-plus" class="link small">afficher 50 de plus (${rows.length - n} restants)</button></p>` : ''}` : '<p class="muted small">Aucun craft dans cette catégorie.</p>'}
     <p class="muted small">Viable : données à jour, ${p.volumeMin} ventes / mois et ${Math.round(p.margeAcceptable * 100)} % de rendement minimum.</p>`;

@@ -9,7 +9,7 @@
 //   - en draft : recalculés à 2 % du prix à chaque modification (la ligne n'est pas encore figée) ;
 //   - validée : ils ne bougent plus, sauf saisie manuelle ou « prix modifié » (changerPrix : + 1 % du nouveau prix).
 //   changements = [{ date, ancien, prix, frais }] historique des changements de prix.
-// Règle : tant qu'un item a au moins une ligne draft ou validée, il n'est pas proposé dans le plan de craft.
+// Règle : tant qu'un équipement a au moins une ligne draft ou validée, il n'est pas proposé dans le plan de craft.
 
 export const TAUX_FRAIS = 0.02, TAUX_CHANGEMENT = 0.01;
 const ACTIFS = new Set(['draft', 'valide']);
@@ -69,7 +69,7 @@ export function remettreEnVente(base, u) { const l = trouverLigne(base, u); if (
 // ---------- import d'une capture « Mes ventes » ----------
 // identifie = { lignes: [{ id, nom, prix }] }. coutDe(id) donne le coût de craft estimé d'après la base.
 // - item sans ligne active : nouvelle ligne « validée » (prix lu, coûts estimés) ;
-// - une ligne active du même item au même prix : c'est la même annonce, rien à faire ;
+// - une ligne active du même équipement au même prix : c'est la même annonce, rien à faire ;
 // - sinon : à trancher par l'utilisateur (fusionner avec une ligne existante ou en créer une).
 // Une même annonce vue deux fois (captures qui se chevauchent) n'est traitée qu'une fois.
 export function importerCapture(base, identifie, coutDe, maintenant = Date.now()) {
@@ -109,7 +109,7 @@ export function migrerVentes(base, coutDe = () => null) {
 }
 
 // ---------- coût de FM estimé ----------
-// Moyenne des coûts de FM renseignés sur les exemplaires vendus du même item ; null (n/a) sans donnée.
+// Moyenne des coûts de FM renseignés sur les exemplaires vendus du même équipement ; null (n/a) sans donnée.
 // Un coût de FM à 0 est traité comme non renseigné (c'est la valeur par défaut d'une ligne).
 export function coutFmEstime(base, id) {
   const v = vendues(base).filter(l => l.id === Number(id) && (l.coutFm ?? 0) > 0);
@@ -138,7 +138,7 @@ export const historiquePrix = l => l.prix == null ? [] : [{ date: l.dateMiseEnVe
 // Écart du prix actuel (ou de vente) au prix initial, en fraction (−0,12 = 12 % plus bas)
 export const ecartPrix = l => { const i = prixInitial(l); return i && l.prix != null ? (l.prix - i) / i : null; };
 
-// Par item vendu : nombre de ventes, changements de prix moyens, écart moyen final / initial, délai moyen
+// Par équipement vendu : nombre de ventes, changements de prix moyens, écart moyen final / initial, délai moyen
 export function prixParItem(base) {
   const m = new Map();
   for (const l of vendues(base).filter(x => x.prix != null)) {

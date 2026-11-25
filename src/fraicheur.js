@@ -1,4 +1,4 @@
-// Niveaux de fraîcheur des données et état des items.
+// Niveaux de fraîcheur des données et état des équipements.
 //
 //   noir   : aucune info
 //   rouge  : ressource introuvable à l'HDV (aucun lot en vente au dernier passage)
@@ -62,7 +62,7 @@ export function bleuLigne(r, base, maintenant = Date.now(), prof = 0) {
 // niveau à afficher : un vert de moins d'une heure s'affiche en bleu
 export const affiche = (niveau, bleu) => niveau === 'vert' && bleu ? 'bleu' : niveau;
 
-// État complet d'un item du catalogue
+// État complet d'un équipement du catalogue
 //   pret       : volume vert ou jaune, prix vert, ressources sans orange ni noir et au plus 2 jaunes
 //   utilisable : aucune donnée orange ou noire (jaune toléré partout) → plan de craft avec avertissement
 export function etatItem(it, base, maintenant = Date.now(), maxJaunes = 2) {

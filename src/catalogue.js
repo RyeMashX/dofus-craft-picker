@@ -2,12 +2,12 @@
 
 import { PARAMS } from './params.js';
 
-// Items craftables avec les métiers du joueur (niveau du métier ≥ niveau de l'item).
+// Items craftables avec les métiers du joueur (niveau du métier ≥ niveau de l'équipement).
 export function itemsCraftables(catalogue, metiers = PARAMS.metiers) {
   return catalogue.items.filter(i => (metiers[i.metier] ?? 0) >= i.niveau);
 }
 
-// Convertit un item du catalogue au format du moteur (recette avec noms).
+// Convertit un équipement du catalogue au format du moteur (recette avec noms).
 export function versMoteur(item, catalogue, marche = {}) {
   return {
     id: item.id,
@@ -24,8 +24,8 @@ const versMoteurRecette = (recette, catalogue, prof = 0) => recette.map(r => ({
   ...(r.recette && prof < 6 ? { recette: versMoteurRecette(r.recette, catalogue, prof + 1) } : {}),
 }));
 
-// Ressources à relever pour un ensemble d'items, triées par nombre d'items qui les utilisent :
-// relever les premières débloque le plus d'items.
+// Ressources à relever pour un ensemble d'équipements, triées par nombre d'équipements qui les utilisent :
+// relever les premières débloque le plus d'équipements.
 export function ressourcesARelever(items, catalogue) {
   const compte = new Map();
   for (const it of items) {

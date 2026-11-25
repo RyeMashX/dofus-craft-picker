@@ -68,7 +68,7 @@ export function renderAchats(ctx) {
   const nbFaits = achats.filter(fait).length;
   const perime = L.signature !== signaturePlan(plan);
   const ageH = (Date.now() - L.date) / 3600e3;
-  // STOP : avec les relevés faits depuis (captures pendant l'achat), un item du plan n'est plus rentable.
+  // STOP : avec les relevés faits depuis (captures pendant l'achat), un équipement du plan n'est plus rentable.
   // Ses ressources qui ne servent qu'à lui sont suspendues.
   const p = ctx.params();
   const stops = L.terminee ? [] : itemsStop(ev, p).filter(l => L.crafts.some(c => c.id === l.id));
@@ -136,7 +136,7 @@ export function renderAchats(ctx) {
       <div class="ac">${g.lignes.map(ligne).join('')}</div></div>`;
   }).join('');
 
-  // À crafter avant les items : une ligne par ressource craftée, détail = composants et économie
+  // À crafter avant les équipements : une ligne par ressource craftée, détail = composants et économie
   const sc = L.sousCrafts ?? [];
   const faitC = s => !!coches[`c${s.id}`];
   const ligneC = s => {
@@ -166,7 +166,7 @@ export function renderAchats(ctx) {
   const nonCoches = achats.length - nbFaits;
   const finHtml = L.terminee
     ? `<div class="fin-achats ok-bloc"><b>Achats terminés le ${dateCourte(L.terminee.date)}</b><span class="muted small">Dépensé ${fmtK(L.terminee.reel)} pour ${fmtK(L.terminee.estime)} estimés (${L.terminee.reel >= L.terminee.estime ? '+' : ''}${ctx.pct(L.terminee.reel / L.terminee.estime - 1)}). ${L.terminee.exemplaires} exemplaires en draft dans Ventes.</span></div>`
-    : `<div class="fin-achats"><div><b>Terminer les achats</b><span class="muted small">Dépense réelle : le coût de craft de chaque item est corrigé au prorata, puis ses exemplaires passent en draft dans Ventes.${nonCoches ? ` ${nonCoches} ligne${nonCoches > 1 ? 's' : ''} non cochée${nonCoches > 1 ? 's' : ''}.` : ''}</span></div>
+    : `<div class="fin-achats"><div><b>Terminer les achats</b><span class="muted small">Dépense réelle : le coût de craft de chaque équipement est corrigé au prorata, puis ses exemplaires passent en draft dans Ventes.${nonCoches ? ` ${nonCoches} ligne${nonCoches > 1 ? 's' : ''} non cochée${nonCoches > 1 ? 's' : ''}.` : ''}</span></div>
         <div class="row"><input id="ac-reel" class="num milliers" inputmode="numeric" placeholder="${fmt(Math.round(estCoches || total))}"><button id="ac-fin" class="primary small">Terminer</button></div></div>`;
 
   $('#achats').innerHTML = `

@@ -2,7 +2,7 @@
 //
 // - Viable : item utilisable (aucune donnée orange ou noire), non exclu, rendement ≥ 15 % (« acceptable »).
 //   « Cible » au-delà de 25 %.
-// - Recommandation : répartition du budget sur les items cibles, ni exclus ni en vente.
+// - Recommandation : répartition du budget sur les équipements cibles, ni exclus ni en vente.
 //   L'effort (coût fictif par craft) sert UNIQUEMENT à départager : il n'entre pas dans la marge affichée.
 // - Confiance : affichée seulement, elle ne modifie aucun chiffre.
 // - Plan : { [itemId]: nombre de crafts }. Les ressources de tous les crafts sont achetées ensemble :
@@ -49,7 +49,7 @@ export function offresToutes(base) {
   return Object.fromEntries(Object.entries(base.ressources).filter(([, r]) => r.lots && !estIndispo(r)).map(([id, r]) => [id, r.lots.valeurs]));
 }
 
-// Fiche d'un item pour le Craft (1 craft). raison = pourquoi il n'est pas viable (null s'il l'est).
+// Fiche d'un équipement pour le Craft (1 craft). raison = pourquoi il n'est pas viable (null s'il l'est).
 export function ficheItem(it, catalogue, base, p, offres, maintenant = Date.now()) {
   const b = base.items[it.id] ?? {};
   const etat = etatItem(it, base, maintenant);
@@ -77,7 +77,7 @@ export function ficheItem(it, catalogue, base, p, offres, maintenant = Date.now(
 }
 
 // Confirmation avant achat : tout ce que le plan de craft utilise doit être bleu (relevé de moins d'une heure) :
-// le prix de vente de chaque item et les lots de ses ressources. Une ressource craftable pas bleue fait relever son
+// le prix de vente de chaque équipement et les lots de ses ressources. Une ressource craftable pas bleue fait relever son
 // prix d'achat et ses composants pas bleus. Le volume de ventes n'est pas redemandé (il ne bouge pas en une heure).
 export function tachesConfirmation(plan, catalogue, base, maintenant = Date.now()) {
   const taches = [], vus = new Set();
@@ -104,7 +104,7 @@ export function risquees(craft) {
     .sort((a, b) => b.enJeu - a.enJeu);
 }
 
-// Ce qui n'est pas vert dans les données d'un item (détail de la confiance) : ['prix de vente jaune', 'Étoffe jaune', …]
+// Ce qui n'est pas vert dans les données d'un équipement (détail de la confiance) : ['prix de vente jaune', 'Étoffe jaune', …]
 export function aVerifier(it, catalogue, base, maintenant = Date.now()) {
   const b = base.items[it.id], out = [];
   const nv = niveauVolume(b, maintenant), np = niveauPrixItem(b, maintenant);
@@ -130,7 +130,7 @@ export function viables(catalogue, base, p, maintenant = Date.now()) {
   return { liste, offres };
 }
 
-// Coût de craft estimé d'un item d'après la base (pour une vente ajoutée par OCR)
+// Coût de craft estimé d'un équipement d'après la base (pour une vente ajoutée par OCR)
 export function coutEstime(catalogue, base, p, id) {
   const it = catalogue.items.find(i => i.id === Number(id));
   if (!it) return null;
@@ -189,8 +189,8 @@ export function recommanderDansBudget(liste, offres, budget, p, catalogue, base)
   return plan;
 }
 
-// Évaluation d'un plan { [id]: n } : lignes par item (chiffres réels) et totaux avec achats consolidés.
-// Un item du plan qui n'est plus viable reste dans le plan, évalué avec les données disponibles, et signalé (raison).
+// Évaluation d'un plan { [id]: n } : lignes par équipement (chiffres réels) et totaux avec achats consolidés.
+// Un équipement du plan qui n'est plus viable reste dans le plan, évalué avec les données disponibles, et signalé (raison).
 export function evaluerPlan(plan, liste, offres, catalogue, p, base = null) {
   const parId = new Map(liste.map(v => [v.id, v]));
   const toutes = base ? { ...offresToutes(base), ...offres } : offres;

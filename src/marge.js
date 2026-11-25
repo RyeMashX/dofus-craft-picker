@@ -1,7 +1,7 @@
 import { coutCraft } from './craft.js';
 
 // Prix de vente visé à partir des prix des annonces en vente (liste "Lot / Prix" de l'HDV).
-// On ne se fie pas au prix moyen : un item peut valoir 5 fois plus avec un exo.
+// On ne se fie pas au prix moyen : un équipement peut valoir 5 fois plus avec un exo.
 // mode 'min'  : annonce la moins chère − decote
 // mode 'moy3' : moyenne des 3 moins chères − decote
 // (V2 : ne garder que les annonces avec jet correct)
@@ -15,12 +15,12 @@ export function prixVenteEstime(prix, p) {
   return { min, moy3, estime: Math.round(ref) - p.decoteVente };
 }
 
-// Nombre max de crafts d'un même item : 1 jour de vente.
+// Nombre max de crafts d'un même équipement : 1 jour de vente.
 export function maxCrafts(volumeMois, p) {
   return Math.max(0, Math.floor(volumeMois / p.joursParMois));
 }
 
-// Évalue n crafts d'un item.
+// Évalue n crafts d'un équipement.
 // item = { id, nom, niveau, volumeMois, prixVente, coutFm, recette }
 export function evaluerItem(item, offres, p, n = 1) {
   const craft = coutCraft(item.recette, offres, n, p);

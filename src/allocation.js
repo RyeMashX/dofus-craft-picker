@@ -1,7 +1,7 @@
 import { evaluerItem, maxCrafts } from './marge.js';
 
 // Répartition d'un budget entre items.
-// Pour chaque item on peut faire 0..maxCrafts crafts. On maximise :
+// Pour chaque équipement on peut faire 0..maxCrafts crafts. On maximise :
 //     score = marge totale − coutEffortParCraft × nombre total de crafts
 // sous la contrainte capital total ≤ budget. Le budget n'a pas à être dépensé en entier.
 // Résolution exacte par sac à dos "par groupes" sur un budget découpé en pas de `pasBudget`.
@@ -19,7 +19,7 @@ export function optionsItem(item, offres, p) {
 
 export function allouer(items, offres, budget, p) {
   const nbPas = Math.max(0, Math.floor(budget / p.pasBudget));
-  // dp[b] = meilleur score avec au plus b pas de budget ; pour chaque item, l'option retenue à chaque b
+  // dp[b] = meilleur score avec au plus b pas de budget ; pour chaque équipement, l'option retenue à chaque b
   // (on remonte ensuite ces choix au lieu de recopier des listes à chaque case : beaucoup plus rapide)
   let dp = new Float64Array(nbPas + 1);
   const etapes = [];

@@ -3,7 +3,7 @@
 import { calculerPlan, organiser, tacheFaite } from './plan.js';
 import { venduALUnite } from './catalogue.js';
 
-const LIB = { volume: 'Courbe', prixItem: 'Annonces', ressource: 'Lots' };
+const LIB = { volume: 'Volume', prixItem: 'Prix', ressource: 'Prix' };
 const MODE = { volume: 'courbe', prixItem: 'annonces', ressource: 'lots' };
 // une ressource vendue à l'unité (équipement dans une recette) se scanne comme des annonces
 const modeTache = (kind, id, catalogue) => kind === 'ressource' && venduALUnite(catalogue.ressources[id], catalogue) ? 'annonces' : MODE[kind];
@@ -44,8 +44,8 @@ function renderPreparation(ctx) {
     <div class="row"><label class="sel">J'ai <input id="minutes" type="number" min="1" step="1" class="num" value="${S.etat.minutes}"> minutes</label></div>
     <div class="kpis">
       <div class="kpi"><div class="v">${pl.taches.length}</div><div class="l">scans, ≈ ${Math.ceil(pl.secondes / 60)} min</div></div>
-      <div class="kpi"><div class="v ok">${pl.pretsApres}</div><div class="l">items prêts après (${pl.pretsAvant} maintenant)</div></div>
-      <div class="kpi"><div class="v">${nb('craft')} / ${nb('entretien')} / ${nb('veille')}</div><div class="l" title="Veille : prix des équipements sous le seuil de volume, ressources des seuls items non vendables, items exclus">craft / entretien / veille</div></div>
+      <div class="kpi"><div class="v ok">${pl.pretsApres}</div><div class="l">équipements prêts après (${pl.pretsAvant} maintenant)</div></div>
+      <div class="kpi"><div class="v">${nb('craft')} / ${nb('entretien')} / ${nb('veille')}</div><div class="l" title="Veille : prix des équipements sous le seuil de volume, ressources des seuls équipements non vendables, équipements exclus">craft / entretien / veille</div></div>
     </div>
     <p class="small muted">${parKind('volume')} courbes, ${parKind('prixItem')} annonces, ${parKind('ressource')} lots de ressources.
       Durée retenue : ${ts.volume} s par courbe (${src('volume')}), ${ts.prixItem} s par annonce (${src('prixItem')}), ${ts.ressource} s par ressource (${src('ressource')}).</p>
@@ -108,7 +108,7 @@ function renderDeroule(ctx) {
   const ligneHtml = l => `<tr class="${l.fait ? 'fini' : ''}">
       <td>${ctx.boutonCopier(l.nom, l.kinds[0] === 'ressource' && venduALUnite(S.catalogue.ressources[l.id], S.catalogue) ? 'prixItem' : l.kinds[0])}</td><td>${icone(l.iconId)}</td>
       <td class="nom" title="${esc(l.nom)}">${esc(l.nom)}</td>
-      <td class="r">${l.kinds.map((k, i) => `<span class="bd${l.faits[i] ? ' fait' : ''}">${l.faits[i] ? '✓ ' : ''}${k === 'ressource' && venduALUnite(S.catalogue.ressources[l.id], S.catalogue) ? LIB.prixItem : LIB[k]}</span>`).join(' ')}</td></tr>`;
+      <td class="r">${l.kinds.map((k, i) => `<span class="bd${l.faits[i] ? ' fait' : ''}">${l.faits[i] ? '✓ ' : ''}${LIB[k]}</span>`).join(' ')}</td></tr>`;
 
   const groupeHtml = (h, g) => {
     const k = cleGroupe(h, g), gFait = etatGroupes.get(k), estOuvert = k === ouvert;

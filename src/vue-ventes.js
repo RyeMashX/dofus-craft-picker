@@ -1,8 +1,8 @@
 // Onglet Ventes : une ligne par exemplaire en vente (draft ou validé), prix et coûts modifiables, marge calculée.
 // Relevé OCR de l'onglet « Vente » de l'HDV directement depuis cet onglet :
 // - item absent de la liste → ligne « validée » (prix lu, coût de craft estimé d'après la base) ;
-// - même item au même prix → même annonce, rien à faire ;
-// - même item à un autre prix → tu choisis : fusionner avec une ligne existante ou créer une ligne.
+// - même équipement au même prix → même annonce, rien à faire ;
+// - même équipement à un autre prix → tu choisis : fusionner avec une ligne existante ou créer une ligne.
 // « Vendu » sort la ligne de la liste : elle passe dans l'onglet Bilan.
 
 import { supprimerChangement, historiquePrix, ecartPrix, actives, marge, rendement, majLigne, changerPrix, supprimerLigne, marquerVendu, importerCapture, fusionner, nouvelleLigne, trouverLigne } from './ventes.js';
@@ -80,7 +80,7 @@ function carteReleve(ctx) {
   }).join('');
   return `<div class="lect"><div class="row"><h3>Relevé de mes ventes</h3><span class="muted small">${R.captures} capture${R.captures > 1 ? 's' : ''}</span><div class="spacer"></div><button id="rv-fin" class="link small">fermer</button></div>
     <p class="small"><b class="ok">${R.ajoutees}</b> ajoutées · ${R.connues} déjà connues${R.ignorees ? ` · ${R.ignorees} hors catalogue` : ''}${R.total ? ` · ${R.total} lots en vente au total à l'HDV` : ''}</p>
-    ${R.aTrancher.length ? `<p class="small warn">Même item, prix différent : c'est une annonce déjà suivie (prix modifié) ou un exemplaire de plus ?</p>${trancher}` : ''}
+    ${R.aTrancher.length ? `<p class="small warn">Même équipement, prix différent : c'est une annonce déjà suivie (prix modifié) ou un exemplaire de plus ?</p>${trancher}` : ''}
     <p class="muted small">Fais défiler ta liste à l'HDV et scanne l'écran suivant : une annonce vue deux fois n'est comptée qu'une fois.</p></div>`;
 }
 
@@ -147,7 +147,7 @@ export function renderVentes(ctx) {
       <span class="spacer"></span>
       <button id="vt-plus" class="regen${S.vtAjout ? ' on' : ''}" title="Ajouter un exemplaire à la main (en draft)"><svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
     ${carteReleve(ctx)}
-    ${S.vtAjout ? '<div class="ac vt-ajout"><input id="vt-nom" placeholder="Nom de l\'item à ajouter…" autocomplete="off" spellcheck="false"><div id="vt-ac" class="ac-liste hidden"></div></div>' : ''}
+    ${S.vtAjout ? '<div class="ac vt-ajout"><input id="vt-nom" placeholder="Nom de l\'équipement à ajouter…" autocomplete="off" spellcheck="false"><div id="vt-ac" class="ac-liste hidden"></div></div>' : ''}
     ${toutes.length ? `<div class="vt-filtres">
       <input id="vt-q" type="search" placeholder="Filtrer par nom…" value="${esc(F.q ?? '')}" autocomplete="off" spellcheck="false">
       <div id="vt-statut" class="seg small">${[['tous', 'tous'], ['draft', 'draft'], ['valide', 'validé']].map(([k, l]) => `<button data-st="${k}" class="${F.statut === k ? 'on' : ''}">${l}</button>`).join('')}</div>
@@ -156,7 +156,7 @@ export function renderVentes(ctx) {
       ${filtre ? '<button id="vt-raz" class="link small">tout afficher</button>' : ''}
     </div>` : ''}
     ${lignes.length ? `<div class="cp">${lignes.map(ligne).join('')}</div>` : toutes.length ? '<p class="muted small">Aucune ligne pour ces filtres.</p>' : '<p class="muted small">Rien en vente. Mets des crafts en vente depuis l\'onglet Craft, scanne ta liste à l\'HDV ou ajoute-les à la main avec « + ».</p>'}
-    <p class="muted small">Marge = prix − craft − mise en vente − FM. Mise en vente : 2 % du prix, recalculés tant que la ligne est en draft, figés une fois validée ; « Prix modifié » ajoute 1 % du nouveau prix. Les lignes venues du Craft sont en « draft » : vérifie leurs chiffres puis passe-les en « validé ». Un item en vente n'est pas proposé dans le plan de craft.</p>`;
+    <p class="muted small">Marge = prix − craft − mise en vente − FM. Mise en vente : 2 % du prix, recalculés tant que la ligne est en draft, figés une fois validée ; « Prix modifié » ajoute 1 % du nouveau prix. Les lignes venues du Craft sont en « draft » : vérifie leurs chiffres puis passe-les en « validé ». Un équipement en vente n'est pas proposé dans le plan de craft.</p>`;
 
   const p = ctx.params(), coutDe = id => coutEstime(S.catalogue, S.base, p, id);
   const R = S.releveVentes;

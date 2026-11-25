@@ -76,10 +76,10 @@ const enPixels = (z, f) => ({ x: z.x * f.width, y: z.y * f.height, w: z.w * f.wi
 
 // Ce que l'on scanne → écran à lire et zone où regarder
 export const MODES = {
-  courbe: { ecran: 'courbe', zone: 'courbe', libelle: 'Courbe 30 j (volume)' },
-  annonces: { ecran: 'detail', zone: 'detail', libelle: "Annonces d'un item (prix)" },
-  lots: { ecran: 'detail', zone: 'detail', libelle: "Lots d'une ressource" },
-  liste: { ecran: 'liste', zone: 'liste', libelle: 'Liste HDV (prix moyens)' },
+  annonces: { ecran: 'detail', zone: 'detail', libelle: 'Prix équipement' },
+  lots: { ecran: 'detail', zone: 'detail', libelle: 'Prix ressource' },
+  courbe: { ecran: 'courbe', zone: 'courbe', libelle: 'Volume équipement' },
+  liste: { ecran: 'liste', zone: 'liste', libelle: 'Prix moyens (liste HDV)' },
   ventes: { ecran: 'ventes', zone: 'ventes', libelle: 'Mes ventes (onglet Vente)' },
 };
 

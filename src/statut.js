@@ -3,8 +3,8 @@
 // base.exclus  = { [itemId]: { jusquau: timestamp | null, date } }   null = exclusion permanente
 //
 // Règles :
-// - un item exclu disparaît du plan de scan, des recommandations et de la liste des crafts viables ;
-// - un item avec au moins 1 lot en vente n'est pas proposé dans le plan de craft
+// - un équipement exclu disparaît du plan de scan, des recommandations et de la liste des crafts viables ;
+// - un équipement avec au moins 1 lot en vente n'est pas proposé dans le plan de craft
 //   (ni dans la préparation craft du plan de scan), mais reste visible.
 
 import { JOUR } from './base.js';

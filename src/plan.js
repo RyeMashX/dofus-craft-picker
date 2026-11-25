@@ -1,11 +1,11 @@
 // Plan de scan : quoi rafraîchir dans le temps disponible.
 //
 // Budget = minutes × 60 s, chaque scan a une durée (tempsScan, mesurée à l'usage).
-//   1. Préparer le craft (70 % par défaut) : on complète des dossiers d'items pour qu'ils soient « prêts »,
-//      en prenant à chaque fois l'item qui rapporte le plus par seconde de scan restante
+//   1. Préparer le craft (70 % par défaut) : on complète des dossiers d'équipements pour qu'ils soient « prêts »,
+//      en prenant à chaque fois l'équipement qui rapporte le plus par seconde de scan restante
 //      (valeur = marge estimée × ventes par jour ; les ressources partagées ne comptent qu'une fois).
 //   2. Veille (10 % par défaut) : ce que ni le craft ni l'entretien ne demandent jamais : prix des équipements sous
-//      le seuil de volume, ressources qui ne servent qu'à des items non vendables, volume et prix des items exclus.
+//      le seuil de volume, ressources qui ne servent qu'à des équipements non vendables, volume et prix des équipements exclus.
 //      Priorité aux règles habituelles : noir, rouge, orange, jaune, puis les vertes les plus anciennes.
 //   3. Entretien (le reste) : les données les plus anciennes du reste de la base, pondérées par leur importance ;
 //      noires, rouges, orange et jaunes d'abord, puis les vertes les plus anciennes quand il n'y a plus que du vert.
@@ -27,7 +27,7 @@ export const cleTache = t => `${t.kind}:${t.id}`;
 const poids = (niveau, date, seuils, maintenant) => niveau !== 'vert' ? POIDS_NIVEAU[niveau]
   : 0.6 * Math.min(1, Math.max(0, (maintenant - (date ?? maintenant)) / (seuils.jaune * JOUR)));
 
-// Tâches nécessaires pour qu'un item devienne prêt (sans celles déjà prévues)
+// Tâches nécessaires pour qu'un équipement devienne prêt (sans celles déjà prévues)
 // Une ressource craftable (alliage…) pas à jour : on relève son prix d'achat ET ses composants, pour comparer.
 const mauvais = n => n === 'noir' || n === 'rouge' || n === 'orange';
 function tachesPourPret(it, etat, base, maintenant = Date.now()) {
@@ -48,7 +48,7 @@ function tachesPourPret(it, etat, base, maintenant = Date.now()) {
   return t;
 }
 
-// Valeur d'un item pour le craft : marge estimée × ventes par jour (kamas / jour)
+// Valeur d'un équipement pour le craft : marge estimée × ventes par jour (kamas / jour)
 function valeurItem(it, base, p) {
   const vol = base.items[it.id]?.volume?.valeur;
   if (vol == null || vol < p.volumeMin) return 0;
@@ -60,7 +60,7 @@ function valeurItem(it, base, p) {
 // Importance d'une donnée pour l'entretien (≈ 0,3 à 1,3)
 function importances(focus, base, p) {
   const volJour = id => (base.items[id]?.volume?.valeur ?? 0) / p.joursParMois;
-  const demande = new Map(); // ressource → ventes/jour cumulées des items ≥ seuil qui l'utilisent
+  const demande = new Map(); // ressource → ventes/jour cumulées des équipements ≥ seuil qui l'utilisent
   for (const it of focus) {
     if ((base.items[it.id]?.volume?.valeur ?? 0) < p.volumeMin) continue;
     for (const r of ingredients(it.recette)) demande.set(r.id, (demande.get(r.id) ?? 0) + volJour(it.id));
@@ -79,7 +79,7 @@ function importances(focus, base, p) {
 }
 
 export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(), partCraft = p.partCraft ?? 0.7, partVeille = p.partVeille ?? 0.1) {
-  // un item exclu (liste noire) sort du craft et de l'entretien (il reste suivi par la veille)
+  // un équipement exclu (liste noire) sort du craft et de l'entretien (il reste suivi par la veille)
   const tous = itemsFocus(catalogue, p);
   const focus = tous.filter(it => !estExclu(base, it.id, maintenant));
   const temps = t => p.tempsScan[t.kind === 'ressource' ? 'ressource' : t.kind];
@@ -92,7 +92,7 @@ export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(
   const etats = new Map(focus.map(it => [it.id, etatItem(it, base, maintenant)]));
   const candidats = focus
     .map(it => ({ it, valeur: valeurItem(it, base, p), taches: tachesPourPret(it, etats.get(it.id), base, maintenant) }))
-    // un item déjà en vente ne sera pas recrafté : inutile de préparer son dossier
+    // un équipement déjà en vente ne sera pas recrafté : inutile de préparer son dossier
     .filter(c => c.valeur > 0 && c.taches.length && !etats.get(c.it.id).pret && !estEnVente(base, c.it.id));
   const budgetCraft = budget * partCraft;
   const vises = [];
@@ -154,7 +154,7 @@ export function calculerPlan(catalogue, base, p, minutes, maintenant = Date.now(
     ingredients(it.recette).forEach(r => idsRes.add(r.id));
   }
   for (const id of idsRes) {
-    if (!imp.demande.has(id)) continue; // ressource d'aucun item vendable
+    if (!imp.demande.has(id)) continue; // ressource d'aucun équipement vendable
     const nr = niveauRessource(base.ressources[id], maintenant);
     ent.push({ kind: 'ressource', id, score: poids(nr, base.ressources[id]?.lots?.date, FRAICHEUR.ressource, maintenant) * imp.ressource(id) });
   }

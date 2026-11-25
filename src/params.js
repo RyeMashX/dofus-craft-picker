@@ -11,7 +11,7 @@ export const PARAMS = {
   volumeMin: 60,            // ventes / mois minimum
   margeMin: 0.25,           // rendement « cible » = marge / coût du craft
   margeAcceptable: 0.15,    // rendement « acceptable » : listé dans les crafts viables, ajout manuel possible
-  joursParMois: 30,         // max de crafts d'un même item = volume / 30 (1 jour de vente)
+  joursParMois: 30,         // max de crafts d'un même équipement = volume / 30 (1 jour de vente)
 
   // Achat des ressources par lots (voir README, "Règle des lots")
   lotsCredibles: 20,        // coût standard : au plus 20 lots d'une même taille au prix affiché ; au-delà, pénurie possible
@@ -23,7 +23,7 @@ export const PARAMS = {
   gainMinSurplus: 0.20,     // on n'achète "trop" que si ça fait gagner au moins 20 %
 
   // Périmètre et fraîcheur des relevés
-  focusNiveaux: [200, 200], // on commence par les items niveau 200
+  focusNiveaux: [200, 200], // on commence par les équipements niveau 200
   metiers: {                // niveaux de métier du joueur
     Bijoutier: 200, Cordonnier: 200, Tailleur: 200, Sculpteur: 200, 'Façonneur': 200, Forgeron: 200,
   },
@@ -37,7 +37,7 @@ export const PARAMS = {
   // Plan de scan
   tempsScan: { volume: 15, prixItem: 15, ressource: 10 }, // secondes par capture (à calibrer)
   seuilsPriorite: { urgent: 1.2, aFaire: 0.8 },           // score ≥ urgent → "urgent", ≥ aFaire → "à faire", sinon "plus tard"
-  demandeRef: 3,            // une ressource utile à ~3 items prometteurs a le poids maximal
+  demandeRef: 3,            // une ressource utile à ~3 équipements prometteurs a le poids maximal
 
   // FM et effort
   inclureFm: true,          // la marge déduit la FM estimée (moyenne des ventes : voir coutFmEstime dans ventes.js)

@@ -25,7 +25,7 @@ function lignesEquipements(S, p) {
       vendus: b.volume?.valeur ?? null, nVol: e.volume,
       prixMin: b.prix?.valeurs[0] ?? null, prix: b.prix?.valeurs ?? [], nPrix: e.prix, aucune: aucuneAnnonce(b),
       prixMoyen: b.prixMoyen?.valeur ?? null,
-      cout: est.cout, rendement: est.rendement, precision: est.precision,
+      cout: est.cout, fm: est.fm, rendement: est.rendement, precision: est.precision,
       resVertes: e.compte.vert, resTotal: it.recette.length, compte: e.compte,
       etat: e.pret ? 'prêt' : e.utilisable ? 'utilisable' : '',
       exclu: exclusion(S.base, it.id), enVente: lotsEnVente(S.base, it.id),
@@ -144,7 +144,7 @@ export function renderDonnees(ctx) {
   const rendEq = x => ({
     nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>`, categorie: esc(x.categorie), niveau: x.niveau,
     vendus: `${fmt(x.vendus)} ${pastille(x.nVol)}`, prixMin: `${x.aucune ? '<span class="muted small" title="Aucun exemplaire en vente au dernier relevé">aucun</span>' : fmtK(x.prixMin)} ${pastille(affiche(x.nPrix, bleuPrixItem(S.base.items[x.id])))}`, prixMoyen: fmtK(x.prixMoyen),
-    cout: fmtK(x.cout), rendement: x.rendement == null ? '–' : `<span class="${x.rendement >= p.margeMin ? 'ok' : x.rendement < 0 ? 'bad' : ''}">${pct(x.rendement)}</span>`,
+    cout: fmtK(x.cout), rendement: x.rendement == null ? '–' : `<span class="${x.rendement >= p.margeMin ? 'ok' : x.rendement < 0 ? 'bad' : ''}"${x.fm ? ` title="FM estimée comprise : ${fmtK(x.fm)}"` : ''}>${pct(x.rendement)}</span>`,
     resVertes: `<span title="${x.compte.vert} vertes, ${x.compte.jaune} jaunes, ${x.compte.orange} orange, ${x.compte.rouge} introuvables, ${x.compte.noir} sans info">${x.resVertes}/${x.resTotal}</span> ${pastille(x.compte.noir ? 'noir' : x.compte.rouge ? 'rouge' : x.compte.orange ? 'orange' : x.compte.jaune ? 'jaune' : 'vert')}`,
     mesVentes: x.mesVentes ? `<span title="Exemplaires vendus (onglet Bilan)">${x.mesVentes}</span>` : '<span class="muted">–</span>',
     // un seul statut, par ordre de priorité : exclu, en vente, prêt, utilisable
@@ -194,7 +194,7 @@ export function renderDonnees(ctx) {
     <div class="row small">
       <select id="don-cat" class="small"><option value="">toutes catégories</option>${cats.map(c => `<option${c === D.cat ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
       <select id="don-etat" class="small">${optEtat.map(([v, l]) => `<option value="${v}"${v === D.etat ? ' selected' : ''}>${l}</option>`).join('')}</select>
-      <label class="sel"><input id="don-vend" type="checkbox"${D.vendables ? ' checked' : ''}> ${onglet === 'equipements' ? `${p.volumeMin} ventes ou plus` : 'utiles (items vendables)'}</label>
+      <label class="sel"><input id="don-vend" type="checkbox"${D.vendables ? ' checked' : ''}> ${onglet === 'equipements' ? `${p.volumeMin} ventes ou plus` : 'utiles (équipements vendables)'}</label>
       <div class="spacer"></div><span class="muted">${rows.length} lignes</span>
     </div>
     <div class="table-large"><table class="rt don"><thead><tr>${cols.map(c => `<th class="sort${c.r ? ' r' : ''}${c.cle === cle ? ' on' : ''}" data-cle="${c.cle}">${c.t} <span class="fl">${c.cle === cle ? (sens > 0 ? '▴' : '▾') : '↕'}</span></th>`).join('')}</tr></thead>
@@ -204,7 +204,7 @@ export function renderDonnees(ctx) {
         ${ouvert ? `<tr class="detail"><td colspan="${cols.length}">${detail(x)}</td></tr>` : ''}`;
     }).join('')}</tbody></table></div>
     ${rows.length > D.n ? `<p class="small"><button id="don-plus" class="link small">afficher 100 de plus</button></p>` : ''}
-    <p class="muted small">Clic sur un nom : ${onglet === 'equipements' ? 'la recette' : 'les items qui l\'utilisent'}. Clic sur une valeur soulignée : modification.</p>`;
+    <p class="muted small">Clic sur un nom : ${onglet === 'equipements' ? 'la recette' : 'les équipements qui l\'utilisent'}. Clic sur une valeur soulignée : modification.</p>`;
 
   // ---- événements ----
   const set = (k, v) => { D[k] = v; ctx.sauverEtat(); ctx.renderTout(); };

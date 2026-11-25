@@ -222,14 +222,14 @@ function formulaire(L) {
   }
   const tries = [...r.annonces].filter(a => a.prix).sort((a, b) => a.prix - b.prix);
   return lignesEdition(Array.from({ length: NB_PRIX }, (_, i) => [`${i + 1}.`, `data-i="${i}" data-champ="prix"`, tries[i]?.prix ?? null, tries[i] && !tries[i].sur]))
-    + `<div class="row"><button id="lect-indispo" class="secondary small" title="Aucun exemplaire en vente : le prix de vente visé sera le prix moyen">Aucun item en vente</button></div>`;
+    + `<div class="row"><button id="lect-indispo" class="secondary small" title="Aucun exemplaire en vente : le prix de vente visé sera le prix moyen">Aucun équipement en vente</button></div>`;
 }
 
-const TITRES = { courbe: 'Courbe 30 j', liste: 'Liste HDV' };
+const TITRES = { courbe: 'Volume', liste: 'Prix moyens' };
 function titreLecture(L) {
   const r = L.identifie;
-  if (L.type === 'liste') return `Liste HDV · ${r.filter(x => !x.inconnu && !x.retire).length} prix moyens`;
-  const genre = L.type === 'courbe' ? TITRES.courbe : r.objet?.genre === 'ressource' && !r.objet.unite ? 'Lots' : 'Annonces';
+  if (L.type === 'liste') return `Prix moyens · ${r.filter(x => !x.inconnu && !x.retire).length} prix moyens`;
+  const genre = L.type === 'courbe' ? TITRES.courbe : 'Prix';
   return `${genre} · ${r.objet ? esc(r.objet.nom) : 'objet non reconnu'}`;
 }
 
@@ -268,7 +268,7 @@ const CHAMPS_SAISIE = {
 function candidatsSaisie(mode) {
   const items = S.catalogue.items.map(i => ({ id: i.id, nom: i.nom, niveau: i.niveau, genre: 'item', info: `${i.niveau} · ${i.type}` }));
   const res = Object.values(S.catalogue.ressources).map(r => ({ id: r.id, nom: r.nom, niveau: r.niveau, genre: 'ressource', info: `${r.niveau} · ressource`, ...(venduALUnite(r, S.catalogue) ? { unite: true, info: `${r.niveau} · ${r.type}, pour un craft` } : {}) }));
-  // équipements utilisés comme ressources : saisis comme des annonces d'item
+  // équipements utilisés comme ressources : saisis comme des annonces d'équipement
   return mode === 'lots' ? res.filter(r => !r.unite) : mode === 'liste' ? [...items, ...res] : [...items, ...res.filter(r => r.unite)];
 }
 
@@ -341,7 +341,7 @@ function renderSaisie() {
   const mode = S.etat.mode, sz = S.saisie;
   zone.innerHTML = `<div class="lect saisie"><div class="row"><h3>Saisie manuelle · ${esc(Cap.MODES[mode].libelle)}</h3><div class="spacer"></div>
       <button id="saisie-fermer" class="link small">fermer</button></div>
-    <div class="ac"><input id="saisie-nom" placeholder="${mode === 'lots' ? 'Nom de la ressource' : mode === 'liste' ? "Nom de l'item ou de la ressource" : "Nom de l'item"}" value="${esc(sz.nom)}" autocomplete="off" spellcheck="false">
+    <div class="ac"><input id="saisie-nom" placeholder="${mode === 'lots' ? 'Nom de la ressource' : mode === 'liste' ? "Nom de l'équipement ou de la ressource" : "Nom de l'équipement"}" value="${esc(sz.nom)}" autocomplete="off" spellcheck="false">
       <div id="ac-liste" class="ac-liste hidden"></div></div>
     ${mode === 'annonces'
       ? lignesEdition([0, 1, 2].map(i => [`${i + 1}.`, `data-saisie="p${i}"`, sz.valeurs['p' + i] ?? null]))
@@ -349,7 +349,7 @@ function renderSaisie() {
     ${sz.erreur ? `<p class="small bad">${esc(sz.erreur)}</p>` : ''}
     <div class="row"><button id="saisie-ok" class="primary small">Enregistrer</button>
       ${mode === 'lots' ? '<button id="saisie-indispo" class="secondary small" title="Aucun lot de cette ressource en vente : marquée introuvable (rouge), ses crafts ne sont plus proposés">Aucun lot disponible</button>'
-        : mode === 'annonces' ? '<button id="saisie-indispo" class="secondary small" title="Aucun exemplaire en vente : le prix de vente visé sera le prix moyen">Aucun item en vente</button>' : ''}</div></div>`;
+        : mode === 'annonces' ? '<button id="saisie-indispo" class="secondary small" title="Aucun exemplaire en vente : le prix de vente visé sera le prix moyen">Aucun équipement en vente</button>' : ''}</div></div>`;
   $('#saisie-fermer').onclick = () => { S.saisie = null; renderSaisie(); };
   $('#saisie-ok').onclick = enregistrerSaisie;
   const ind = $('#saisie-indispo');
@@ -500,13 +500,20 @@ function statut(msg) { const el = $('#scan-status'); if (el) el.textContent = ms
 
 // ---------- résultats ----------
 // ---------- base et réglages ----------
+// prix moyens (liste HDV) : seulement pour initialiser la base, activable dans les réglages
+function remplirModes() {
+  if (S.etat.mode === 'liste' && !S.etat.reglages?.modeListe) S.etat.mode = 'annonces';
+  $('#mode').innerHTML = Object.entries(Cap.MODES).filter(([k]) => k !== 'ventes' && (k !== 'liste' || S.etat.reglages?.modeListe)).map(([k, m]) => `<option value="${k}">${m.libelle}</option>`).join('');
+  $('#mode').value = S.etat.mode;
+}
+
 function renderBase(cat, p) {
   const items = Object.values(S.base.items), res = Object.values(S.base.ressources);
   $('#base-stats').innerHTML = `<div class="kpis">
     <div class="kpi"><div class="v">${items.filter(i => i.volume).length}</div><div class="l">volumes</div></div>
-    <div class="kpi"><div class="v">${items.filter(i => i.prix).length}</div><div class="l">annonces d'items</div></div>
+    <div class="kpi"><div class="v">${items.filter(i => i.prix).length}</div><div class="l">annonces d'équipements</div></div>
     <div class="kpi"><div class="v">${res.filter(r => r.lots).length}</div><div class="l">lots de ressources</div></div>
-  </div><p class="muted small">Catalogue DofusDB du ${cat.genereLe} · ${itemsFocus(cat, p).length} items dans le focus. La base est conservée dans ce navigateur : exporte-la de temps en temps.</p>`;
+  </div><p class="muted small">Catalogue DofusDB du ${cat.genereLe} · ${itemsFocus(cat, p).length} équipements dans le focus. La base est conservée dans ce navigateur : exporte-la de temps en temps.</p>`;
 
   const r = S.etat.reglages;
   $('#reglages').innerHTML = `
@@ -520,8 +527,13 @@ function renderBase(cat, p) {
     <span>Lots : nombre crédible d'une même taille au prix affiché</span><input class="num" data-reg="lotsCredibles" value="${r.lotsCredibles}">
     <span>Lots : hausse par lot acheté, scénario pessimiste (%)</span><input class="num" data-reg="hausseParLot" value="${r.hausseParLot}">
     <span>Lots : plafond de la hausse (× prix affiché)</span><input class="num" data-reg="plafondHausse" value="${r.plafondHausse}">
-    <span>Coût retenu : part de l'écart vers le pessimiste (%)</span><input class="num" data-reg="partPessimiste" value="${r.partPessimiste}">`;
-  $$('#reglages [data-reg]').forEach(el => el.onchange = () => { S.etat.reglages[el.dataset.reg] = el.value; sauverEtat(); renderTout(); });
+    <span>Coût retenu : part de l'écart vers le pessimiste (%)</span><input class="num" data-reg="partPessimiste" value="${r.partPessimiste}">
+    <span title="Lecture de la liste HDV (colonne prix moyen) : sert à initialiser la base">Proposer « Prix moyens » dans Je scanne</span><input type="checkbox" data-reg="modeListe"${r.modeListe ? ' checked' : ''}>`;
+  $$('#reglages [data-reg]').forEach(el => el.onchange = () => {
+    S.etat.reglages[el.dataset.reg] = el.type === 'checkbox' ? el.checked : el.value;
+    if (el.dataset.reg === 'modeListe') { if (!el.checked && S.etat.mode === 'liste') S.etat.mode = 'annonces'; remplirModes(); }
+    sauverEtat(); renderTout();
+  });
 }
 
 // Contexte passé aux vues (vue-plan.js, vue-donnees.js)
@@ -593,8 +605,8 @@ async function scanner() {
       if (L.type !== 'liste' && !o) L.alerte = 'Objet non reconnu : rien n\'a été enregistré.';
       else if (L.type === 'courbe' && !L.identifie.trenteJours) L.alerte = 'Onglet 30 jours non détecté : rien n\'a été enregistré. Passe sur l\'onglet 30 jours et relance, ou corrige à la main.';
       else {
-        if (mode === 'lots' && o?.genre === 'item') L.alerte = 'Mode « lots de ressource » mais l\'objet est un équipement : enregistré comme annonces.';
-        if (mode === 'annonces' && o?.genre === 'ressource' && !o.unite) L.alerte = 'Mode « annonces d\'item » mais l\'objet est une ressource : enregistré comme lots.';
+        if (mode === 'lots' && o?.genre === 'item') L.alerte = 'Mode « Prix ressource » mais l\'objet est un équipement : enregistré comme prix d\'équipement.';
+        if (mode === 'annonces' && o?.genre === 'ressource' && !o.unite) L.alerte = 'Mode « Prix équipement » mais l\'objet est une ressource : enregistré comme prix de ressource.';
         L.messages = enregistrer(L);
         L.enregistre = L.messages.length > 0;
       }
@@ -664,8 +676,7 @@ function brancher() {
   $('#settings-back').onclick = () => { S.etat.vue = S.etat.vueAvantReglages ?? 'scan'; sauverEtat(); renderTout(); };
   $('#cap-start').onclick = basculerCapture;
   $('#scan').onclick = scanner;
-  $('#mode').innerHTML = Object.entries(Cap.MODES).filter(([k]) => k !== 'ventes').map(([k, m]) => `<option value="${k}">${m.libelle}</option>`).join('');
-  $('#mode').value = S.etat.mode;
+  remplirModes();
   $('#mode').onchange = e => { S.etat.mode = e.target.value; sauverEtat(); renderSaisie(); };
   $('#saisir').onclick = () => { ouvrirSaisie(); renderSaisie(); };
   $('#zones-btn').onclick = () => ouvrirZones();
