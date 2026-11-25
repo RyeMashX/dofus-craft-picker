@@ -95,6 +95,15 @@ for (const [f, nom, val, attendu] of [
   verifier('deux zones : courbe', [L.titre, L.vendus, L.trenteJours], ['Jugement de Thanatena', 81, true]);
 }
 
+// 2 quinquies. Nom de deux lettres (« Or ») : panneau entier, puis zone nom seule
+{
+  const img = lire('detail-lots-or.png');
+  const r = identifier('detail', await lireEcran('detail', img, plein(img), reconnaitre, { echelle: 2 }), catalogue);
+  verifier('Or : panneau entier', [r.objet?.nom, ...r.annonces.map(a => `${a.lot}:${a.prix}`)], ['Or', '1:135', '10:1399', '100:13000', '1000:139811']);
+  const z = identifier('detail', await lireEcran('detail', img, { nom: { x: 125, y: 76, w: 330, h: 30 }, valeur: { x: 85, y: 300, w: 345, h: 340 } }, reconnaitre, { echelle: 2 }), catalogue);
+  verifier('Or : deux zones', [z.objet?.nom, ...z.annonces.map(a => `${a.lot}:${a.prix}`)], ['Or', '1:135', '10:1399', '100:13000', '1000:139811']);
+}
+
 // 3. Courbe 30 jours
 {
   const img = lire('courbe-item.png');

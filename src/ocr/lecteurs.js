@@ -72,7 +72,15 @@ export function titreEtNiveau(lignes) {
   const i = lignes.findIndex(l => RE_NIVEAU.test(l.texte));
   if (i < 0) return { titre: null, niveau: null };
   const niveau = Number(lignes[i].texte.match(RE_NIVEAU)[1]);
-  // titre : première rangée au-dessus qui contient des lettres
+  // titre : le nom est aligné à gauche sur la ligne « Niv. » ; on prend la première rangée au-dessus dont les mots
+  // alignés ont des lettres (2 suffisent : « Or »), sans les restes d'icône à gauche
+  const niv = lignes[i], h = niv.bbox.y1 - niv.bbox.y0, x0 = (niv.mots.find(w => /niv/i.test(w.texte)) ?? niv.mots[0])?.bbox.x0 ?? niv.bbox.x0;
+  for (let k = i - 1; k >= 0; k--) {
+    const ms = (lignes[k].mots ?? []).filter(w => w.bbox.x0 >= x0 - 1.5 * h);
+    const t = lettres(ms.map(w => w.texte).join(' '));
+    if (ms.length && Math.abs(ms[0].bbox.x0 - x0) <= 1.5 * h && t.replace(/[^A-Za-zÀ-ÿ]/g, '').length >= 2) return { titre: t, niveau };
+  }
+  // repli : première rangée au-dessus avec au moins 3 lettres
   for (let k = i - 1; k >= 0; k--) {
     const t = lettres(lignes[k].texte);
     if (t.replace(/[^A-Za-zÀ-ÿ]/g, '').length >= 3) return { titre: t, niveau };
@@ -294,8 +302,8 @@ export async function lireNom(pre, reconnaitre) {
   const lignes = rangees(await reconnaitre(pre, {}));
   const t = titreEtNiveau(lignes);
   if (t.titre) return t;
-  // zone sans la ligne « Niv. » : le nom est la première ligne qui contient des lettres
-  const l = lignes.map(x => lettres(x.texte)).find(x => x.replace(/[^A-Za-zÀ-ÿ]/g, '').length >= 3);
+  // zone sans la ligne « Niv. » : le nom est la première ligne qui contient des lettres (2 suffisent : « Or »)
+  const l = lignes.filter(x => !RE_NIVEAU.test(x.texte)).map(x => lettres(x.texte)).find(x => x.replace(/[^A-Za-zÀ-ÿ]/g, '').length >= 2);
   return { titre: l ?? null, niveau: t.niveau };
 }
 

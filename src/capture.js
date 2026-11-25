@@ -101,7 +101,9 @@ export async function scanner(zones, mode, onProgres) {
     : l.length > 0;
   let lecture = await lireEcran(ecran, frame, px, rec), zoneLue = px;
   // deux zones qui ne donnent rien (panneau ailleurs ce coup-ci) : on relit le panneau entier
-  if (deux && !estUtile(lecture) && zones[zone]) { zoneLue = enPixels(zones[zone], frame); lecture = await lireEcran(ecran, frame, zoneLue, rec); }
+  // (mais si les prix ont été lus et seul le nom manque, on garde cette lecture : la saisie reprend les prix)
+  const prixLus = ecran === 'detail' ? lecture.annonces?.length > 0 : lecture.vendus != null;
+  if (deux && !estUtile(lecture) && !prixLus && zones[zone]) { zoneLue = enPixels(zones[zone], frame); lecture = await lireEcran(ecran, frame, zoneLue, rec); }
   dernier = { canvas, zone: zoneLue, texte: textes.join('\n---\n'), mode };
   const utile = estUtile(lecture);
   return { type: ecran, lecture, utile };
