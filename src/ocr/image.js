@@ -50,3 +50,28 @@ export function pretraiter(img, zone, { echelle = 2, seuil = 110, masquerJaune =
   }
   return { width: W, height: H, data };
 }
+
+// Marge blanche autour d'une image prétraitée (texte noir sur blanc) : tesseract lit mieux un texte qui ne touche pas le bord
+export function marge(img, m) {
+  const W = img.width + 2 * m, H = img.height + 2 * m;
+  const data = new Uint8ClampedArray(W * H * 4).fill(255);
+  for (let y = 0; y < img.height; y++) data.set(img.data.subarray(y * img.width * 4, (y + 1) * img.width * 4), ((y + m) * W + m) * 4);
+  return { width: W, height: H, data };
+}
+
+// Redimensionne une image prétraitée (noir et blanc) d'un facteur k, puis la reseuille
+export function redimensionner(img, k) {
+  const W = Math.max(1, Math.round(img.width * k)), H = Math.max(1, Math.round(img.height * k));
+  const data = new Uint8ClampedArray(W * H * 4);
+  const v = (x, y) => img.data[(y * img.width + x) * 4];
+  for (let Y = 0; Y < H; Y++) {
+    const sy = Math.min(img.height - 1, Math.max(0, (Y + 0.5) / k - 0.5)), y0 = Math.floor(sy), y1 = Math.min(img.height - 1, y0 + 1), fy = sy - y0;
+    for (let X = 0; X < W; X++) {
+      const sx = Math.min(img.width - 1, Math.max(0, (X + 0.5) / k - 0.5)), x0 = Math.floor(sx), x1 = Math.min(img.width - 1, x0 + 1), fx = sx - x0;
+      const g = v(x0, y0) * (1 - fx) * (1 - fy) + v(x1, y0) * fx * (1 - fy) + v(x0, y1) * (1 - fx) * fy + v(x1, y1) * fx * fy;
+      const o = g > 127 ? 255 : 0, i = (Y * W + X) * 4;
+      data[i] = data[i + 1] = data[i + 2] = o; data[i + 3] = 255;
+    }
+  }
+  return { width: W, height: H, data };
+}

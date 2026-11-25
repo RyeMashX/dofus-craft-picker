@@ -11,7 +11,7 @@
 // `reconnaitre(image, { chiffres })` est fourni par l'appelant (tesseract.js dans le
 // navigateur ou dans Node) et renvoie [{ texte, bbox: {x0,y0,x1,y1}, mots: [{ texte, bbox }] }].
 
-import { pretraiter, recadrer } from './image.js';
+import { pretraiter, recadrer, marge, redimensionner } from './image.js';
 
 // "112 999 999" → 112999999.
 // Les montants s'écrivent par groupes de 3 chiffres : on s'arrête au premier groupe incohérent
@@ -153,6 +153,25 @@ export function departager(annonces) {
   return annonces;
 }
 
+async function lireColonnes(pre, lignes, rangs, motLot, reconnaitre) {
+  const tete = lignes.find(l => l.mots.includes(motLot));
+  const hLot = motLot.bbox.y1 - motLot.bbox.y0;
+  const med = t => { t = t.filter(v => v != null).sort((a, b) => a - b); return t.length ? t[Math.floor(t.length / 2)] : null; };
+  // bord droit : juste avant le symbole kama (le mot entre le prix et ACHETER), sinon avant ACHETER
+  const kama = med(rangs.map(r => {
+    const m = r.ligne.mots, k = m.findIndex(w => /ACHETER/i.test(w.texte));
+    const avant = k > 0 ? m[k - 1] : null;
+    return avant && !/\d{3}/.test(avant.texte) ? avant.bbox.x0 : null;
+  }));
+  const xAch = med(rangs.map(r => r.xAcheter));
+  const x0 = Math.max(0, motLot.bbox.x0 - hLot), x1 = (kama ?? xAch ?? pre.width) - 4;
+  const pas = rangs.length > 1 ? (centre(rangs.at(-1).ligne.bbox) - centre(rangs[0].ligne.bbox)) / (rangs.length - 1) : 2 * hLot;
+  const y0 = tete ? tete.bbox.y1 + 2 : Math.max(0, rangs[0].ligne.bbox.y0 - pas / 2);
+  const y1 = Math.min(pre.height, rangs.at(-1).ligne.bbox.y1 + pas * 0.4);
+  if (x1 - x0 < 4 * hLot || y1 <= y0) return null;
+  return lireLots(marge(recadrer(pre, { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }), Math.round(hLot)), reconnaitre);
+}
+
 export async function lireDetail(pre, reconnaitre) {
   const lignes = rangees(await reconnaitre(pre, {}));
   const { titre, niveau } = titreEtNiveau(lignes);
@@ -187,7 +206,10 @@ export async function lireDetail(pre, reconnaitre) {
   });
 
   let annonces = [];
-  if (rangs.length) {
+  // d'abord : relecture des seules colonnes Lot et Prix, si on retrouve exactement les mêmes rangées
+  const auto = motLot && rangs.length ? await lireColonnes(pre, lignes, rangs, motLot, reconnaitre) : null;
+  if (auto && auto.length === rangs.length) annonces = auto;
+  else if (rangs.length) {
     const med = l => { const t = l.filter(v => v != null).sort((x, y) => x - y); return t.length ? t[Math.floor(t.length / 2)] : null; };
     const xLot = med(rangs.map(r => r.xLot));
     // seconde chance : un 1 / 10 / 100 seul, aligné sur la colonne Lot des autres rangées (prix illisible en première passe)
@@ -219,6 +241,50 @@ export async function lireDetail(pre, reconnaitre) {
     departager(annonces);
   }
   return { titre, niveau, prixMoyen: pm ? nombre(pm[1]).valeur : null, annonces };
+}
+
+// ---------- colonnes Lot et Prix seules ----------
+// Le panneau détail change de place et de hauteur selon le nombre d'annonces : pas de zone fixe. On repère
+// l'en-tête « Lot » et les boutons ACHETER sur la première lecture, puis on relit un rectangle qui ne contient
+// que les colonnes Lot et Prix (sans icône, sans symbole kama, sans ACHETER) : beaucoup moins de parasites.
+// Une rangée = une ligne avec des chiffres. Le lot est à gauche (premier ~45 % de la largeur), le prix à droite.
+// Tesseract confond parfois 9 et 3 selon la taille du texte : on lit la même image à trois tailles
+// (×1, ×1,5, ×0,75) et on vote, rangée par rangée. Sans majorité, l'ordre des prix départage (departager).
+// La dernière rangée, coupée par le bas de la zone (ou nettement plus basse que les autres), est ignorée.
+export async function lireLots(pre, reconnaitre) {
+  const coupe = 0.45 * pre.width;
+  const decouper = (lignes, k) => lignes.map(l => {
+    const mots = l.mots.filter(w => /\d/.test(w.texte));
+    const lotMots = mots.filter(w => w.bbox.x1 / k < coupe), prixMots = mots.filter(w => w.bbox.x0 / k >= coupe);
+    const lotTxt = lotMots.map(w => w.texte.replace(/\D/g, '')).join('');
+    const b = l.bbox;
+    return {
+      bbox: { x0: b.x0 / k, x1: b.x1 / k, y0: b.y0 / k, y1: b.y1 / k },
+      lot: /^(1|10|100|1000)$/.test(lotTxt) ? Number(lotTxt) : null,
+      prix: prixMots.map(w => w.texte.replace(/\D/g, '')).filter(Boolean).join(' '),
+    };
+  }).filter(r => r.prix);
+  const passes = [];
+  for (const k of [1, 1.5, 0.75]) passes.push(decouper(rangees(await reconnaitre(k === 1 ? pre : redimensionner(pre, k), { chiffres: true })), k));
+  const base = passes.reduce((a, b) => (b.length > a.length ? b : a));
+  if (!base.length) return [];
+  const hauteurs = base.map(r => r.bbox.y1 - r.bbox.y0).sort((a, b) => a - b), hMed = hauteurs[Math.floor(hauteurs.length / 2)];
+  const rangs = base.filter(r => r.bbox.y1 < pre.height - 2 && r.bbox.y1 - r.bbox.y0 > 0.6 * hMed);
+  const pas = rangs.length > 1 ? (centre(rangs.at(-1).bbox) - centre(rangs[0].bbox)) / (rangs.length - 1) : 100;
+  const vote = vals => {
+    const c = new Map(); for (const v of vals) if (v != null) c.set(v, (c.get(v) ?? 0) + 1);
+    return [...c.entries()].sort((a, b) => b[1] - a[1]);
+  };
+  const annonces = rangs.map(r => {
+    const lus = passes.map(ps => proche(ps, centre(r.bbox), pas / 3)).filter(Boolean);
+    const prix = lus.map(x => { const n = nombre(x.prix); return n && (n.valide || /^\d{4}( \d{3})+$/.test(x.prix)) ? n.valeur : null; });
+    const v = vote(prix), lots = vote(lus.map(x => x.lot));
+    const lot = lots[0]?.[0] ?? null;
+    if (!v.length) return { lot, prix: nombre(r.prix)?.valeur ?? null, sur: false, conflit: null };
+    if (v[0][1] >= 2 && (v.length === 1 || v[0][1] > v[1][1])) return { lot, prix: v[0][0], sur: true, conflit: null };
+    return { lot, prix: v[0][0], sur: false, conflit: v.map(x => x[0]) };
+  });
+  return departager(annonces);
 }
 
 // ---------- courbe 30 jours ----------

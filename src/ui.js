@@ -607,6 +607,7 @@ async function scanner() {
       else {
         if (mode === 'lots' && o?.genre === 'item') L.alerte = 'Mode « Prix ressource » mais l\'objet est un équipement : enregistré comme prix d\'équipement.';
         if (mode === 'annonces' && o?.genre === 'ressource' && !o.unite) L.alerte = 'Mode « Prix équipement » mais l\'objet est une ressource : enregistré comme prix de ressource.';
+        if (L.identifie.ordre) L.alerte = [L.alerte, `Prix non croissants : vérifie la ligne ${L.identifie.ordre.join(', ')} (l'HDV range les annonces du moins cher au plus cher).`].filter(Boolean).join(' ');
         L.messages = enregistrer(L);
         L.enregistre = L.messages.length > 0;
       }

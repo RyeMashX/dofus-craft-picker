@@ -147,3 +147,18 @@ test('OCR : deux passes en désaccord, l\'ordre croissant des annonces départag
   ]);
   assert.deepEqual(a.map(x => [x.prix, x.sur]), [[2700000, true], [2950001, true], [2956789, true]]);
 });
+
+test('OCR lots d\'une ressource : tailles dans l\'ordre 1, 10, 100, 1000, jamais deux fois la même', async () => {
+  const { deduireLots, verifierOrdre } = await import('../src/ocr/identification.js');
+  const lots = a => deduireLots(a).map(x => x.lot);
+  // 4 lignes : forcément 1, 10, 100, 1000, même si deux « 10 » ont été lus
+  assert.deepEqual(lots([{ lot: 1, prix: 400 }, { lot: 10, prix: 2498 }, { lot: 10, prix: 22221 }, { lot: 1000, prix: 210940 }]), [1, 10, 100, 1000]);
+  // 10 lu avant 1 : impossible, corrigé par les prix unitaires
+  assert.deepEqual(lots([{ lot: 10, prix: 2874 }, { lot: 1, prix: 22949 }, { lot: 100, prix: 220000 }]), [1, 10, 100]);
+  // 3 lignes sans x10 : 1, 100, 1000
+  assert.deepEqual(lots([{ lot: null, prix: 500 }, { lot: null, prix: 48000 }, { lot: null, prix: 470000 }]), [1, 100, 1000]);
+  // équipement : une ligne moins chère que la précédente est signalée
+  const a = [{ prix: 2700000, sur: true }, { prix: 2350001, sur: true }, { prix: 2956789, sur: true }];
+  assert.deepEqual(verifierOrdre(a), [2]);
+  assert.equal(a[1].sur, false);
+});

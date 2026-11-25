@@ -181,6 +181,13 @@ Réglages : nombre de lots crédibles, hausse par lot, plafond, part de l'écart
 
 Partout (Données, Craft, plan de scan) : marge = prix de vente visé − taxe de 2 % − coût des ressources − FM estimée ; rendement = marge / (ressources + FM). La FM estimée est la moyenne des FM des ventes du même équipement, rien s'il n'y en a pas. Ventes et Bilan utilisent les chiffres réels de chaque vente.
 
+### Lecture du panneau détail (prix)
+
+- Le panneau change de place et de hauteur selon le nombre d'annonces : pas de zone fixe. L'outil repère l'en-tête « Lot » et les boutons ACHETER, puis relit un rectangle qui ne contient que les colonnes Lot et Prix (sans icône, sans symbole kama, sans ACHETER).
+- Ce rectangle est lu à trois tailles (×1, ×1,5, ×0,75) et chaque rangée est votée : Tesseract confond 9 et 3 selon la taille du texte. Sans majorité, l'ordre des prix départage.
+- **Ressource** : une ligne par taille, dans l'ordre 1, 10, 100, 1000. Avec 4 lignes c'est forcément 1, 10, 100, 1000 ; avec moins, la combinaison croissante qui contredit le moins les lots lus et garde des prix unitaires cohérents. Un lot corrigé est marqué « déduit ».
+- **Équipement** : prix croissants de haut en bas. Une ligne moins chère que la précédente est marquée douteuse et une alerte donne son numéro.
+
 ## Limites connues (V1)
 
 - Dans le plan de craft, deux items qui partagent une ressource sont chiffrés comme s'ils l'achetaient séparément ; la liste d'achat, elle, additionne les quantités avant de calculer les trois coûts.

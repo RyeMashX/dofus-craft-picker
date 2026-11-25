@@ -51,16 +51,19 @@ export function identifier(type, lecture, catalogue) {
   // ressource vendue à l'unité (équipement) : des annonces de 1, pas des lots
   const annonces = type !== 'detail' ? lecture.annonces
     : objet.unite ? lecture.annonces.map(a => ({ ...a, lot: 1 }))
-    : objet.genre === 'ressource' ? deduireLots(lecture.annonces) : lecture.annonces;
-  return { ...lecture, annonces, objet };
+    : objet.genre === 'ressource' ? deduireLots(lecture.annonces) : lecture.annonces.map(a => ({ ...a }));
+  // équipement (ou équipement utilisé comme ressource) : prix croissants
+  const ordre = type === 'detail' && (objet.genre === 'item' || objet.unite) ? verifierOrdre(annonces) : [];
+  return { ...lecture, annonces, objet, ...(ordre.length ? { ordre } : {}) };
 }
 
-// Lots illisibles (écrits petit, en gris) : on les déduit. L'HDV range les lots d'une ressource
-// par taille croissante (1, 10, 100, 1000) et le prix unitaire reste du même ordre d'un lot à l'autre :
-// on choisit les tailles croissantes, compatibles avec les lots lus, qui donnent les prix unitaires les plus proches.
+// Lots d'une ressource : l'HDV affiche une ligne par taille, dans l'ordre 1, 10, 100, 1000. Avec n lignes, les tailles
+// sont donc n tailles distinctes dans cet ordre (4 lignes : forcément 1, 10, 100, 1000 ; jamais 10 puis 1, ni deux 10).
+// Parmi ces combinaisons, on garde celle qui contredit le moins les lots lus et dont les prix unitaires sont
+// les plus proches d'une ligne à l'autre. Un lot corrigé ou déduit est marqué « deduit ».
 export function deduireLots(annonces) {
   const rangs = annonces.filter(a => a.prix != null);
-  if (!rangs.length || rangs.every(a => a.lot != null) || rangs.length > 4) return annonces;
+  if (!rangs.length || rangs.length > 4) return annonces;
   const tailles = [1, 10, 100, 1000];
   let best = null;
   const essayer = (i, depuis, choix) => {
@@ -68,17 +71,32 @@ export function deduireLots(annonces) {
       const logs = rangs.map((a, k) => Math.log10(a.prix / choix[k]));
       const moy = logs.reduce((s, x) => s + x, 0) / logs.length;
       const ecart = logs.reduce((s, x) => s + (x - moy) ** 2, 0);
-      if (!best || ecart < best.ecart) best = { ecart, choix: [...choix] };
+      const desaccords = rangs.filter((a, k) => a.lot != null && a.lot !== choix[k]).length;
+      const cout = ecart + 0.3 * desaccords;
+      if (!best || cout < best.cout) best = { cout, choix: [...choix] };
       return;
     }
-    for (let t = depuis; t < tailles.length; t++) {
-      if (rangs[i].lot != null && rangs[i].lot !== tailles[t]) continue;
-      essayer(i + 1, t + 1, [...choix, tailles[t]]);
-    }
+    for (let t = depuis; t <= tailles.length - (rangs.length - i); t++) essayer(i + 1, t + 1, [...choix, tailles[t]]);
   };
   essayer(0, 0, []);
-  if (!best) return annonces;
-  return annonces.map(a => { const k = rangs.indexOf(a); return k < 0 || a.lot != null ? a : { ...a, lot: best.choix[k], deduit: true }; });
+  return annonces.map(a => {
+    const k = rangs.indexOf(a);
+    if (k < 0 || a.lot === best.choix[k]) return a;
+    return { ...a, lot: best.choix[k], deduit: true };
+  });
+}
+
+// Annonces d'un équipement : prix croissants de haut en bas (égalités possibles). Une ligne moins chère que la
+// précédente est forcément mal lue : elle n'est plus « sûre ». Retourne les numéros de ligne en cause (1 = la première).
+export function verifierOrdre(annonces) {
+  const enCause = [];
+  let avant = null;
+  annonces.forEach((a, i) => {
+    if (a.prix == null) return;
+    if (avant != null && a.prix < avant) { a.sur = false; enCause.push(i + 1); }
+    else avant = a.prix;
+  });
+  return enCause;
 }
 
 const f = n => n == null ? '-' : Math.round(n).toLocaleString('fr-FR');
