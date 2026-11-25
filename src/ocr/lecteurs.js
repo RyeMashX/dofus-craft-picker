@@ -251,7 +251,7 @@ export async function lireDetail(pre, reconnaitre) {
 // Tesseract confond parfois 9 et 3 selon la taille du texte : on lit la même image à trois tailles
 // (×1, ×1,5, ×0,75) et on vote, rangée par rangée. Sans majorité, l'ordre des prix départage (departager).
 // La dernière rangée, coupée par le bas de la zone (ou nettement plus basse que les autres), est ignorée.
-export async function lireLots(pre, reconnaitre) {
+export async function lireLots(pre, reconnaitre, avecPositions = false) {
   const coupe = 0.45 * pre.width;
   const decouper = (lignes, k) => lignes.map(l => {
     const mots = l.mots.filter(w => /\d/.test(w.texte));
@@ -267,7 +267,7 @@ export async function lireLots(pre, reconnaitre) {
   const passes = [];
   for (const k of [1, 1.5, 0.75]) passes.push(decouper(rangees(await reconnaitre(k === 1 ? pre : redimensionner(pre, k), { chiffres: true })), k));
   const base = passes.reduce((a, b) => (b.length > a.length ? b : a));
-  if (!base.length) return [];
+  if (!base.length) return avecPositions ? { annonces: [], bbox: [] } : [];
   const hauteurs = base.map(r => r.bbox.y1 - r.bbox.y0).sort((a, b) => a - b), hMed = hauteurs[Math.floor(hauteurs.length / 2)];
   const rangs = base.filter(r => r.bbox.y1 < pre.height - 2 && r.bbox.y1 - r.bbox.y0 > 0.6 * hMed);
   const pas = rangs.length > 1 ? (centre(rangs.at(-1).bbox) - centre(rangs[0].bbox)) / (rangs.length - 1) : 100;
@@ -277,6 +277,7 @@ export async function lireLots(pre, reconnaitre) {
   };
   const annonces = rangs.map(r => {
     const lus = passes.map(ps => proche(ps, centre(r.bbox), pas / 3)).filter(Boolean);
+    r.lus = lus;
     const prix = lus.map(x => { const n = nombre(x.prix); return n && (n.valide || /^\d{4}( \d{3})+$/.test(x.prix)) ? n.valeur : null; });
     const v = vote(prix), lots = vote(lus.map(x => x.lot));
     const lot = lots[0]?.[0] ?? null;
@@ -284,7 +285,37 @@ export async function lireLots(pre, reconnaitre) {
     if (v[0][1] >= 2 && (v.length === 1 || v[0][1] > v[1][1])) return { lot, prix: v[0][0], sur: true, conflit: null };
     return { lot, prix: v[0][0], sur: false, conflit: v.map(x => x[0]) };
   });
+  if (avecPositions) return { annonces, bbox: rangs.map(r => r.bbox) };
   return departager(annonces);
+}
+
+// ---------- lecture en deux zones (nom, valeur), réglées une fois par mode ----------
+export async function lireNom(pre, reconnaitre) {
+  const lignes = rangees(await reconnaitre(pre, {}));
+  const t = titreEtNiveau(lignes);
+  if (t.titre) return t;
+  // zone sans la ligne « Niv. » : le nom est la première ligne qui contient des lettres
+  const l = lignes.map(x => lettres(x.texte)).find(x => x.replace(/[^A-Za-zÀ-ÿ]/g, '').length >= 3);
+  return { titre: l ?? null, niveau: t.niveau };
+}
+
+// Zone valeur des prix : elle couvre la hauteur maximale de la liste, donc parfois du décor sous un panneau court
+// (ou le prix moyen au-dessus). On ne garde que les rangées entre la première et la dernière qui ont un lot lisible
+// (1, 10, 100, 1000), et on s'arrête au premier écart nettement plus grand que l'espacement des rangées.
+export function garderRangees(annonces, bbox) {
+  // rangée coupée par le bord du panneau : prix illisible ou nul
+  const ok = annonces.map((a, i) => (a.prix > 0 ? i : -1)).filter(i => i >= 0);
+  annonces = ok.map(i => annonces[i]); bbox = ok.map(i => bbox[i]);
+  const avecLot = annonces.map((a, i) => (a.lot != null ? i : -1)).filter(i => i >= 0);
+  if (!avecLot.length) return annonces;
+  let garde = annonces.slice(avecLot[0], avecLot.at(-1) + 1).map((a, k) => ({ a, b: bbox[avecLot[0] + k] }));
+  if (garde.length > 2) {
+    const ecarts = garde.slice(1).map((x, k) => x.b.y0 - garde[k].b.y0).sort((u, v) => u - v);
+    const pas = ecarts[Math.floor(ecarts.length / 2)];
+    const fin = garde.findIndex((x, k) => k > 0 && x.b.y0 - garde[k - 1].b.y0 > 1.6 * pas);
+    if (fin > 0) garde = garde.slice(0, fin);
+  }
+  return garde.map(x => x.a);
 }
 
 // ---------- courbe 30 jours ----------
@@ -378,6 +409,17 @@ export const echelleAuto = largeurImage => (largeurImage >= 2400 ? 2 : largeurIm
 
 export async function lireEcran(type, img, zone, reconnaitre, opts = {}) {
   opts = { echelle: echelleAuto(img.width), ...opts };
+  // deux zones réglées par l'utilisateur : nom, puis valeur (colonnes Lot et Prix, ou onglets + articles vendus)
+  if (zone?.nom && zone?.valeur) {
+    const nom = await lireNom(pretraiter(img, zone.nom, opts), reconnaitre);
+    if (type === 'courbe') {
+      const c = await lireCourbe(pretraiter(img, zone.valeur, { ...opts, masquerJaune: false }), reconnaitre, recadrer(img, zone.valeur), opts.echelle);
+      return { ...c, titre: nom.titre ?? c.titre, niveau: nom.niveau ?? c.niveau };
+    }
+    const pre = pretraiter(img, zone.valeur, opts);
+    const { annonces, bbox } = await lireLots(marge(pre, 16), reconnaitre, true);
+    return { ...nom, prixMoyen: null, annonces: departager(garderRangees(annonces, bbox)) };
+  }
   if (type === 'courbe') {
     const echelle = opts.echelle;
     const pre = pretraiter(img, zone, { ...opts, masquerJaune: false });

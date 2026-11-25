@@ -89,16 +89,21 @@ export async function scanner(zones, mode, onProgres) {
   const { canvas, frame } = image();
   const rec0 = await reconnaisseur(onProgres);
   const textes = [];
-  const rec = async (img, o) => { const l = await rec0(img, o); if (!o.chiffres) textes.push(l.map(x => x.texte).join('\n')); return l; };
+  const rec = async (img, o) => { const l = await rec0(img, o); textes.push(`${o.chiffres ? '[chiffres] ' : ''}${l.map(x => x.texte).join(o.chiffres ? ' | ' : '\n')}`); return l; };
   const { ecran, zone } = MODES[mode];
-  const px = enPixels(zones[zone], frame);
+  // deux zones (nom, valeur) réglées pour ce mode, sinon la zone d'origine de l'écran
+  const deux = zones[`${mode}.nom`] && zones[`${mode}.valeur`];
+  const px = deux ? { nom: enPixels(zones[`${mode}.nom`], frame), valeur: enPixels(zones[`${mode}.valeur`], frame) } : enPixels(zones[zone], frame);
   onProgres?.({ status: MODES[mode].libelle.toLowerCase() });
-  const lecture = await lireEcran(ecran, frame, px, rec);
-  dernier = { canvas, zone: px, texte: textes.join('\n---\n'), mode };
-  const utile = ecran === 'courbe' ? lecture.vendus != null
-    : ecran === 'detail' ? !!(lecture.titre && lecture.annonces.length)
-    : ecran === 'ventes' ? lecture.lignes.length > 0
-    : lecture.length > 0;
+  const estUtile = l => ecran === 'courbe' ? l.vendus != null
+    : ecran === 'detail' ? !!(l.titre && l.annonces.length)
+    : ecran === 'ventes' ? l.lignes.length > 0
+    : l.length > 0;
+  let lecture = await lireEcran(ecran, frame, px, rec), zoneLue = px;
+  // deux zones qui ne donnent rien (panneau ailleurs ce coup-ci) : on relit le panneau entier
+  if (deux && !estUtile(lecture) && zones[zone]) { zoneLue = enPixels(zones[zone], frame); lecture = await lireEcran(ecran, frame, zoneLue, rec); }
+  dernier = { canvas, zone: zoneLue, texte: textes.join('\n---\n'), mode };
+  const utile = estUtile(lecture);
   return { type: ecran, lecture, utile };
 }
 
@@ -106,7 +111,11 @@ export async function scanner(zones, mode, onProgres) {
 let dernier = null;
 export function diagnostic() {
   if (!dernier) return null;
-  const { canvas, zone } = dernier;
+  const { canvas } = dernier;
+  // deux zones : l'aperçu montre le rectangle qui les contient toutes les deux
+  const z = dernier.zone;
+  const zone = z.nom ? (() => { const x = Math.min(z.nom.x, z.valeur.x), y = Math.min(z.nom.y, z.valeur.y);
+    return { x, y, w: Math.max(z.nom.x + z.nom.w, z.valeur.x + z.valeur.w) - x, h: Math.max(z.nom.y + z.nom.h, z.valeur.y + z.valeur.h) - y }; })() : z;
   const c = document.createElement('canvas');
   const k = Math.min(1, 600 / zone.w);
   c.width = Math.round(zone.w * k); c.height = Math.round(zone.h * k);

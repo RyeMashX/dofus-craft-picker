@@ -628,12 +628,24 @@ const ZONES = {
   detail: ['Panneau détail', 'Encadre le panneau de gauche qui s\'ouvre quand tu cliques un objet (nom, prix moyen, lots ou annonces). Prends toute sa hauteur, annonces comprises.'],
   courbe: ['Cours du marché', 'Encadre la fenêtre « Cours du marché » (titre, onglets, nombre d\'articles vendus).'],
   ventes: ['Mes ventes', 'Encadre la liste de tes annonces (onglet Vente de l\'HDV), en-tête et pied « lots en vente » compris.'],
+  // deux zones par mode de scan de prix / volume, réglées une fois
+  'annonces.nom': ['Prix équipement · nom', 'Encadre le nom de l\'équipement et la ligne « Niv. 200 » en dessous, dans le panneau détail.'],
+  'annonces.valeur': ['Prix équipement · lots et prix', 'Encadre les colonnes Lot et Prix des annonces : du bord gauche du lot jusqu\'au bord droit du prix, avant le symbole kama, sur toute la hauteur que la liste peut prendre.'],
+  'lots.nom': ['Prix ressource · nom', 'Encadre le nom de la ressource et la ligne « Niv. » en dessous, dans le panneau détail.'],
+  'lots.valeur': ['Prix ressource · lots et prix', 'Encadre les colonnes Lot et Prix des lots (x1, x10, x100, x1000) : du bord gauche du lot jusqu\'au bord droit du prix, avant le symbole kama.'],
+  'courbe.nom': ['Volume équipement · nom', 'Encadre le nom de l\'équipement dans la fenêtre « Cours du marché ».'],
+  'courbe.valeur': ['Volume équipement · volume', 'Encadre les onglets (24 heures, 7 jours, 30 jours) et le nombre d\'articles vendus.'],
 };
-function ouvrirZones(cle = Cap.MODES[S.etat.mode].zone) {
+// Zones du mode choisi : nom puis valeur pour les prix et le volume, une seule pour les autres écrans
+const zonesDuMode = mode => ['annonces', 'lots', 'courbe'].includes(mode) ? [`${mode}.nom`, `${mode}.valeur`] : [Cap.MODES[mode].zone];
+function ouvrirZones(cle = zonesDuMode(S.etat.mode)) {
+  const suite = Array.isArray(cle) ? cle.slice(1) : [];
+  if (Array.isArray(cle)) cle = cle[0];
   let frame;
   try { frame = Cap.image().canvas; } catch (e) { statut(e.message); toast(e.message); return; }
   const [titre, aide] = ZONES[cle];
-  let zone = S.etat.zones[cle], drag = null;
+  let zone = S.etat.zones[cle] ?? null, drag = null;
+  const etape = suite.length || cle.endsWith('.valeur') ? ` (${cle.endsWith('.nom') ? '1' : '2'}/2)` : '';
   const modal = $('#zones-modal'), cv = $('#zones-canvas'), ctx = cv.getContext('2d');
   cv.width = frame.width; cv.height = frame.height;
   const dessiner = () => {
@@ -641,9 +653,9 @@ function ouvrirZones(cle = Cap.MODES[S.etat.mode].zone) {
     ctx.lineWidth = Math.max(3, frame.width / 500);
     ctx.strokeStyle = '#f0b84a';
     if (drag) ctx.strokeRect(drag.x0, drag.y0, drag.x1 - drag.x0, drag.y1 - drag.y0);
-    else ctx.strokeRect(zone.x * cv.width, zone.y * cv.height, zone.w * cv.width, zone.h * cv.height);
-    $('#zones-title').textContent = `Zone : ${titre}`;
-    $('#zones-help').textContent = `${aide} Glisse pour dessiner. La zone actuelle est en jaune.`;
+    else if (zone) ctx.strokeRect(zone.x * cv.width, zone.y * cv.height, zone.w * cv.width, zone.h * cv.height);
+    $('#zones-title').textContent = `Zone${etape} : ${titre}`;
+    $('#zones-help').textContent = `${aide} Glisse pour dessiner.${zone ? ' La zone actuelle est en jaune.' : ''}`;
   };
   const pos = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * cv.width / r.width, y: (e.clientY - r.top) * cv.height / r.height }; };
   cv.onmousedown = e => { const p = pos(e); drag = { x0: p.x, y0: p.y, x1: p.x, y1: p.y }; };
@@ -654,13 +666,21 @@ function ouvrirZones(cle = Cap.MODES[S.etat.mode].zone) {
     drag = null;
     if (w > 20 && h > 20) {
       S.etat.zones = { ...S.etat.zones, [cle]: { x: x / cv.width, y: y / cv.height, w: w / cv.width, h: h / cv.height } };
-      sauverEtat(); fermer(); statut(`Zone « ${titre} » enregistrée.`); return;
+      sauverEtat(); fermer(); statut(`Zone « ${titre} » enregistrée.`);
+      if (suite.length) setTimeout(() => ouvrirZones(suite), 0);
+      return;
     }
     dessiner();
   };
   const fermer = () => modal.classList.add('hidden');
   $('#zones-cancel').onclick = fermer;
-  $('#zones-default').onclick = () => { S.etat.zones = { ...S.etat.zones, [cle]: ZONES_DEFAUT[cle] }; sauverEtat(); fermer(); statut(`Zone « ${titre} » remise par défaut.`); };
+  // par défaut : zone d'origine ; pour les zones nom / valeur, on les retire (retour à la lecture du panneau entier)
+  $('#zones-default').onclick = () => {
+    const z = { ...S.etat.zones };
+    if (ZONES_DEFAUT[cle]) z[cle] = ZONES_DEFAUT[cle]; else { const m = cle.split('.')[0]; delete z[`${m}.nom`]; delete z[`${m}.valeur`]; }
+    S.etat.zones = z; sauverEtat(); fermer();
+    statut(ZONES_DEFAUT[cle] ? `Zone « ${titre} » remise par défaut.` : `Zones nom et valeur retirées : lecture du panneau entier.`);
+  };
   modal.classList.remove('hidden');
   dessiner();
 }

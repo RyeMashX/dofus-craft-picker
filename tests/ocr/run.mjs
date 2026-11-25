@@ -75,6 +75,26 @@ const plein = img => ({ x: 0, y: 0, w: img.width, h: img.height });
   verifier('9 lu 3 : prix', r.annonces.map(a => a.prix), [2700000, 2950001, 2950001, 2956789, 2978999, 2999999, 2999999, 3038749, 3299000, 3499000, 3800000, 4220000, 4222222]);
 }
 
+// 2 quater. Deux zones réglées (nom, puis colonnes Lot et Prix sur toute la hauteur possible de la liste)
+for (const [f, nom, val, attendu] of [
+  ['detail-annonces-9-lu-3.png', [115, 41, 495, 60], [95, 290, 320, 897], ['Anneau Crustique', 2700000, 2950001, 2950001, 2956789, 2978999, 2999999, 2999999, 3038749, 3299000, 3499000, 3800000, 4220000, 4222222]],
+  ['detail-annonces-icones.png', [115, 41, 495, 60], [95, 290, 320, 897], ['Ceinture du Strigide', 2600000, 2650000, 2700000, 2800000, 2900000, 2900000, 2940000, 2999990, 2999998, 2999998, 2999998, 2999998, 2999998]],
+  ['detail-annonce-unique.png', [115, 80, 495, 60], [95, 290, 320, 853], ['Alliance Brûlâme', 10125000]],   // décor sous un panneau court
+  ['detail-lots-galet.png', [125, 140, 400, 80], [95, 340, 320, 843], ['Galet brasillant', '1:229813', '10:2299902', '100:26999999']],
+  ['detail-lots-pepite.png', [125, 80, 400, 60], [95, 290, 320, 853], ['Pépite', '1:400', '10:2498', '100:22221', '1000:210940']],
+]) {
+  const img = lire(f);
+  const z = a => ({ x: a[0], y: a[1], w: a[2], h: Math.min(a[3], img.height - a[1]) });
+  const r = identifier('detail', await lireEcran('detail', img, { nom: z(nom), valeur: z(val) }, reconnaitre, { echelle: 2 }), catalogue);
+  const res = r.objet?.genre === 'ressource';
+  verifier(`deux zones : ${f}`, [r.objet?.nom, ...r.annonces.map(a => (res ? `${a.lot}:${a.prix}` : a.prix))], attendu);
+}
+{
+  const img = lire('courbe-item.png');
+  const L = await lireEcran('courbe', img, { nom: { x: 200, y: 110, w: 500, h: 70 }, valeur: { x: 30, y: 280, w: 1510, h: 45 } }, reconnaitre, { echelle: 2 });
+  verifier('deux zones : courbe', [L.titre, L.vendus, L.trenteJours], ['Jugement de Thanatena', 81, true]);
+}
+
 // 3. Courbe 30 jours
 {
   const img = lire('courbe-item.png');
