@@ -7,8 +7,10 @@ import { icone } from './vue-plan.js';
 import { champ, brancherChamps, jourIso, histPrix, dateCourte } from './vue-ventes.js';
 
 const MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
-const nomMois = k => { const [a, m] = k.split('-'); return `${MOIS[+m - 1]} ${a.slice(2)}`; };
-const PERIODES = [['tout', 'tout'], ['30', '30 jours'], ['90', '90 jours'], ['365', '12 mois']];
+const ARMES_CAT = '__armes';
+const ARMES = new Set(['Arc', 'Baguette', 'Bâton', 'Dague', 'Épée', 'Marteau', 'Pelle', 'Hache', 'Faux', 'Lance']);
+const moisDe = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; };
+const nomMoisLong = k => { const [a, m] = k.split('-'); return `${MOIS[+m - 1]} ${a}`; };
 const COLONNES = [
   ['nom', 'équipement'], ['ventes', 'ventes', 'Nombre de ventes'], ['prixMoyen', 'prix', 'Prix de vente moyen'],
   ['margeMoyenne', 'marge', 'Marge moyenne par vente, et rendement'], ['margeTotale', 'total', 'Marge totale'],
@@ -22,15 +24,26 @@ export function renderBilan(ctx) {
   if (!S.catalogue) return;
   const items = new Map(S.catalogue.items.map(i => [i.id, i]));
   const F = (S.etat.bilanVue ??= { q: '', periode: 'tout', cat: '', tri: 'margeTotale', sens: -1 });
+  if (!['tout', '30', '90', 'dates'].includes(F.periode) && !F.periode.startsWith('m:')) F.periode = 'tout';
 
   // ---- filtres : les ventes retenues alimentent tout l'onglet (indicateurs, graphiques, tableau) ----
   const toutes = vendues(S.base);
-  const depuis = F.periode === 'tout' ? 0 : Date.now() - Number(F.periode) * 864e5;
+  // période : tout, 30 / 90 derniers jours, un mois précis, ou entre deux dates (bornes incluses)
+  const debutJour = iso => iso ? new Date(`${iso}T00:00:00`).getTime() : null;
+  const dansPeriode = t => {
+    if (F.periode === 'tout') return true;
+    if (F.periode === '30' || F.periode === '90') return t >= Date.now() - Number(F.periode) * 864e5;
+    if (F.periode.startsWith('m:')) return moisDe(t) === F.periode.slice(2);
+    const du = debutJour(F.du), au = debutJour(F.au);
+    return (du == null || t >= du) && (au == null || t < au + 864e5);
+  };
+  const dansCat = it => !F.cat || (F.cat === ARMES_CAT ? ARMES.has(it?.type) : it?.type === F.cat);
   const q = ctx.normaliser(F.q ?? '');
   const retenues = toutes.filter(l => {
     const it = items.get(l.id);
-    return (l.dateVente ?? l.dateMiseEnVente ?? 0) >= depuis && (!F.cat || it?.type === F.cat) && (!q || ctx.normaliser(it?.nom ?? '').includes(q));
+    return dansPeriode(l.dateVente ?? l.dateMiseEnVente ?? 0) && dansCat(it) && (!q || ctx.normaliser(it?.nom ?? '').includes(q));
   });
+  const moisVentes = [...new Set(toutes.map(l => moisDe(l.dateVente ?? l.dateMiseEnVente ?? 0)))].sort().reverse();
   const sous = { ...S.base, ventes: retenues };
   const b = bilan(sous);
   const cats = [...new Set(toutes.map(l => items.get(l.id)?.type).filter(Boolean))].sort();
@@ -45,14 +58,13 @@ export function renderBilan(ctx) {
   });
 
   // ---- graphiques ----
-  const graphMois = (() => {
-    const m = [...b.parMois].reverse().slice(-12);
-    if (!m.length) return '';
-    const max = Math.max(...m.map(x => Math.max(x.ca, Math.abs(x.marge))), 1);
-    return `<div class="gr"><h4>Par mois</h4><div class="gr-mois">${m.map(x => `<div class="gm" title="${nomMois(x.mois)} : ${x.ventes} vente${x.ventes > 1 ? 's' : ''}, CA ${fmtK(x.ca)}, marge ${fmtK(x.marge)}">
-      <div class="gm-barres"><i class="ca" style="height:${(100 * x.ca / max).toFixed(1)}%"></i><i class="mg ${x.marge < 0 ? 'neg' : ''}" style="height:${(100 * Math.abs(x.marge) / max).toFixed(1)}%"></i></div>
-      <span>${nomMois(x.mois)}</span></div>`).join('')}</div>
-      <p class="gr-leg"><i class="ca"></i> chiffre d'affaires <i class="mg"></i> marge</p></div>`;
+  // part des ventes selon le nombre de changements de prix avant la vente
+  const graphChgts = (() => {
+    if (!retenues.length) return '';
+    const n = retenues.map(nbChangements);
+    const tranches = [['0 changement', x => x === 0], ['1 changement', x => x === 1], ['2 changements', x => x === 2], ['3 et +', x => x >= 3]]
+      .map(([t, f]) => [t, n.filter(f).length]);
+    return `<div class="gr"><h4>Changements de prix avant la vente</h4>${tranches.map(([t, k]) => `<div class="gh" title="${k} vente${k > 1 ? 's' : ''}"><span class="gh-n">${t}</span><span class="gh-b"><i class="ch" style="width:${(100 * k / retenues.length).toFixed(1)}%"></i></span><b>${pct(k / retenues.length)}</b></div>`).join('')}</div>`;
   })();
   const graphItems = (() => {
     const top = [...parItem].sort((x, y) => y.margeTotale - x.margeTotale).slice(0, 8);
@@ -103,8 +115,10 @@ export function renderBilan(ctx) {
   $('#bilan').innerHTML = `
     <div class="row small bl-filtres">
       <input id="bl-q" type="search" placeholder="Rechercher un équipement" value="${esc(F.q)}" autocomplete="off">
-      <div id="bl-per" class="seg small">${PERIODES.map(([k, t]) => `<button data-per="${k}" class="${F.periode === k ? 'on' : ''}">${t}</button>`).join('')}</div>
-      <select id="bl-cat" class="small"><option value="">toutes catégories</option>${cats.map(c => `<option${c === F.cat ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
+      <select id="bl-per" class="small">${[['tout', 'toute la période'], ['30', '30 derniers jours'], ['90', '90 derniers jours'], ...moisVentes.map(m => [`m:${m}`, nomMoisLong(m)]), ['dates', 'entre deux dates…']]
+        .map(([k, t]) => `<option value="${k}"${F.periode === k ? ' selected' : ''}>${t}</option>`).join('')}</select>
+      ${F.periode === 'dates' ? `<label class="vf-date"><span>du</span><input type="date" id="bl-du" value="${F.du ?? ''}"></label><label class="vf-date"><span>au</span><input type="date" id="bl-au" value="${F.au ?? ''}"></label>` : ''}
+      <select id="bl-cat" class="small"><option value="">toutes catégories</option><option value="${ARMES_CAT}"${F.cat === ARMES_CAT ? ' selected' : ''}>Armes (toutes)</option>${cats.map(c => `<option${c === F.cat ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
       ${filtre ? '<button id="bl-raz" class="link small">effacer les filtres</button>' : ''}
     </div>
     <div class="kpis kpis4">
@@ -113,12 +127,11 @@ export function renderBilan(ctx) {
       <div class="kpi"><div class="v ${b.marge >= 0 ? 'ok' : 'bad'}">${fmtK(b.marge)}</div><div class="l">marge, ${pct(b.rendement)}</div></div>
       <div class="kpi"><div class="v">${jours(b.delaiMoyen)}</div><div class="l">délai moyen de vente</div></div>
     </div>
-    ${b.ventes ? `<div class="kpis">
+    ${b.ventes ? `<div class="kpis kpis2">
       <div class="kpi"><div class="v">${b.changementsMoyens.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}</div><div class="l">changements de prix par vente</div></div>
-      <div class="kpi"><div class="v">${pct(1 - b.sansChangement)}</div><div class="l">vendus après un changement de prix</div></div>
       <div class="kpi"><div class="v ${b.ecartMoyen < 0 ? 'bad' : ''}">${b.ecartMoyen > 0 ? '+' : ''}${pct(b.ecartMoyen)}</div><div class="l">écart moyen prix final / initial</div></div>
     </div>
-    <div class="graphes">${graphMois}${graphItems}${graphDelais}</div>` : ''}
+    <div class="graphes">${graphItems}${graphChgts}${graphDelais}</div>` : ''}
     <h3>Par équipement</h3>
     ${table}
     ${parItem.length ? '<p class="muted small">Clic sur une ligne : ses ventes, avec « modifier » pour les dates, les chiffres, remettre en vente ou supprimer. Prix initial : celui d\'avant le premier « Prix modifié ».</p>' : ''}`;
@@ -127,9 +140,11 @@ export function renderBilan(ctx) {
   const set = (k, v) => { F[k] = v; ctx.sauverEtat(); ctx.renderTout(); };
   const qEl = $('#bl-q');
   qEl.oninput = () => { F.q = qEl.value; ctx.renderTout(); const n = $('#bl-q'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
-  $$('#bl-per [data-per]').forEach(x => x.onclick = () => set('periode', x.dataset.per));
+  $('#bl-per').onchange = e => set('periode', e.target.value);
+  const du = $('#bl-du'); if (du) du.onchange = e => set('du', e.target.value || null);
+  const au = $('#bl-au'); if (au) au.onchange = e => set('au', e.target.value || null);
   $('#bl-cat').onchange = e => set('cat', e.target.value);
-  const raz = $('#bl-raz'); if (raz) raz.onclick = () => { Object.assign(F, { q: '', periode: 'tout', cat: '' }); ctx.sauverEtat(); ctx.renderTout(); };
+  const raz = $('#bl-raz'); if (raz) raz.onclick = () => { Object.assign(F, { q: '', periode: 'tout', cat: '', du: null, au: null }); ctx.sauverEtat(); ctx.renderTout(); };
   $$('#bilan th[data-tri]').forEach(th => th.onclick = () => {
     const k = th.dataset.tri;
     F.sens = F.tri === k ? -F.sens : (k === 'nom' ? 1 : -1); F.tri = k; ctx.sauverEtat(); ctx.renderTout();

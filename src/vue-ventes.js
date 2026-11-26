@@ -120,18 +120,16 @@ export function renderVentes(ctx) {
   const ligne = l => {
     const it = items.get(l.id), m = marge(l);
     return `<div class="vt-l ${l.statut}">
-      <div class="cp-nom">${icone(it.iconId)} <span class="n" title="${esc(it.nom)}">${esc(it.nom)}</span></div>
-      <div class="seg small statut3">
-        <button data-st3="draft" data-uid="${l.uid}" class="${l.statut === 'draft' ? 'on' : ''}" title="Crafté, pas encore à l'HDV : chiffres à vérifier">Crafté</button>
-        <button data-st3="valide" data-uid="${l.uid}" class="${l.statut === 'valide' ? 'on' : ''}" title="Mis en vente à l'HDV : frais figés">En vente</button>
-        <button data-st3="vendu" data-uid="${l.uid}"${l.statut === 'draft' ? ' disabled title="Passe d\'abord par « En vente »"' : ' title="Vendu aujourd\'hui (date modifiable dans Bilan)"'}>Vendu</button></div>
+      <div class="cp-nom">${icone(it.iconId)} <span class="n" title="${esc(it.nom)}">${esc(it.nom)}</span>
+        <button class="etape et-${l.statut}" data-st3="${l.statut === 'draft' ? 'valide' : 'draft'}" data-uid="${l.uid}" title="${l.statut === 'draft' ? 'Crafté, pas encore à l\'HDV. Clique quand il est mis en vente.' : 'Mis en vente à l\'HDV (frais figés). Clique pour repasser en « Crafté ».'}"><i></i>${l.statut === 'draft' ? 'Crafté' : 'En vente'}</button></div>
       <div class="vt-meta"><label class="vf-date"><span>en vente le</span><input type="date" data-uid="${l.uid}" data-date="dateMiseEnVente" value="${jourIso(l.dateMiseEnVente)}"></label>
         <span class="spacer"></span><span class="muted small">marge</span> <b class="${m == null ? 'muted' : m >= 0 ? 'ok' : 'bad'}">${fmtK(m)}</b> <span class="muted small">${pct(rendement(l))}</span></div>
       ${histPrix(ctx, l)}
       <div class="vt-champs">${CHAMPS.map(([k, lib]) => champ(ctx, l, k, lib)).join('')}</div>
       ${S.chgPrix === l.uid ? `<div class="vt-chg"><label class="vf"><span>Nouveau prix à l'HDV</span><input id="chg-prix" class="num milliers" inputmode="numeric" value="${ctx.fmtSaisie(l.prix)}"></label>
         <button id="chg-ok" class="primary small">OK, + 1 % de frais</button><button id="chg-annuler" class="link small">annuler</button></div>` : ''}
-      <div class="vt-actions">${l.statut === 'valide' && l.prix != null && S.chgPrix !== l.uid ? `<button class="secondary small" data-chg="${l.uid}" title="Tu as changé le prix à l'HDV : nouveau prix et + 1 % de ce prix dans les frais">Prix modifié</button>` : ''}<span class="spacer"></span><button class="retirer" data-suppr="${l.uid}" title="Supprimer la ligne (pas vendu, retiré de l'HDV)">✕</button></div>
+      <div class="vt-actions"><button class="secondary small vendu-btn" data-st3="vendu" data-uid="${l.uid}"${l.statut === 'draft' ? ' disabled title="Passe d\'abord la ligne « En vente »"' : ' title="Vendu : la ligne quitte cette liste et passe dans le Bilan"'}>✓ Vendu</button>
+        ${l.statut === 'valide' && l.prix != null && S.chgPrix !== l.uid ? `<button class="secondary small" data-chg="${l.uid}" title="Tu as changé le prix à l'HDV : nouveau prix et + 1 % de ce prix dans les frais">Prix modifié</button>` : ''}<span class="spacer"></span><button class="retirer" data-suppr="${l.uid}" title="Supprimer la ligne (pas vendu, retiré de l'HDV)">✕</button></div>
     </div>`;
   };
 

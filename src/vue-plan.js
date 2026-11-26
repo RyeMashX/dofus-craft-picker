@@ -142,7 +142,7 @@ function renderDeroule(ctx) {
     <div class="bar"><i style="width:${pct}%"></i></div>
     ${termine ? `<div class="fin"><b>Plan terminé ✓</b><p class="small">${plan.confirmation ? 'Prix confirmés : vérifie les marges du plan de craft, puis génère la liste d\'achat.' : 'Les données sont à jour pour le plan de craft.'}</p><button id="plan-craft" class="primary small">Voir le plan de craft</button></div>` : ''}
     ${hdvsTries.map((h, i) => `<div class="hdv${etatHdv.get(h.hdv) ? ' fini' : ''}">
-      <h3>${HDV[h.hdv]}${etatHdv.get(h.hdv) ? ' <span class="ok">✓</span>' : ''}${!etatHdv.get(h.hdv) && i > 0 ? ` <button class="link small" data-hdv="${h.hdv}" title="Tu es déjà à cet HDV : commence par lui, les autres restent à faire ensuite">↑ commencer ici</button>` : ''}</h3>
+      <h3 class="hdv-t"><span>${HDV[h.hdv]}${etatHdv.get(h.hdv) ? ' <span class="ok">✓</span>' : ''}</span>${!etatHdv.get(h.hdv) && i > 0 ? `<button class="regen" data-hdv="${h.hdv}" title="Tu es déjà à cet HDV : commence par lui, les autres restent à faire ensuite"><svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Commencer ici</span></button>` : ''}</h3>
       ${h.groupes.map(g => groupeHtml(h, g)).join('')}</div>`).join('')}`;
 
   S.flash = null;

@@ -84,7 +84,7 @@ KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources), 
 - Une ligne par exemplaire : date de mise en vente, prix, coût du craft, coût de mise en vente, coût de FM, tous modifiables ; marge = prix − craft − mise en vente − FM.
 - **Frais de mise en vente** (règle de l'HDV) : 2 % du prix initial, puis 1 % du nouveau prix à chaque changement de prix. En draft, ils sont recalculés à 2 % du prix à chaque modification ; une fois la ligne validée, ils sont figés (sauf saisie manuelle). « Prix modifié » enregistre un changement de prix à l'HDV : nouveau prix et + 1 % de ce prix dans les frais. Modifier directement le champ prix d'une ligne validée est une simple correction, sans frais.
 - **Filtres et tri** (mémorisés) : nom, statut (draft / validé), sans prix, marge négative, en vente depuis plus de 7 ou 14 jours ; tri par nom, date de mise en vente, prix, marge ou rendement. Les indicateurs portent sur les lignes affichées ; la marge attendue est aussi donnée en % du coût (craft + FM) des lignes qui ont un prix.
-- Statut en trois étapes : **Crafté** (ajouté depuis le Craft ou à la main, chiffres à vérifier) → **En vente** (à l'HDV, frais figés) → **Vendu**. « Vendu » n'est possible que depuis « En vente ».
+- Statut : pastille **Crafté** (ajouté depuis le Craft ou à la main, chiffres à vérifier) / **En vente** (à l'HDV, frais figés), clic pour basculer. **✓ Vendu** est un bouton à part, grisé tant que la ligne est « Crafté ».
 - **Relevé OCR** depuis l'onglet (« Scanner mes ventes », zone propre) : item absent → ligne validée, coût estimé d'après la base ; même équipement au même prix → même annonce ; même équipement à un autre prix → tu choisis « Fusionner avec la ligne du … » (= changement de prix, + 1 % de frais sur une ligne validée) ou « Nouvelle ligne ». Deux exemplaires lus sur le même écran font deux lignes.
 - Tant qu'un équipement a au moins une ligne en vente, il n'est pas proposé dans le plan de craft ni préparé par le plan de scan.
 - **Vendu** : la ligne sort de la liste et passe dans le **Bilan** (date de vente modifiable).
@@ -93,9 +93,9 @@ KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources), 
 
 **Historique des prix** : chaque « Prix modifié » (ou fusion d'une annonce relue à un autre prix) est gardé. Les lignes de Ventes et du Bilan montrent la suite des prix (3,5 M → 3,2 M → 2,9 M), l'écart au prix initial et le nombre de changements. Le Bilan donne les changements de prix par vente, la part vendue après un changement de prix, l'écart moyen prix final / initial, et un tableau par équipement (ventes, prix moyen, marge moyenne et rendement, changements, écart) ; un clic sur un équipement déplie le détail de chacune de ses ventes. Un changement de prix saisi par erreur se supprime avec le × à côté du prix (son 1 % de frais est retiré). Les corrections du champ prix ne comptent pas comme des changements.
 
-**Filtres** (mémorisés) : recherche, période (tout, 30 jours, 90 jours, 12 mois), catégorie ; ils s'appliquent aux indicateurs, aux graphiques et au tableau.
+**Filtres** (mémorisés) : recherche, période (tout, 30 ou 90 derniers jours, un mois précis, ou entre deux dates), catégorie (dont « Armes (toutes) ») ; ils s'appliquent aux indicateurs, aux graphiques et au tableau.
 
-**Graphiques** : chiffre d'affaires et marge par mois (12 derniers), marge totale des 8 meilleurs équipements, répartition des délais de vente.
+**Graphiques** : marge totale des 8 meilleurs équipements, part des ventes selon le nombre de changements de prix (0, 1, 2, 3 et +), répartition des délais de vente.
 
 **Par équipement** : ventes, prix moyen, marge moyenne et rendement, marge totale, délai moyen, changements de prix, écart ; tri par clic sur une colonne. Un clic déplie ses ventes ; « modifier » ouvre les dates, l'historique des prix et les chiffres d'une vente, avec « Remettre en vente » et la suppression.
 

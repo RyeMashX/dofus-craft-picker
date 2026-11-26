@@ -414,9 +414,9 @@ body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
 .fin-achats > div:first-child, .fin-achats.ok-bloc { display: flex; flex-direction: column; gap: 2px; }
 .fin-achats input { width: 140px; }
 .conf-bleu { color: var(--f-bleu); border: 1px solid var(--f-bleu); }
-.statut3 { margin: 4px 0 2px; }
-.statut3 button[disabled] { opacity: 0.35; cursor: not-allowed; }
-.statut3 button[data-st3="vendu"]:not([disabled]):hover { color: var(--ok, #4caf50); }
+
+
+
 /* Bilan v2 : filtres, graphiques */
 .bl-filtres { flex-wrap: wrap; gap: 6px; }
 .bl-filtres input[type=search] { flex: 1 1 180px; min-width: 140px; }
@@ -448,3 +448,12 @@ i.ca { background: #4a5468; } i.mg { background: var(--ok, #4caf50); } i.mg.neg,
   .prix-items th:nth-child(3), .prix-items td:nth-child(3) { width: 17%; }
   .prix-items th:nth-child(4), .prix-items td:nth-child(4) { width: 30%; }
 }
+.hdv-t { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+/* statut d'une ligne de vente : Crafté / En vente (bascule), Vendu = action à part */
+.etape { display: inline-flex; align-items: center; gap: 5px; flex: none; margin-left: auto; padding: 2px 9px; font-size: 11px; font-weight: 600; border-radius: 12px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; }
+.etape i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.etape.et-valide { color: var(--accent); border-color: var(--accent); }
+.etape:hover { filter: brightness(1.2); }
+.vendu-btn[disabled] { opacity: 0.35; cursor: not-allowed; }
+.gh-b i.ch { background: var(--accent); }
+.kpis.kpis2 { grid-template-columns: 1fr 1fr; }

@@ -125,23 +125,21 @@ export function renderDonnees(ctx) {
     if (D.vendables) rows = rows.filter(x => x.vendables > 0);
     if (D.etat) rows = rows.filter(x => x.nRes === D.etat);
   }
-  // Barres de fraîcheur : elles suivent la recherche, la catégorie et le filtre « ventes » (pas le filtre d'état).
-  // Onglet Équipements : les équipements filtrés et leurs ressources ; onglet Ressources : l'inverse.
-  const filtre = D.q || D.cat || D.vendables;
-  const baseFiltre = lignes.filter(x => (!q || ctx.normaliser(x.nom).includes(q)) && dansCat(x)
-    && (!D.vendables || (onglet === 'equipements' ? (x.vendus ?? -1) >= p.volumeMin : x.vendables > 0)));
+  // Barres de fraîcheur : elles représentent exactement la liste affichée (tous les filtres).
+  // Onglet Équipements : les équipements listés et leurs ressources ; onglet Ressources : l'inverse.
+  const filtre = rows.length !== lignes.length;
   let eqB = eq, rsB = rs;
-  if (filtre && onglet === 'equipements') {
-    eqB = baseFiltre;
+  if (onglet === 'equipements') {
+    eqB = rows;
     const ids = new Set(eqB.flatMap(x => ingredients(x.it.recette).map(r => r.id)));
     rsB = rs.filter(r => ids.has(r.id));
-  } else if (filtre) {
-    rsB = baseFiltre;
+  } else {
+    rsB = rows;
     const ids = new Set(rsB.flatMap(r => r.usages.map(u => u.it.id)));
     eqB = eq.filter(x => ids.has(x.id));
   }
   const bars = `<div class="bars">
-    ${barre(`Volumes 30 j${filtre ? ` · ${eqB.length} équipements filtrés` : ''}`, compter(eqB, x => x.nVol))}
+    ${barre(`Volumes 30 j${filtre ? ` · ${eqB.length} équipement${eqB.length > 1 ? 's' : ''}` : ''}`, compter(eqB, x => x.nVol))}
     ${barre('Prix des équipements', compter(eqB, x => x.nPrix))}
     ${barre(`Prix des ressources${filtre ? ` · ${rsB.length}` : ''}`, compter(rsB, x => x.nRes))}
   </div>`;
