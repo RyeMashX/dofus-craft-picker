@@ -35,5 +35,7 @@ jobs:
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site
+      # l'artefact n'est parfois pas encore visible juste après l'envoi : petite attente
+      - run: sleep 15
       - id: deployment
         uses: actions/deploy-pages@v4
