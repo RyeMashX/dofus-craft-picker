@@ -133,11 +133,19 @@ export function renderBilan(ctx) {
     const m = marge(l), d = l.dateVente && l.dateMiseEnVente ? (l.dateVente - l.dateMiseEnVente) / 864e5 : null, edit = S.bilanEdit === l.uid;
     // infobulles : historique des prix (dates, montants, frais) et détail des coûts
     const nch = nbChangements(l), h = historiquePrix(l);
-    const tipChg = nch ? h.map((x, k) => `${dateCourte(x.date)} : ${fmt(x.prix)}${k ? ` (frais ${fmt(l.changements[k - 1].frais)})` : ' (prix initial)'}`).join('\n') : 'Aucun changement de prix';
-    const tipMarge = [`Prix de vente : ${fmt(l.prix)}`, `Craft : − ${fmt(l.coutCraft ?? 0)}`, `Mise en vente${nch ? ' et changements de prix' : ''} : − ${fmt(l.frais ?? 0)}`, `FM : − ${fmt(l.coutFm ?? 0)}`, `Marge : ${fmt(m)} (${pct(rendement(l))})`].join('\n');
+    const ligneTip = (lib, val, cls = '') => `<div class="tb-l ${cls}"><span>${lib}</span><b>${val}</b></div>`;
+    const tipMarge = `<div class="tip-bulle"><div class="tb-t">Détail de la marge</div>
+      ${ligneTip('Prix de vente', fmt(l.prix))}
+      ${ligneTip('Craft', `− ${fmt(l.coutCraft ?? 0)}`, 'moins')}
+      ${ligneTip(nch ? 'Mise en vente et changements' : 'Mise en vente', `− ${fmt(l.frais ?? 0)}`, 'moins')}
+      ${ligneTip('FM', `− ${fmt(l.coutFm ?? 0)}`, 'moins')}
+      <div class="tb-l tb-total"><span>Marge</span><b class="${m >= 0 ? 'ok' : 'bad'}">${fmt(m)} <small>${pct(rendement(l))}</small></b></div></div>`;
+    const tipChg = nch ? `<div class="tip-bulle"><div class="tb-t">Historique des prix</div>
+      <div class="tb-l tb-th"><span>date</span><span>prix</span><span>frais</span></div>
+      ${h.map((x, k) => `<div class="tb-l tb-3${k === h.length - 1 ? ' tb-dernier' : ''}"><span>${dateCourte(x.date)}${k ? '' : ' <em>initial</em>'}</span><b>${fmt(x.prix)}</b><span class="muted">${k ? fmt(l.changements[k - 1].frais) : '–'}</span></div>`).join('')}</div>` : '';
     return `<tr class="bv"><td>${dateCourte(l.dateMiseEnVente)}</td><td>${dateCourte(l.dateVente)}</td>
-      <td class="r">${fmtK(l.prix)}</td><td class="r" title="${esc(tipMarge)}"><span class="souligne ${m >= 0 ? 'ok' : 'bad'}">${fmtK(m)}</span> <span class="muted">${pct(rendement(l))}</span></td>
-      <td class="r" title="${esc(tipChg)}"><span class="${nch ? 'souligne' : 'muted'}">${nch}</span></td><td class="r">${jours(d)}</td>
+      <td class="r">${fmtK(l.prix)}</td><td class="r"><span class="ib"><span class="souligne ${m >= 0 ? 'ok' : 'bad'}">${fmtK(m)}</span> <span class="muted">${pct(rendement(l))}</span>${tipMarge}</span></td>
+      <td class="r">${nch ? `<span class="ib"><span class="souligne">${nch}</span>${tipChg}</span>` : '<span class="muted">0</span>'}</td><td class="r">${jours(d)}</td>
       <td class="r bv-act"><button class="link small" data-bedit="${l.uid}">${edit ? 'fermer' : 'modifier'}</button></td></tr>
       ${edit ? `<tr class="bv-edit"><td colspan="7">
         <div class="vt-meta"><label class="vf-date"><span>mis en vente le</span><input type="date" data-uid="${l.uid}" data-date="dateMiseEnVente" value="${jourIso(l.dateMiseEnVente)}"></label>
