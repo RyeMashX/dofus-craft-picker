@@ -8,6 +8,7 @@ import { detailCraft } from './craft-plan.js';
 import { icone } from './vue-plan.js';
 import { exclusion, exclure, reintegrer, finDeJournee, lotsEnVente } from './statut.js';
 import { vendues } from './ventes.js';
+import { ingredients } from './catalogue.js';
 
 const NOM_NIV = { noir: 'aucune info', rouge: 'introuvable', orange: 'périmé', jaune: 'à risque', vert: 'à jour', bleu: 'relevé il y a moins d\'une heure' };
 export const pastille = n => `<i class="pt pt-${n}" title="${NOM_NIV[n]}"></i>`;
@@ -64,6 +65,9 @@ function lignesRessources(S, p) {
 }
 
 // ---------- rendu ----------
+// Catégorie virtuelle : toutes les armes d'un coup
+const ARMES_CAT = '__armes';
+const ARMES = new Set(['Arc', 'Baguette', 'Bâton', 'Dague', 'Épée', 'Marteau', 'Pelle', 'Hache', 'Faux', 'Lance']);
 function barre(titre, compte) {
   const total = NIVEAUX.reduce((s, n) => s + compte[n], 0) || 1;
   const segs = [...NIVEAUX].reverse().map(n => compte[n] ? `<i class="seg-${n}" style="width:${(100 * compte[n] / total).toFixed(2)}%" title="${NOM_NIV[n]} : ${compte[n]}"></i>` : '').join('');
@@ -101,18 +105,14 @@ export function renderDonnees(ctx) {
     <div class="kpi"><div class="v">${vendables.length}</div><div class="l">à ${p.volumeMin} ventes ou plus</div></div>
     <div class="kpi"><div class="v ok">${eq.filter(x => x.etat === 'prêt').length}</div><div class="l">prêts pour le craft</div></div>
     <div class="kpi"><div class="v">${eq.filter(x => x.etat).length}</div><div class="l">utilisables (avec avertissement)</div></div>
-  </div>
-  <div class="bars">
-    ${barre('Volumes 30 j', compter(eq, x => x.nVol))}
-    ${barre('Prix des équipements', compter(eq, x => x.nPrix))}
-    ${barre('Prix des ressources', compter(rs, x => x.nRes))}
   </div>`;
 
   // ---- table ----
   const onglet = D.onglet, lignes = onglet === 'equipements' ? eq : rs;
   const cats = [...new Set(lignes.map(x => x.categorie))].sort(compareCategorie);
   const q = ctx.normaliser(D.q ?? '');
-  let rows = lignes.filter(x => (!q || ctx.normaliser(x.nom).includes(q)) && (!D.cat || x.categorie === D.cat));
+  const dansCat = x => !D.cat || (D.cat === ARMES_CAT ? ARMES.has(x.categorie) : x.categorie === D.cat);
+  let rows = lignes.filter(x => (!q || ctx.normaliser(x.nom).includes(q)) && dansCat(x));
   if (onglet === 'equipements') {
     if (D.vendables) rows = rows.filter(x => (x.vendus ?? -1) >= p.volumeMin);
     if (D.etat === 'prêt') rows = rows.filter(x => x.etat === 'prêt');
@@ -125,6 +125,27 @@ export function renderDonnees(ctx) {
     if (D.vendables) rows = rows.filter(x => x.vendables > 0);
     if (D.etat) rows = rows.filter(x => x.nRes === D.etat);
   }
+  // Barres de fraîcheur : elles suivent la recherche, la catégorie et le filtre « ventes » (pas le filtre d'état).
+  // Onglet Équipements : les équipements filtrés et leurs ressources ; onglet Ressources : l'inverse.
+  const filtre = D.q || D.cat || D.vendables;
+  const baseFiltre = lignes.filter(x => (!q || ctx.normaliser(x.nom).includes(q)) && dansCat(x)
+    && (!D.vendables || (onglet === 'equipements' ? (x.vendus ?? -1) >= p.volumeMin : x.vendables > 0)));
+  let eqB = eq, rsB = rs;
+  if (filtre && onglet === 'equipements') {
+    eqB = baseFiltre;
+    const ids = new Set(eqB.flatMap(x => ingredients(x.it.recette).map(r => r.id)));
+    rsB = rs.filter(r => ids.has(r.id));
+  } else if (filtre) {
+    rsB = baseFiltre;
+    const ids = new Set(rsB.flatMap(r => r.usages.map(u => u.it.id)));
+    eqB = eq.filter(x => ids.has(x.id));
+  }
+  const bars = `<div class="bars">
+    ${barre(`Volumes 30 j${filtre ? ` · ${eqB.length} équipements filtrés` : ''}`, compter(eqB, x => x.nVol))}
+    ${barre('Prix des équipements', compter(eqB, x => x.nPrix))}
+    ${barre(`Prix des ressources${filtre ? ` · ${rsB.length}` : ''}`, compter(rsB, x => x.nRes))}
+  </div>`;
+
   const { cle, sens } = D.tri;
   rows.sort((a, b) => {
     const va = a[cle], vb = b[cle];
@@ -186,13 +207,13 @@ export function renderDonnees(ctx) {
     ? [['', 'tous états'], ['prêt', 'prêts'], ['utilisable', 'utilisables'], ['vert', 'au moins un vert'], ['jaune', 'à risque (jaune)'], ['orange', 'périmé (orange)'], ['rouge', 'ressource introuvable (rouge)'], ['noir', 'sans info'], ['exclus', 'exclus (liste noire)'], ['enVente', 'en vente']]
     : [['', 'toutes fraîcheurs'], ['vert', 'à jour'], ['jaune', 'à risque'], ['orange', 'périmé'], ['rouge', 'introuvable'], ['noir', 'sans info']];
 
-  $('#donnees').innerHTML = `${kpis}
+  $('#donnees').innerHTML = `${kpis}${bars}
     <div class="row"><div id="don-onglets" class="seg">
       <button data-o="equipements" class="${onglet === 'equipements' ? 'on' : ''}">Équipements (${eq.length})</button>
       <button data-o="ressources" class="${onglet === 'ressources' ? 'on' : ''}">Ressources (${rs.length})</button></div></div>
     <input id="don-q" type="search" placeholder="Rechercher par nom" value="${esc(D.q)}" autocomplete="off">
     <div class="row small">
-      <select id="don-cat" class="small"><option value="">toutes catégories</option>${cats.map(c => `<option${c === D.cat ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
+      <select id="don-cat" class="small"><option value="">toutes catégories</option>${onglet === 'equipements' ? `<option value="${ARMES_CAT}"${D.cat === ARMES_CAT ? ' selected' : ''}>Armes (toutes)</option>` : ''}${cats.map(c => `<option${c === D.cat ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
       <select id="don-etat" class="small">${optEtat.map(([v, l]) => `<option value="${v}"${v === D.etat ? ' selected' : ''}>${l}</option>`).join('')}</select>
       <label class="sel"><input id="don-vend" type="checkbox"${D.vendables ? ' checked' : ''}> ${onglet === 'equipements' ? `${p.volumeMin} ventes ou plus` : 'utiles (équipements vendables)'}</label>
       <div class="spacer"></div><span class="muted">${rows.length} lignes</span>
