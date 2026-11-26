@@ -457,3 +457,48 @@ i.ca { background: #4a5468; } i.mg { background: var(--ok, #4caf50); } i.mg.neg,
 .vendu-btn[disabled] { opacity: 0.35; cursor: not-allowed; }
 .gh-b i.ch { background: var(--accent); }
 .kpis.kpis2 { grid-template-columns: 1fr 1fr; }
+.kpis.kpis3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 480px) { .kpis.kpis3 { grid-template-columns: 1fr 1fr; } }
+/* calendrier : période en deux clics */
+.cal { position: relative; }
+.cal-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: inherit; font-size: 12px; white-space: nowrap; }
+.cal-btn .ic { width: 14px; height: 14px; }
+.cal-btn.on, .cal-btn:hover { border-color: var(--accent); }
+.cal-pop { position: absolute; z-index: 30; top: calc(100% + 6px); right: 0; background: var(--card, #1b1d22); border: 1px solid var(--line); border-radius: 10px; padding: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+.cal-racc { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px; }
+.cal-racc button { font-size: 11px; padding: 3px 8px; border-radius: 12px; border: 1px solid var(--line); background: transparent; color: var(--muted); }
+.cal-racc button.on { color: var(--accent); border-color: var(--accent); }
+.cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.cal-nav button { background: transparent; border: 1px solid var(--line); color: inherit; border-radius: 6px; width: 26px; height: 24px; font-size: 15px; line-height: 1; }
+.cal-deux { display: flex; gap: 16px; }
+.cal-titre { text-align: center; font-size: 12px; font-weight: 600; margin-bottom: 4px; text-transform: capitalize; }
+.cal-grille { display: grid; grid-template-columns: repeat(7, 30px); gap: 2px 0; }
+.cal-grille i { font-style: normal; font-size: 10px; color: var(--muted); text-align: center; }
+.cal-grille button { height: 28px; border: none; background: transparent; color: inherit; font-size: 12px; border-radius: 0; cursor: pointer; }
+.cal-grille button:hover:not([disabled]) { outline: 1px solid var(--accent); border-radius: 6px; }
+.cal-grille button.dans { background: rgba(240, 190, 80, .16); }
+.cal-grille button.bord { background: var(--accent); color: #111; font-weight: 700; border-radius: 6px; }
+.cal-grille button.auj { text-decoration: underline; }
+.cal-grille button[disabled] { opacity: .3; cursor: default; }
+@media (max-width: 600px) { .cal-mois.second { display: none; } }
+/* graphique CA et marge dans le temps */
+.gr-large { margin: 10px 0 4px; overflow: visible; }
+.gt-tete { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.gt-tete h4 { margin: 0; }
+.gt { display: flex; gap: 6px; height: 190px; padding-top: 22px; }
+.gt-axe { display: flex; flex-direction: column; justify-content: space-between; font-size: 9px; color: var(--muted); text-align: right; padding-bottom: 14px; min-width: 34px; }
+.gt-barres { flex: 1; display: flex; align-items: stretch; gap: 2px; min-width: 0; border-left: 1px solid #2a2d35; background: linear-gradient(#2a2d35, #2a2d35) 0 50% / 100% 1px no-repeat; background-size: 100% 1px; }
+.gt-b { position: relative; flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.gt-col { flex: 1; display: flex; align-items: flex-end; justify-content: center; gap: 1px; border-bottom: 1px solid #2a2d35; }
+.gt-col i { display: block; width: 42%; max-width: 16px; border-radius: 2px 2px 0 0; min-height: 0; }
+.gt-l { height: 14px; font-size: 9px; color: var(--muted); text-align: center; white-space: nowrap; overflow: visible; }
+.gt-b:not(.vide):hover .gt-col { background: rgba(255,255,255,.05); }
+.gt-bulle { display: none; position: absolute; bottom: calc(100% - 20px); left: 50%; transform: translateX(-50%); z-index: 20; width: 260px; background: #0f1013; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 11px; box-shadow: 0 8px 24px rgba(0,0,0,.5); pointer-events: none; }
+.gt-bulle.g { left: 0; transform: none; } .gt-bulle.d { left: auto; right: 0; transform: none; }
+.gt-b:hover .gt-bulle { display: block; }
+.gt-bulle > div { margin-top: 2px; }
+.gt-v { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; }
+.gt-v span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gt-b .gt-col { position: relative; }
+.gt-val { position: absolute; left: 0; right: 0; margin-bottom: 16px; text-align: center; font-size: 9px; line-height: 1.15; color: var(--muted); pointer-events: none; transform: translateY(-2px); }
+.gt-val b { font-size: 10px; }

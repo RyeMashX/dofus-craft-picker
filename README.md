@@ -93,9 +93,9 @@ KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources) q
 
 **Historique des prix** : chaque « Prix modifié » (ou fusion d'une annonce relue à un autre prix) est gardé. Les lignes de Ventes et du Bilan montrent la suite des prix (3,5 M → 3,2 M → 2,9 M), l'écart au prix initial et le nombre de changements. Le Bilan donne les changements de prix par vente, la part vendue après un changement de prix, l'écart moyen prix final / initial, et un tableau par équipement (ventes, prix moyen, marge moyenne et rendement, changements, écart) ; un clic sur un équipement déplie le détail de chacune de ses ventes. Un changement de prix saisi par erreur se supprime avec le × à côté du prix (son 1 % de frais est retiré). Les corrections du champ prix ne comptent pas comme des changements.
 
-**Filtres** (mémorisés) : recherche, période (tout, 30 ou 90 derniers jours, un mois précis, ou entre deux dates), catégorie (dont « Armes (toutes) ») ; ils s'appliquent aux indicateurs, aux graphiques et au tableau.
+**Filtres** (mémorisés) : recherche, période choisie sur un calendrier en deux clics (début puis fin) ou par raccourci (7, 30, 90 jours glissants, 12 mois, tout ; 30 jours par défaut), catégorie (dont « Armes (toutes) ») ; ils s'appliquent aux indicateurs, aux graphiques et au tableau.
 
-**Graphiques** : marge totale des 8 meilleurs équipements, part des ventes selon le nombre de changements de prix (0, 1, 2, 3 et +), répartition des délais de vente.
+**Graphiques** : chiffre d'affaires et marge dans le temps, sur toute la largeur, par jour, semaine, mois ou année (valeurs affichées quand il y a peu de barres ; au survol : les ventes de la période avec prix et marge) ; marge totale des 8 meilleurs équipements, part des ventes selon le nombre de changements de prix (0, 1, 2, 3 et +), répartition des délais de vente.
 
 **Par équipement** : ventes, prix moyen, marge moyenne et rendement, marge totale, délai moyen, changements de prix, écart ; tri par clic sur une colonne. Un clic déplie ses ventes ; « modifier » ouvre les dates, l'historique des prix et les chiffres d'une vente, avec « Remettre en vente » et la suppression.
 

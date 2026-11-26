@@ -5,12 +5,20 @@
 import { vendues, marge, rendement, bilan, remettreEnVente, prixParItem, nbChangements, historiquePrix, supprimerLigne } from './ventes.js';
 import { icone } from './vue-plan.js';
 import { champ, brancherChamps, jourIso, histPrix, dateCourte } from './vue-ventes.js';
+import { calendrierHtml, brancherCalendrier, bornes, iso } from './calendrier.js';
 
 const MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 const ARMES_CAT = '__armes';
 const ARMES = new Set(['Arc', 'Baguette', 'Bâton', 'Dague', 'Épée', 'Marteau', 'Pelle', 'Hache', 'Faux', 'Lance']);
-const moisDe = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; };
-const nomMoisLong = k => { const [a, m] = k.split('-'); return `${MOIS[+m - 1]} ${a}`; };
+// Granularité du graphique : clé de la période d'une date, son libellé, et la période suivante
+const GRAINS = {
+  jour: { lib: 'jour', cle: d => iso(d), suivante: d => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1), titre: d => `${d.getDate()}/${String(d.getMonth() + 1).padStart(2, '0')}` },
+  semaine: { lib: 'semaine', debut: d => new Date(d.getFullYear(), d.getMonth(), d.getDate() - (d.getDay() + 6) % 7), suivante: d => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7), titre: d => `${d.getDate()}/${String(d.getMonth() + 1).padStart(2, '0')}` },
+  mois: { lib: 'mois', debut: d => new Date(d.getFullYear(), d.getMonth(), 1), suivante: d => new Date(d.getFullYear(), d.getMonth() + 1, 1), titre: d => `${MOIS[d.getMonth()]} ${String(d.getFullYear()).slice(2)}` },
+  annee: { lib: 'année', debut: d => new Date(d.getFullYear(), 0, 1), suivante: d => new Date(d.getFullYear() + 1, 0, 1), titre: d => String(d.getFullYear()) },
+};
+const debutDe = (g, t) => { const d = new Date(t); return (GRAINS[g].debut ?? (x => new Date(x.getFullYear(), x.getMonth(), x.getDate())))(d); };
+const MAX_BARRES = 90;
 const COLONNES = [
   ['nom', 'équipement'], ['ventes', 'ventes', 'Nombre de ventes'], ['prixMoyen', 'prix', 'Prix de vente moyen'],
   ['margeMoyenne', 'marge', 'Marge moyenne par vente, et rendement'], ['margeTotale', 'total', 'Marge totale'],
@@ -23,31 +31,26 @@ export function renderBilan(ctx) {
   const { S, $, $$, esc, fmtK, pct } = ctx;
   if (!S.catalogue) return;
   const items = new Map(S.catalogue.items.map(i => [i.id, i]));
-  const F = (S.etat.bilanVue ??= { q: '', periode: 'tout', cat: '', tri: 'margeTotale', sens: -1 });
-  if (!['tout', '30', '90', 'dates'].includes(F.periode) && !F.periode.startsWith('m:')) F.periode = 'tout';
+  const F = (S.etat.bilanVue ??= { q: '', cat: '', tri: 'margeTotale', sens: -1 });
+  F.plage ??= { glissant: 30 };                      // par défaut : les 30 derniers jours, glissants
+  F.grain ??= 'jour';
+  delete F.periode;
+  const cal = (S.calBilan ??= { ouvert: false });
 
   // ---- filtres : les ventes retenues alimentent tout l'onglet (indicateurs, graphiques, tableau) ----
   const toutes = vendues(S.base);
-  // période : tout, 30 / 90 derniers jours, un mois précis, ou entre deux dates (bornes incluses)
-  const debutJour = iso => iso ? new Date(`${iso}T00:00:00`).getTime() : null;
-  const dansPeriode = t => {
-    if (F.periode === 'tout') return true;
-    if (F.periode === '30' || F.periode === '90') return t >= Date.now() - Number(F.periode) * 864e5;
-    if (F.periode.startsWith('m:')) return moisDe(t) === F.periode.slice(2);
-    const du = debutJour(F.du), au = debutJour(F.au);
-    return (du == null || t >= du) && (au == null || t < au + 864e5);
-  };
+  const { debut, fin } = bornes(F.plage);
+  const dateDe = l => l.dateVente ?? l.dateMiseEnVente ?? 0;
   const dansCat = it => !F.cat || (F.cat === ARMES_CAT ? ARMES.has(it?.type) : it?.type === F.cat);
   const q = ctx.normaliser(F.q ?? '');
   const retenues = toutes.filter(l => {
-    const it = items.get(l.id);
-    return dansPeriode(l.dateVente ?? l.dateMiseEnVente ?? 0) && dansCat(it) && (!q || ctx.normaliser(it?.nom ?? '').includes(q));
+    const it = items.get(l.id), t = dateDe(l);
+    return (debut == null || t >= debut) && (fin == null || t < fin) && dansCat(it) && (!q || ctx.normaliser(it?.nom ?? '').includes(q));
   });
-  const moisVentes = [...new Set(toutes.map(l => moisDe(l.dateVente ?? l.dateMiseEnVente ?? 0)))].sort().reverse();
   const sous = { ...S.base, ventes: retenues };
   const b = bilan(sous);
   const cats = [...new Set(toutes.map(l => items.get(l.id)?.type).filter(Boolean))].sort();
-  const filtre = F.q || F.periode !== 'tout' || F.cat;
+  const filtre = retenues.length !== toutes.length;
 
   // ---- tableau par équipement ----
   const parItem = prixParItem(sous).map(p => ({ ...p, nom: items.get(p.id)?.nom ?? `#${p.id}`, margeTotale: p.margeMoyenne * p.ventes }));
@@ -58,6 +61,41 @@ export function renderBilan(ctx) {
   });
 
   // ---- graphiques ----
+  // CA et marge par jour / semaine / mois / année, sur la période choisie ; survol : ventes de la période
+  const graphTemps = (() => {
+    if (!retenues.length) return '';
+    const g = GRAINS[F.grain];
+    const t0 = debut ?? Math.min(...retenues.map(dateDe)), t1 = (fin ?? Date.now() + 1) - 1;
+    let barres = [];
+    for (let d = debutDe(F.grain, t0); d.getTime() <= t1; d = g.suivante(d)) barres.push({ d, cle: d.getTime(), ventes: [] });
+    const coupe = barres.length > MAX_BARRES;
+    if (coupe) barres = barres.slice(-MAX_BARRES);
+    const parCle = new Map(barres.map(x => [x.cle, x]));
+    for (const l of retenues) parCle.get(debutDe(F.grain, dateDe(l)).getTime())?.ventes.push(l);
+    for (const x of barres) { x.ca = x.ventes.reduce((s, l) => s + l.prix, 0); x.marge = x.ventes.reduce((s, l) => s + (marge(l) ?? 0), 0); }
+    const max = Math.max(...barres.map(x => Math.max(x.ca, Math.abs(x.marge))), 1);
+    const pas = barres.length > 45 ? Math.ceil(barres.length / 30) : barres.length > 20 ? 2 : 1;   // un libellé sur n
+    const totalCa = barres.reduce((s, x) => s + x.ca, 0), totalMg = barres.reduce((s, x) => s + x.marge, 0);
+    const bulle = (x, k) => {
+      const lignes = [...x.ventes].sort((a, c) => (marge(c) ?? 0) - (marge(a) ?? 0));
+      const cote = k < barres.length * 0.25 ? 'g' : k > barres.length * 0.75 ? 'd' : '';
+      return `<div class="gt-bulle ${cote}"><b>${g.titre(x.d)}${F.grain === 'semaine' ? ' (semaine)' : ''}</b>
+        <div>${x.ventes.length} vente${x.ventes.length > 1 ? 's' : ''} · CA ${fmtK(x.ca)} · marge <span class="${x.marge < 0 ? 'bad' : 'ok'}">${fmtK(x.marge)}</span></div>
+        ${lignes.slice(0, 12).map(l => { const m = marge(l); return `<div class="gt-v"><span>${esc(items.get(l.id)?.nom ?? '#' + l.id)}</span><span>${fmtK(l.prix)}</span><span class="${m < 0 ? 'bad' : 'ok'}">${fmtK(m)}</span></div>`; }).join('')}
+        ${lignes.length > 12 ? `<div class="muted">et ${lignes.length - 12} autres</div>` : ''}</div>`;
+    };
+    return `<div class="gr gr-large"><div class="gt-tete"><h4>Chiffre d'affaires et marge</h4>
+        <span class="muted small">CA ${fmtK(totalCa)} · marge <b class="${totalMg < 0 ? 'bad' : 'ok'}">${fmtK(totalMg)}</b></span><span class="spacer"></span>
+        <div id="bl-grain" class="seg small">${Object.entries(GRAINS).map(([k, v]) => `<button data-grain="${k}" class="${F.grain === k ? 'on' : ''}">${v.lib}</button>`).join('')}</div></div>
+      <div class="gt"><div class="gt-axe"><span>${fmtK(max)}</span><span>${fmtK(max / 2)}</span><span>0</span></div>
+        <div class="gt-barres">${barres.map((x, k) => `<div class="gt-b${x.ventes.length ? '' : ' vide'}">
+          ${x.ventes.length ? bulle(x, k) : ''}
+          ${barres.length <= 16 && x.ventes.length ? `<span class="gt-val" style="bottom:${(100 * Math.max(x.ca, Math.abs(x.marge)) / max).toFixed(1)}%"><b class="${x.marge < 0 ? 'bad' : 'ok'}">${fmtK(x.marge)}</b><br>${fmtK(x.ca)}</span>` : ''}
+          <div class="gt-col"><i class="ca" style="height:${(100 * x.ca / max).toFixed(1)}%"></i><i class="mg${x.marge < 0 ? ' neg' : ''}" style="height:${(100 * Math.abs(x.marge) / max).toFixed(1)}%"></i></div>
+          <span class="gt-l">${k % pas === 0 ? g.titre(x.d) : ''}</span></div>`).join('')}</div></div>
+      <p class="gr-leg"><i class="ca"></i> chiffre d'affaires <i class="mg"></i> marge${coupe ? ` · ${MAX_BARRES} dernières périodes seulement : choisis une granularité plus large` : ''} · survole une barre pour le détail</p></div>`;
+  })();
+
   // part des ventes selon le nombre de changements de prix avant la vente
   const graphChgts = (() => {
     if (!retenues.length) return '';
@@ -115,22 +153,21 @@ export function renderBilan(ctx) {
   $('#bilan').innerHTML = `
     <div class="row small bl-filtres">
       <input id="bl-q" type="search" placeholder="Rechercher un équipement" value="${esc(F.q)}" autocomplete="off">
-      <select id="bl-per" class="small">${[['tout', 'toute la période'], ['30', '30 derniers jours'], ['90', '90 derniers jours'], ...moisVentes.map(m => [`m:${m}`, nomMoisLong(m)]), ['dates', 'entre deux dates…']]
-        .map(([k, t]) => `<option value="${k}"${F.periode === k ? ' selected' : ''}>${t}</option>`).join('')}</select>
-      ${F.periode === 'dates' ? `<label class="vf-date"><span>du</span><input type="date" id="bl-du" value="${F.du ?? ''}"></label><label class="vf-date"><span>au</span><input type="date" id="bl-au" value="${F.au ?? ''}"></label>` : ''}
+      ${calendrierHtml(F.plage, cal, esc)}
       <select id="bl-cat" class="small"><option value="">toutes catégories</option><option value="${ARMES_CAT}"${F.cat === ARMES_CAT ? ' selected' : ''}>Armes (toutes)</option>${cats.map(c => `<option${c === F.cat ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
-      ${filtre ? '<button id="bl-raz" class="link small">effacer les filtres</button>' : ''}
+      ${F.q || F.cat ? '<button id="bl-raz" class="link small">effacer les filtres</button>' : ''}
     </div>
-    <div class="kpis kpis4">
+    <div class="kpis kpis3">
       <div class="kpi"><div class="v">${b.ventes}${filtre ? `<span class="muted small"> / ${toutes.length}</span>` : ''}</div><div class="l">ventes</div></div>
       <div class="kpi"><div class="v">${fmtK(b.ca)}</div><div class="l">chiffre d'affaires</div></div>
       <div class="kpi"><div class="v ${b.marge >= 0 ? 'ok' : 'bad'}">${fmtK(b.marge)}</div><div class="l">marge, ${pct(b.rendement)}</div></div>
-      <div class="kpi"><div class="v">${jours(b.delaiMoyen)}</div><div class="l">délai moyen de vente</div></div>
     </div>
-    ${b.ventes ? `<div class="kpis kpis2">
+    ${b.ventes ? `<div class="kpis kpis3">
+      <div class="kpi"><div class="v">${jours(b.delaiMoyen)}</div><div class="l">délai moyen de vente</div></div>
       <div class="kpi"><div class="v">${b.changementsMoyens.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}</div><div class="l">changements de prix par vente</div></div>
       <div class="kpi"><div class="v ${b.ecartMoyen < 0 ? 'bad' : ''}">${b.ecartMoyen > 0 ? '+' : ''}${pct(b.ecartMoyen)}</div><div class="l">écart moyen prix final / initial</div></div>
     </div>
+    ${graphTemps}
     <div class="graphes">${graphItems}${graphChgts}${graphDelais}</div>` : ''}
     <h3>Par équipement</h3>
     ${table}
@@ -140,11 +177,10 @@ export function renderBilan(ctx) {
   const set = (k, v) => { F[k] = v; ctx.sauverEtat(); ctx.renderTout(); };
   const qEl = $('#bl-q');
   qEl.oninput = () => { F.q = qEl.value; ctx.renderTout(); const n = $('#bl-q'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
-  $('#bl-per').onchange = e => set('periode', e.target.value);
-  const du = $('#bl-du'); if (du) du.onchange = e => set('du', e.target.value || null);
-  const au = $('#bl-au'); if (au) au.onchange = e => set('au', e.target.value || null);
+  brancherCalendrier($('#bilan'), F.plage, cal, plage => set('plage', plage), () => ctx.renderTout());
+  $$('#bl-grain [data-grain]').forEach(x => x.onclick = () => set('grain', x.dataset.grain));
   $('#bl-cat').onchange = e => set('cat', e.target.value);
-  const raz = $('#bl-raz'); if (raz) raz.onclick = () => { Object.assign(F, { q: '', periode: 'tout', cat: '', du: null, au: null }); ctx.sauverEtat(); ctx.renderTout(); };
+  const raz = $('#bl-raz'); if (raz) raz.onclick = () => { Object.assign(F, { q: '', cat: '', plage: { glissant: 30 } }); ctx.sauverEtat(); ctx.renderTout(); };
   $$('#bilan th[data-tri]').forEach(th => th.onclick = () => {
     const k = th.dataset.tri;
     F.sens = F.tri === k ? -F.sens : (k === 'nom' ? 1 : -1); F.tri = k; ctx.sauverEtat(); ctx.renderTout();
