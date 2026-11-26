@@ -63,7 +63,9 @@ function renderPreparation(ctx) {
 function renderDeroule(ctx) {
   const { S, $, $$, esc } = ctx;
   const plan = S.etat.plan;
+  // ordre des HDV : celui du plan, sauf si tu as choisi de commencer par un autre (« commencer ici »)
   const hdvs = organiser(plan, S.catalogue);
+  if (plan.premierHdv) hdvs.sort((a, b) => (b.hdv === plan.premierHdv) - (a.hdv === plan.premierHdv));
   const fait = (k, id) => tacheFaite(k, id, S.base, plan.cree);
 
   // état d'avancement
@@ -139,13 +141,14 @@ function renderDeroule(ctx) {
       <div class="spacer"></div><button id="plan-neuf" class="link small">nouveau plan</button></div>
     <div class="bar"><i style="width:${pct}%"></i></div>
     ${termine ? `<div class="fin"><b>Plan terminé ✓</b><p class="small">${plan.confirmation ? 'Prix confirmés : vérifie les marges du plan de craft, puis génère la liste d\'achat.' : 'Les données sont à jour pour le plan de craft.'}</p><button id="plan-craft" class="primary small">Voir le plan de craft</button></div>` : ''}
-    ${hdvsTries.map(h => `<div class="hdv${etatHdv.get(h.hdv) ? ' fini' : ''}">
-      <h3>${HDV[h.hdv]}${etatHdv.get(h.hdv) ? ' <span class="ok">✓</span>' : ''}</h3>
+    ${hdvsTries.map((h, i) => `<div class="hdv${etatHdv.get(h.hdv) ? ' fini' : ''}">
+      <h3>${HDV[h.hdv]}${etatHdv.get(h.hdv) ? ' <span class="ok">✓</span>' : ''}${!etatHdv.get(h.hdv) && i > 0 ? ` <button class="link small" data-hdv="${h.hdv}" title="Tu es déjà à cet HDV : commence par lui, les autres restent à faire ensuite">↑ commencer ici</button>` : ''}</h3>
       ${h.groupes.map(g => groupeHtml(h, g)).join('')}</div>`).join('')}`;
 
   S.flash = null;
   $('#plan-neuf').onclick = async () => { if (termine || await ctx.confirmer('Abandonner ce plan et en préparer un nouveau ?', { ok: 'Nouveau plan' })) { S.etat.plan = null; ctx.sauverEtat(); ctx.renderTout(); } };
   const pc = $('#plan-craft'); if (pc) pc.onclick = () => { S.etat.vue = 'resultats'; ctx.sauverEtat(); ctx.renderTout(); };
   $$('#plan .grp-tete').forEach(el => el.onclick = () => { S.groupeOuvert = el.dataset.g === ouvert ? '' : el.dataset.g; ctx.renderTout(); });
+  $$('#plan [data-hdv]').forEach(b => b.onclick = () => { plan.premierHdv = b.dataset.hdv; S.groupeOuvert = null; ctx.sauverEtat(); ctx.renderTout(); });
   ctx.brancherCopier('#plan');
 }
