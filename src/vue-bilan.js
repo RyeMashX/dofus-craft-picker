@@ -6,6 +6,8 @@ import { vendues, marge, rendement, bilan, remettreEnVente, prixParItem, nbChang
 import { icone } from './vue-plan.js';
 import { champ, brancherChamps, jourIso, histPrix, dateCourte } from './vue-ventes.js';
 import { calendrierHtml, brancherCalendrier, bornes, iso } from './calendrier.js';
+import { iconeCategorie } from './catalogue.js';
+import { menuHtml, brancherMenu } from './menu.js';
 
 const MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 const ARMES_CAT = '__armes';
@@ -28,7 +30,7 @@ const COLONNES = [
 const jours = d => d == null ? '–' : `${d.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} j`;
 
 export function renderBilan(ctx) {
-  const { S, $, $$, esc, fmtK, pct } = ctx;
+  const { S, $, $$, esc, fmt, fmtK, pct } = ctx;
   if (!S.catalogue) return;
   const items = new Map(S.catalogue.items.map(i => [i.id, i]));
   const F = (S.etat.bilanVue ??= { q: '', cat: '', tri: 'margeTotale', sens: -1 });
@@ -79,10 +81,15 @@ export function renderBilan(ctx) {
     const bulle = (x, k) => {
       const lignes = [...x.ventes].sort((a, c) => (marge(c) ?? 0) - (marge(a) ?? 0));
       const cote = k < barres.length * 0.25 ? 'g' : k > barres.length * 0.75 ? 'd' : '';
-      return `<div class="gt-bulle ${cote}"><b>${g.titre(x.d)}${F.grain === 'semaine' ? ' (semaine)' : ''}</b>
-        <div>${x.ventes.length} vente${x.ventes.length > 1 ? 's' : ''} · CA ${fmtK(x.ca)} · marge <span class="${x.marge < 0 ? 'bad' : 'ok'}">${fmtK(x.marge)}</span></div>
-        ${lignes.slice(0, 12).map(l => { const m = marge(l); return `<div class="gt-v"><span>${esc(items.get(l.id)?.nom ?? '#' + l.id)}</span><span>${fmtK(l.prix)}</span><span class="${m < 0 ? 'bad' : 'ok'}">${fmtK(m)}</span></div>`; }).join('')}
-        ${lignes.length > 12 ? `<div class="muted">et ${lignes.length - 12} autres</div>` : ''}</div>`;
+      const titre = F.grain === 'jour' ? new Date(x.cle).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+        : F.grain === 'semaine' ? `semaine du ${new Date(x.cle).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`
+        : F.grain === 'mois' ? new Date(x.cle).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : String(new Date(x.cle).getFullYear());
+      return `<div class="gt-bulle ${cote}">
+        <div class="gb-tete"><div class="gb-date">${titre}</div>
+          <div class="gb-kpis"><div><span>ventes</span><b>${x.ventes.length}</b></div><div><span>CA</span><b>${fmtK(x.ca)}</b></div><div><span>marge</span><b class="${x.marge < 0 ? 'bad' : 'ok'}">${fmtK(x.marge)}</b></div></div></div>
+        <div class="gt-v gb-th"><span>équipement</span><span>prix</span><span>marge</span></div>
+        ${lignes.slice(0, 12).map(l => { const m = marge(l), it = items.get(l.id); return `<div class="gt-v"><span class="gb-nom">${icone(it?.iconId)}<span>${esc(it?.nom ?? '#' + l.id)}</span></span><span>${fmtK(l.prix)}</span><span class="${m < 0 ? 'bad' : 'ok'}">${fmtK(m)}</span></div>`; }).join('')}
+        ${lignes.length > 12 ? `<div class="muted gb-plus">et ${lignes.length - 12} autres</div>` : ''}</div>`;
     };
     return `<div class="gr gr-large"><div class="gt-tete"><h4>Chiffre d'affaires et marge</h4>
         <span class="muted small">CA ${fmtK(totalCa)} · marge <b class="${totalMg < 0 ? 'bad' : 'ok'}">${fmtK(totalMg)}</b></span><span class="spacer"></span>
@@ -116,8 +123,7 @@ export function renderBilan(ctx) {
     if (!d.length) return '';
     const tranches = [['< 1 j', 0, 1], ['1 à 3 j', 1, 3], ['3 à 7 j', 3, 7], ['7 à 14 j', 7, 14], ['14 j et +', 14, Infinity]]
       .map(([t, a, z]) => [t, d.filter(x => x >= a && x < z).length]);
-    const max = Math.max(...tranches.map(x => x[1]), 1);
-    return `<div class="gr"><h4>Délai de vente</h4>${tranches.map(([t, n]) => `<div class="gh"><span class="gh-n">${t}</span><span class="gh-b"><i class="dl" style="width:${(100 * n / max).toFixed(1)}%"></i></span><b>${n}</b></div>`).join('')}</div>`;
+    return `<div class="gr"><h4>Délai de vente</h4>${tranches.map(([t, n]) => `<div class="gh" title="${n} vente${n > 1 ? 's' : ''} sur ${d.length}"><span class="gh-n">${t}</span><span class="gh-b"><i class="dl" style="width:${(100 * n / d.length).toFixed(1)}%"></i></span><b>${pct(n / d.length)}</b></div>`).join('')}</div>`;
   })();
 
   // ---- détail d'un équipement : ses ventes, avec actions ----
@@ -125,10 +131,15 @@ export function renderBilan(ctx) {
   const etroit = $('body').ownerDocument.defaultView.matchMedia('(max-width: 560px)').matches;
   const venteHtml = l => {
     const m = marge(l), d = l.dateVente && l.dateMiseEnVente ? (l.dateVente - l.dateMiseEnVente) / 864e5 : null, edit = S.bilanEdit === l.uid;
-    return `<tr class="bv"><td>${dateCourte(l.dateVente)}${nbChangements(l) ? `<div class="muted small">${historiquePrix(l).map(x => fmtK(x.prix)).join(' → ')}</div>` : ''}</td>
-      <td class="r">${fmtK(l.prix)}</td><td class="r"><span class="${m >= 0 ? 'ok' : 'bad'}">${fmtK(m)}</span> <span class="muted">${pct(rendement(l))}</span></td><td class="r">${jours(d)}</td>
+    // infobulles : historique des prix (dates, montants, frais) et détail des coûts
+    const nch = nbChangements(l), h = historiquePrix(l);
+    const tipChg = nch ? h.map((x, k) => `${dateCourte(x.date)} : ${fmt(x.prix)}${k ? ` (frais ${fmt(l.changements[k - 1].frais)})` : ' (prix initial)'}`).join('\n') : 'Aucun changement de prix';
+    const tipMarge = [`Prix de vente : ${fmt(l.prix)}`, `Craft : − ${fmt(l.coutCraft ?? 0)}`, `Mise en vente${nch ? ' et changements de prix' : ''} : − ${fmt(l.frais ?? 0)}`, `FM : − ${fmt(l.coutFm ?? 0)}`, `Marge : ${fmt(m)} (${pct(rendement(l))})`].join('\n');
+    return `<tr class="bv"><td>${dateCourte(l.dateMiseEnVente)}</td><td>${dateCourte(l.dateVente)}</td>
+      <td class="r">${fmtK(l.prix)}</td><td class="r" title="${esc(tipMarge)}"><span class="souligne ${m >= 0 ? 'ok' : 'bad'}">${fmtK(m)}</span> <span class="muted">${pct(rendement(l))}</span></td>
+      <td class="r" title="${esc(tipChg)}"><span class="${nch ? 'souligne' : 'muted'}">${nch}</span></td><td class="r">${jours(d)}</td>
       <td class="r bv-act"><button class="link small" data-bedit="${l.uid}">${edit ? 'fermer' : 'modifier'}</button></td></tr>
-      ${edit ? `<tr class="bv-edit"><td colspan="5">
+      ${edit ? `<tr class="bv-edit"><td colspan="7">
         <div class="vt-meta"><label class="vf-date"><span>mis en vente le</span><input type="date" data-uid="${l.uid}" data-date="dateMiseEnVente" value="${jourIso(l.dateMiseEnVente)}"></label>
           <label class="vf-date"><span>vendu le</span><input type="date" data-uid="${l.uid}" data-date="dateVente" value="${jourIso(l.dateVente ?? Date.now())}"></label></div>
         ${histPrix(ctx, l)}
@@ -146,7 +157,7 @@ export function renderBilan(ctx) {
         <td class="r ${p.margeTotale < 0 ? 'bad' : ''}">${fmtK(p.margeTotale)}</td><td class="r">${jours(p.delaiMoyen)}</td>
         <td class="r">${p.changementsMoyens.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}</td>
         <td class="r ${p.ecartMoyen < 0 ? 'bad' : ''}">${p.ecartMoyen ? `${p.ecartMoyen > 0 ? '+' : ''}${pct(p.ecartMoyen)}` : '0 %'}</td></tr>
-        ${ouvert ? `<tr class="pi-det"><td colspan="${etroit ? 4 : COLONNES.length}"><table class="pi-t"><thead><tr><th>vendu le</th><th class="r">prix</th><th class="r">marge</th><th class="r">délai</th><th></th></tr></thead><tbody>
+        ${ouvert ? `<tr class="pi-det"><td colspan="${etroit ? 4 : COLONNES.length}"><table class="pi-t"><thead><tr><th>mis en vente</th><th>vendu le</th><th class="r">prix</th><th class="r">marge</th><th class="r" title="Changements de prix (détail au survol)">chgts</th><th class="r">délai</th><th></th></tr></thead><tbody>
           ${p.lignes.map(venteHtml).join('')}</tbody></table></td></tr>` : ''}`; }).join('')}
     </tbody></table>` : `<p class="muted small">${toutes.length ? 'Aucune vente avec ces filtres.' : 'Rien de vendu pour l\'instant. Dans l\'onglet Ventes, « Vendu » fait passer une ligne ici.'}</p>`;
 
@@ -154,7 +165,8 @@ export function renderBilan(ctx) {
     <div class="row small bl-filtres">
       <input id="bl-q" type="search" placeholder="Rechercher un équipement" value="${esc(F.q)}" autocomplete="off">
       ${calendrierHtml(F.plage, cal, esc)}
-      <select id="bl-cat" class="small"><option value="">toutes catégories</option><option value="${ARMES_CAT}"${F.cat === ARMES_CAT ? ' selected' : ''}>Armes (toutes)</option>${cats.map(c => `<option${c === F.cat ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
+      ${menuHtml('bl-cat', F.cat ?? '', [{ v: '', lib: 'toutes catégories' }, { v: ARMES_CAT, lib: 'Armes (toutes)', iconId: iconeCategorie(S.catalogue, ARMES_CAT) },
+        ...cats.map(c => ({ v: c, lib: c, iconId: iconeCategorie(S.catalogue, c) }))], esc, (S.menus ??= {}).ouvert === 'bl-cat', true)}
       ${F.q || F.cat ? '<button id="bl-raz" class="link small">effacer les filtres</button>' : ''}
     </div>
     <div class="kpis kpis3">
@@ -179,7 +191,7 @@ export function renderBilan(ctx) {
   qEl.oninput = () => { F.q = qEl.value; ctx.renderTout(); const n = $('#bl-q'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
   brancherCalendrier($('#bilan'), F.plage, cal, plage => set('plage', plage), () => ctx.renderTout());
   $$('#bl-grain [data-grain]').forEach(x => x.onclick = () => set('grain', x.dataset.grain));
-  $('#bl-cat').onchange = e => set('cat', e.target.value);
+  brancherMenu($('#bilan'), 'bl-cat', S.menus, v => set('cat', v), () => ctx.renderTout());
   const raz = $('#bl-raz'); if (raz) raz.onclick = () => { Object.assign(F, { q: '', cat: '', plage: { glissant: 30 } }); ctx.sauverEtat(); ctx.renderTout(); };
   $$('#bilan th[data-tri]').forEach(th => th.onclick = () => {
     const k = th.dataset.tri;

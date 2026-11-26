@@ -1,7 +1,7 @@
 // Onglet Scan : préparation du plan (temps disponible → aperçu), puis déroulé par HDV et groupes de filtres.
 
 import { calculerPlan, organiser, tacheFaite } from './plan.js';
-import { venduALUnite } from './catalogue.js';
+import { venduALUnite, iconeCategorie } from './catalogue.js';
 
 const LIB = { volume: 'Volume', prixItem: 'Prix', ressource: 'Prix' };
 const MODE = { volume: 'courbe', prixItem: 'annonces', ressource: 'lots' };
@@ -119,7 +119,7 @@ function renderDeroule(ctx) {
     return `<div class="grp${gFait ? ' fini' : ''}${estOuvert ? ' ouvert' : ''}${S.flash === k ? ' flash' : ''}" data-g="${esc(k)}">
       <div class="grp-tete" data-g="${esc(k)}">
         <span class="grp-etat">${gFait ? '✓' : estOuvert ? '▾' : '▸'}</span>
-        <span class="grp-filtres"><b>${esc(g.categories.join(', '))}</b> <span class="muted">· ${niv}</span></span>
+        <span class="grp-filtres"><b class="cats-ico">${g.categories.map(c => `<span class="cat-ico">${icone(iconeCategorie(S.catalogue, c))}${esc(c)}</span>`).join(', ')}</b> <span class="muted">· ${niv}</span></span>
         <span class="muted small">${n}/${g.lignes.length}</span>
       </div>
       ${estOuvert ? `<table class="rt plan-rt"><colgroup><col class="c-copie"><col class="c-ico"><col><col class="c-bd"></colgroup><tbody>${g.lignes.map(ligneHtml).join('')}</tbody></table>` : ''}

@@ -95,9 +95,9 @@ KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources) q
 
 **Filtres** (mémorisés) : recherche, période choisie sur un calendrier en deux clics (début puis fin) ou par raccourci (7, 30, 90 jours glissants, 12 mois, tout ; 30 jours par défaut), catégorie (dont « Armes (toutes) ») ; ils s'appliquent aux indicateurs, aux graphiques et au tableau.
 
-**Graphiques** : chiffre d'affaires et marge dans le temps, sur toute la largeur, par jour, semaine, mois ou année (valeurs affichées quand il y a peu de barres ; au survol : les ventes de la période avec prix et marge) ; marge totale des 8 meilleurs équipements, part des ventes selon le nombre de changements de prix (0, 1, 2, 3 et +), répartition des délais de vente.
+**Graphiques** : chiffre d'affaires et marge dans le temps, sur toute la largeur, par jour, semaine, mois ou année (valeurs affichées quand il y a peu de barres ; au survol : date, nombre de ventes, CA et marge, puis chaque équipement vendu avec son image, son prix et sa marge) ; marge totale des 8 meilleurs équipements, part des ventes selon le nombre de changements de prix (0, 1, 2, 3 et +), répartition des délais de vente en % (nombre de ventes au survol).
 
-**Par équipement** : ventes, prix moyen, marge moyenne et rendement, marge totale, délai moyen, changements de prix, écart ; tri par clic sur une colonne. Un clic déplie ses ventes ; « modifier » ouvre les dates, l'historique des prix et les chiffres d'une vente, avec « Remettre en vente » et la suppression.
+**Par équipement** : ventes, prix moyen, marge moyenne et rendement, marge totale, délai moyen, changements de prix, écart ; tri par clic sur une colonne. Un clic déplie ses ventes (mise en vente, vente, prix, marge avec le détail des coûts au survol, nombre de changements de prix avec dates et montants au survol, délai) ; « modifier » ouvre les dates, l'historique des prix et les chiffres d'une vente, avec « Remettre en vente » et la suppression.
 
 ## Liste noire
 
@@ -192,6 +192,8 @@ Partout (Données, Craft, plan de scan) : marge = prix de vente visé − taxe d
 - Ce rectangle est lu à trois tailles (×1, ×1,5, ×0,75) et chaque rangée est votée : Tesseract confond 9 et 3 selon la taille du texte. Sans majorité, l'ordre des prix départage.
 - **Ressource** : une ligne par taille, dans l'ordre 1, 10, 100, 1000. Avec 4 lignes c'est forcément 1, 10, 100, 1000 ; avec moins, la combinaison croissante qui contredit le moins les lots lus et garde des prix unitaires cohérents. Un lot corrigé est marqué « déduit ».
 - **Équipement** : prix croissants de haut en bas. Une ligne moins chère que la précédente est marquée douteuse et une alerte donne son numéro.
+
+Les catégories (filtres de Données et du Bilan, colonne catégorie, groupes du plan de scan et de la liste d'achat) sont affichées avec un logo : l'icône d'un objet de la catégorie.
 
 ## Limites connues (V1)
 

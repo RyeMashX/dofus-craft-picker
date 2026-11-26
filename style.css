@@ -502,3 +502,33 @@ i.ca { background: #4a5468; } i.mg { background: var(--ok, #4caf50); } i.mg.neg,
 .gt-b .gt-col { position: relative; }
 .gt-val { position: absolute; left: 0; right: 0; margin-bottom: 16px; text-align: center; font-size: 9px; line-height: 1.15; color: var(--muted); pointer-events: none; transform: translateY(-2px); }
 .gt-val b { font-size: 10px; }
+/* menu déroulant avec icônes */
+.menu { position: relative; display: inline-block; }
+.menu-btn { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: inherit; font-size: 12px; white-space: nowrap; max-width: 220px; }
+.menu-btn span:not(.menu-chev) { overflow: hidden; text-overflow: ellipsis; }
+.menu-btn.on, .menu-btn:hover { border-color: var(--accent); }
+.menu-chev { color: var(--muted); font-size: 10px; }
+.menu-btn .ico, .menu-liste .ico { width: 18px; height: 18px; flex: none; }
+.menu-liste { position: absolute; z-index: 40; top: calc(100% + 4px); left: 0; min-width: 200px; max-height: 340px; overflow-y: auto; background: var(--card, #1b1d22); border: 1px solid var(--line); border-radius: 8px; padding: 4px; box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+.menu-liste button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 4px 8px; border: none; background: transparent; color: inherit; font-size: 12px; text-align: left; border-radius: 6px; white-space: nowrap; }
+.menu-liste button:hover { background: rgba(255,255,255,.06); }
+.menu-liste button.on { color: var(--accent); }
+.cat-ico { display: inline-flex; align-items: center; gap: 5px; }
+.cat-ico .ico { width: 16px; height: 16px; }
+/* bulle du graphique : en-tête (date + chiffres) puis liste */
+.gt-bulle { width: 300px; padding: 0; overflow: hidden; }
+.gb-tete { background: #1d2027; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.gb-date { font-weight: 700; font-size: 12px; text-transform: capitalize; margin-bottom: 6px; }
+.gb-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.gb-kpis div { display: flex; flex-direction: column; }
+.gb-kpis span { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.gb-kpis b { font-size: 13px; }
+.gt-bulle .gt-v { padding: 3px 10px; align-items: center; }
+.gt-bulle .gb-th { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding-top: 6px; }
+.gb-nom { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.gb-nom .ico { width: 20px; height: 20px; flex: none; }
+.gb-nom span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gb-plus { padding: 2px 10px 6px; }
+.gt-bulle .gt-v:last-child { padding-bottom: 8px; }
+.souligne { text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
+.menu-liste.droite { left: auto; right: 0; }

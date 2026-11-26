@@ -8,7 +8,8 @@ import { detailCraft } from './craft-plan.js';
 import { icone } from './vue-plan.js';
 import { exclusion, exclure, reintegrer, finDeJournee, lotsEnVente } from './statut.js';
 import { vendues } from './ventes.js';
-import { ingredients } from './catalogue.js';
+import { ingredients, iconeCategorie } from './catalogue.js';
+import { menuHtml, brancherMenu } from './menu.js';
 
 const NOM_NIV = { noir: 'aucune info', rouge: 'introuvable', orange: 'périmé', jaune: 'à risque', vert: 'à jour', bleu: 'relevé il y a moins d\'une heure' };
 export const pastille = n => `<i class="pt pt-${n}" title="${NOM_NIV[n]}"></i>`;
@@ -161,7 +162,7 @@ export function renderDonnees(ctx) {
     return `<span class="editable" data-champ="${c.edit}" data-id="${x.id}" title="Cliquer pour modifier">${contenu}</span>`;
   };
   const rendEq = x => ({
-    nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>`, categorie: esc(x.categorie), niveau: x.niveau,
+    nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>`, categorie: `<span class="cat-ico">${icone(iconeCategorie(S.catalogue, x.categorie))}${esc(x.categorie)}</span>`, niveau: x.niveau,
     vendus: `${fmt(x.vendus)} ${pastille(x.nVol)}`, prixMin: `${x.aucune ? '<span class="muted small" title="Aucun exemplaire en vente au dernier relevé">aucun</span>' : fmtK(x.prixMin)} ${pastille(affiche(x.nPrix, bleuPrixItem(S.base.items[x.id])))}`, prixMoyen: fmtK(x.prixMoyen),
     cout: fmtK(x.cout), rendement: x.rendement == null ? '–' : `<span class="${x.rendement >= p.margeMin ? 'ok' : x.rendement < 0 ? 'bad' : ''}"${x.fm ? ` title="FM estimée comprise : ${fmtK(x.fm)}"` : ''}>${pct(x.rendement)}</span>`,
     resVertes: `<span title="${x.compte.vert} vertes, ${x.compte.jaune} jaunes, ${x.compte.orange} orange, ${x.compte.rouge} introuvables, ${x.compte.noir} sans info">${x.resVertes}/${x.resTotal}</span> ${pastille(x.compte.noir ? 'noir' : x.compte.rouge ? 'rouge' : x.compte.orange ? 'orange' : x.compte.jaune ? 'jaune' : 'vert')}`,
@@ -173,7 +174,7 @@ export function renderDonnees(ctx) {
       : x.etat ? '<span class="tag faire" title="Données utilisables, avec des jaunes">utilisable</span>' : '',
   });
   const rendRs = x => ({
-    nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>`, categorie: esc(x.categorie), niveau: x.niveau,
+    nom: `${icone(x.iconId)} <span class="lien">${esc(x.nom)}</span>`, categorie: `<span class="cat-ico">${icone(iconeCategorie(S.catalogue, x.categorie))}${esc(x.categorie)}</span>`, niveau: x.niveau,
     x1: fmt(x.x1), x10: fmt(x.x10), x100: fmt(x.x100), x1000: fmt(x.x1000), prixMoyen: fmt(x.prixMoyen),
     vendables: `${x.vendables} <span class="muted">/ ${x.utilisations}</span>`, date: `${ctx.age(x.date)} ${pastille(affiche(x.nRes, bleuRessource(S.base.ressources[x.id])))}`,
   });
@@ -211,7 +212,8 @@ export function renderDonnees(ctx) {
       <button data-o="ressources" class="${onglet === 'ressources' ? 'on' : ''}">Ressources (${rs.length})</button></div></div>
     <input id="don-q" type="search" placeholder="Rechercher par nom" value="${esc(D.q)}" autocomplete="off">
     <div class="row small">
-      <select id="don-cat" class="small"><option value="">toutes catégories</option>${onglet === 'equipements' ? `<option value="${ARMES_CAT}"${D.cat === ARMES_CAT ? ' selected' : ''}>Armes (toutes)</option>` : ''}${cats.map(c => `<option${c === D.cat ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
+      ${menuHtml('don-cat', D.cat ?? '', [{ v: '', lib: 'toutes catégories' }, ...(onglet === 'equipements' ? [{ v: ARMES_CAT, lib: 'Armes (toutes)', iconId: iconeCategorie(S.catalogue, ARMES_CAT) }] : []),
+        ...cats.map(c => ({ v: c, lib: c, iconId: iconeCategorie(S.catalogue, c) }))], esc, (S.menus ??= {}).ouvert === 'don-cat')}
       <select id="don-etat" class="small">${optEtat.map(([v, l]) => `<option value="${v}"${v === D.etat ? ' selected' : ''}>${l}</option>`).join('')}</select>
       <label class="sel"><input id="don-vend" type="checkbox"${D.vendables ? ' checked' : ''}> ${onglet === 'equipements' ? `${p.volumeMin} ventes ou plus` : 'utiles (équipements vendables)'}</label>
       <div class="spacer"></div><span class="muted">${rows.length} lignes</span>
@@ -230,7 +232,7 @@ export function renderDonnees(ctx) {
   ctx.$$('#don-onglets button').forEach(b => b.onclick = () => { D.onglet = b.dataset.o; D.cat = ''; D.etat = ''; D.tri = { cle: 'nom', sens: 1 }; D.n = 100; ctx.sauverEtat(); ctx.renderTout(); });
   const qEl = $('#don-q');
   qEl.oninput = () => { D.q = qEl.value; D.n = 100; ctx.renderTout(); const n = $('#don-q'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
-  $('#don-cat').onchange = e => set('cat', e.target.value);
+  brancherMenu($('#donnees'), 'don-cat', S.menus, v => set('cat', v), () => ctx.renderTout());
   $('#don-etat').onchange = e => set('etat', e.target.value);
   $('#don-vend').onchange = e => set('vendables', e.target.checked);
   const plus = $('#don-plus'); if (plus) plus.onclick = () => set('n', D.n + 100);

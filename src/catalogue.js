@@ -64,3 +64,16 @@ export function venduALUnite(res, catalogue) {
   catalogue._typesEquip ??= new Set(catalogue.items.map(i => i.type));
   return catalogue._typesEquip.has(res.type);
 }
+
+// Logo d'une catégorie (Anneau, Bois, Épée…) : l'icône d'un objet de cette catégorie, le plus bas niveau d'abord.
+// Catégorie virtuelle « Armes (toutes) » : une épée.
+export function iconeCategorie(catalogue, type) {
+  if (!catalogue._iconesCat) {
+    const m = new Map();
+    const voir = o => { if (!o?.type || !o.iconId) return; const x = m.get(o.type); if (!x || (o.niveau ?? 0) < x.niveau) m.set(o.type, { iconId: o.iconId, niveau: o.niveau ?? 0 }); };
+    catalogue.items.forEach(voir); Object.values(catalogue.ressources).forEach(voir);
+    catalogue._iconesCat = m;
+  }
+  if (type === '__armes') type = 'Épée';
+  return catalogue._iconesCat.get(type)?.iconId ?? null;
+}

@@ -6,7 +6,7 @@ import { etatCraft, signaturePlan } from './vue-craft.js';
 import { niveauRessource, affiche, bleuRessource } from './fraicheur.js';
 import { estIndispo } from './base.js';
 import { pastille } from './vue-donnees.js';
-import { venduALUnite } from './catalogue.js';
+import { venduALUnite, iconeCategorie } from './catalogue.js';
 import { repartirDepense, itemsStop } from './craft-plan.js';
 import { ajouterVente } from './ventes.js';
 import { icone } from './vue-plan.js';
@@ -132,7 +132,7 @@ export function renderAchats(ctx) {
     const tete = nouveau ? `<h3>${HDV[g.hdv]}</h3><div class="ac-tete"><span></span><span class="c-q">qté</span><span class="c-t">total</span><span class="c-pu">prix/u</span><span></span></div>` : '';
     hdvCourant = g.hdv;
     const n = g.lignes.filter(fait).length;
-    return `${tete}<div class="grp${n === g.lignes.length ? ' fini' : ''}"><div class="grp-tete"><span class="grp-filtres"><b>${esc(g.type)}</b></span><span class="muted small">${n}/${g.lignes.length}</span></div>
+    return `${tete}<div class="grp${n === g.lignes.length ? ' fini' : ''}"><div class="grp-tete"><span class="grp-filtres"><b class="cat-ico">${icone(iconeCategorie(S.catalogue, g.type))}${esc(g.type)}</b></span><span class="muted small">${n}/${g.lignes.length}</span></div>
       <div class="ac">${g.lignes.map(ligne).join('')}</div></div>`;
   }).join('');
 
