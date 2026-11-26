@@ -62,7 +62,7 @@ Pour le volume, la courbe doit être sur l'onglet **30 jours** (détecté à sa 
 
 ## Onglet Données
 
-KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources), puis deux tables (Équipements, Ressources) : recherche, filtres (catégorie, état ou fraîcheur, vendables), tri par colonne, modification directe des valeurs (clic sur une valeur soulignée), et détail au clic sur le nom (recette d'un équipement, items qui utilisent une ressource).
+KPIs, trois barres de fraîcheur (volumes, prix équipements, prix ressources) qui représentent exactement la liste affichée (tous les filtres, et les ressources des équipements listés ou inversement), puis deux tables (Équipements, Ressources) : recherche, filtres (catégorie, état ou fraîcheur, vendables), tri par colonne, modification directe des valeurs (clic sur une valeur soulignée), et détail au clic sur le nom (recette d'un équipement, items qui utilisent une ressource).
 
 Équipements : une seule colonne **Statut**, par priorité exclu > en vente (n exemplaires) > prêt > utilisable ; colonne **Mes ventes** = exemplaires vendus (Bilan).
 
