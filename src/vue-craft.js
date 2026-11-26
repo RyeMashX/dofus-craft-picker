@@ -59,7 +59,7 @@ export function renderCraft(ctx) {
     fixer(recommanderDansBudget(liste, offres, budget, p, S.catalogue, S.base));
     ctx.toast('Plan de craft généré ✓');
   };
-  // Mise en vente : chaque unité devient une ligne « draft » dans Ventes et sort du plan
+  // Mise en vente : chaque unité devient une ligne « Crafté » dans Ventes et sort du plan
   const mettreEnVente = (l, n) => {
     for (let k = 0; k < n; k++) ajouterVente(S.base, { id: l.id, statut: 'draft', prix: l.prixVente, coutCraft: Math.round(l.craftN / l.n), coutFm: l.fmSource ? Math.round(l.fmN / l.n) : null });
     ctx.sauverBase();
@@ -92,7 +92,7 @@ export function renderCraft(ctx) {
         <span class="stepper"><button data-moins="${l.id}" title="Un craft de moins">−</button><b>${l.n}</b><button data-plus="${l.id}" title="Un craft de plus">+</button></span>
         <span class="muted small">coût</span> ${fmtK(l.coutN)}
         <span class="muted small">marge</span> <b class="${l.margeN >= 0 ? 'ok' : 'bad'}">${fmtK(l.margeN)}</b> <span class="muted small">${pct(l.rendementN)}</span> ${delta(l)}
-        <span class="cp-act"><button class="secondary small" data-vendre="${l.id}" title="Mettre 1 exemplaire en vente (ligne « draft » dans Ventes, retiré du plan)">🏷 vente</button>
+        <span class="cp-act"><button class="secondary small" data-vendre="${l.id}" title="Mettre 1 exemplaire en vente (ligne « Crafté » dans Ventes, retiré du plan)">🏷 vente</button>
         <button class="retirer" data-retirer="${l.id}" title="Retirer du plan">✕</button></span>
       </div>
       ${l.raison ? `<div class="small warn">Plus viable : ${esc(l.raison)}. Vérifie ses données avant de l'acheter.</div>` : ''}
@@ -127,7 +127,7 @@ export function renderCraft(ctx) {
         : `<p class="small conf-ok">${pastilleBleue} Tous les prix du plan ont moins d'une heure.</p>`}
       <div class="row">
         <button id="cp-achats" class="${aConfirmer.length ? 'secondary' : 'primary'} small">${achatsAJour ? 'Voir la liste d\'achat →' : 'Générer la liste d\'achat →'}</button>
-        <button id="cp-tout-vendre" class="secondary small" title="Chaque exemplaire du plan devient une ligne « draft » dans Ventes">🏷 Tout mettre en vente</button></div>
+        <button id="cp-tout-vendre" class="secondary small" title="Chaque exemplaire du plan devient une ligne « Crafté » dans Ventes">🏷 Tout mettre en vente</button></div>
       ${S.etat.listeAchat && !achatsAJour ? '<p class="small warn">Le plan a changé depuis la dernière liste d\'achat.</p>' : ''}
       <p class="muted small">Marge nette de la taxe et de la FM estimée ; achats regroupés entre crafts.</p>`
       : '<p class="muted small">Le plan est vide. Ajoute des crafts depuis la liste ci-dessous, ou régénère-le.</p>'}`;
@@ -187,7 +187,7 @@ export function renderCraft(ctx) {
   $$('#craft-plan [data-plus]').forEach(b => b.onclick = () => modifier(b.dataset.plus, +1));
   $$('#craft-plan [data-moins]').forEach(b => b.onclick = () => modifier(b.dataset.moins, -1));
   $$('#craft-plan [data-retirer]').forEach(b => b.onclick = () => modifier(b.dataset.retirer, -Infinity));
-  $$('#craft-plan [data-vendre]').forEach(b => b.onclick = () => { const l = ev.lignes.find(x => x.id === +b.dataset.vendre); if (l) { mettreEnVente(l, 1); ctx.toast(`${l.nom} mis en vente (draft)`); } });
+  $$('#craft-plan [data-vendre]').forEach(b => b.onclick = () => { const l = ev.lignes.find(x => x.id === +b.dataset.vendre); if (l) { mettreEnVente(l, 1); ctx.toast(`${l.nom} ajouté aux ventes (« Crafté »)`); } });
   $$('#craft-viables [data-ajout]').forEach(b => b.onclick = () => modifier(b.dataset.ajout, +1));
   $('#cv-sans-vente').onclick = () => { C.sansVente = !C.sansVente; C.n = 50; ctx.sauverEtat(); ctx.renderTout(); };
   $$('#cv-filtre button').forEach(b => b.onclick = () => { C.filtre = b.dataset.f; C.n = 50; ctx.sauverEtat(); ctx.renderTout(); });

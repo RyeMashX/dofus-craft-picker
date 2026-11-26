@@ -414,3 +414,6 @@ body.pip #view-switch button { padding: 4px 6px; font-size: 12px; }
 .fin-achats > div:first-child, .fin-achats.ok-bloc { display: flex; flex-direction: column; gap: 2px; }
 .fin-achats input { width: 140px; }
 .conf-bleu { color: var(--f-bleu); border: 1px solid var(--f-bleu); }
+.statut3 { margin: 4px 0 2px; }
+.statut3 button[disabled] { opacity: 0.35; cursor: not-allowed; }
+.statut3 button[data-st3="vendu"]:not([disabled]):hover { color: var(--ok, #4caf50); }

@@ -161,12 +161,12 @@ export function renderAchats(ctx) {
   const blocCraft = sc.length ? `<h3>À crafter</h3><div class="ac-tete"><span></span><span class="c-q">qté</span><span class="c-t">coût</span><span class="c-pu">prix/u</span><span></span></div>
     <div class="grp${sc.every(faitC) ? ' fini' : ''}"><div class="ac">${sc.map(ligneC).join('')}</div></div>` : '';
 
-  // Fin des achats : dépense réelle → coût de craft corrigé, exemplaires en draft dans Ventes
+  // Fin des achats : dépense réelle → coût de craft corrigé, exemplaires « Crafté » dans Ventes
   const estCoches = achats.filter(fait).reduce((s, a) => s + (a.plan?.cout ?? 0), 0);
   const nonCoches = achats.length - nbFaits;
   const finHtml = L.terminee
-    ? `<div class="fin-achats ok-bloc"><b>Achats terminés le ${dateCourte(L.terminee.date)}</b><span class="muted small">Dépensé ${fmtK(L.terminee.reel)} pour ${fmtK(L.terminee.estime)} estimés (${L.terminee.reel >= L.terminee.estime ? '+' : ''}${ctx.pct(L.terminee.reel / L.terminee.estime - 1)}). ${L.terminee.exemplaires} exemplaires en draft dans Ventes.</span></div>`
-    : `<div class="fin-achats"><div><b>Terminer les achats</b><span class="muted small">Dépense réelle : le coût de craft de chaque équipement est corrigé au prorata, puis ses exemplaires passent en draft dans Ventes.${nonCoches ? ` ${nonCoches} ligne${nonCoches > 1 ? 's' : ''} non cochée${nonCoches > 1 ? 's' : ''}.` : ''}</span></div>
+    ? `<div class="fin-achats ok-bloc"><b>Achats terminés le ${dateCourte(L.terminee.date)}</b><span class="muted small">Dépensé ${fmtK(L.terminee.reel)} pour ${fmtK(L.terminee.estime)} estimés (${L.terminee.reel >= L.terminee.estime ? '+' : ''}${ctx.pct(L.terminee.reel / L.terminee.estime - 1)}). ${L.terminee.exemplaires} exemplaires « Crafté » dans Ventes.</span></div>`
+    : `<div class="fin-achats"><div><b>Terminer les achats</b><span class="muted small">Dépense réelle : le coût de craft de chaque équipement est corrigé au prorata, puis ses exemplaires passent en « Crafté » dans Ventes.${nonCoches ? ` ${nonCoches} ligne${nonCoches > 1 ? 's' : ''} non cochée${nonCoches > 1 ? 's' : ''}.` : ''}</span></div>
         <div class="row"><input id="ac-reel" class="num milliers" inputmode="numeric" placeholder="${fmt(Math.round(estCoches || total))}"><button id="ac-fin" class="primary small">Terminer</button></div></div>`;
 
   $('#achats').innerHTML = `
@@ -202,7 +202,7 @@ export function renderAchats(ctx) {
     const saisi = ctx.nombreSaisi($('#ac-reel').value);
     const reel = saisi > 0 ? saisi : Math.round(estCoches || total);
     const n = L.crafts.reduce((s, c) => s + c.n, 0);
-    if (!(await ctx.confirmer(`Dépense réelle ${fmtK(reel)} (estimé ${fmtK(total)}). ${n} exemplaires passent en draft dans Ventes avec leur coût de craft corrigé, et sortent du plan de craft.`, { ok: 'Terminer' }))) return;
+    if (!(await ctx.confirmer(`Dépense réelle ${fmtK(reel)} (estimé ${fmtK(total)}). ${n} exemplaires passent en « Crafté » dans Ventes avec leur coût de craft corrigé, et sortent du plan de craft.`, { ok: 'Terminer' }))) return;
     const couts = repartirDepense(L.crafts, reel);
     const planCraft = { ...(S.etat.craftPlan ?? {}) };
     for (const c of L.crafts) {
@@ -212,7 +212,7 @@ export function renderAchats(ctx) {
     }
     S.etat.craftPlan = planCraft;
     L.terminee = { date: Date.now(), reel, estime: total, exemplaires: n };
-    ctx.sauverBase(); ctx.sauverEtat(); ctx.toast(`${n} exemplaires en draft dans Ventes ✓`); ctx.renderTout();
+    ctx.sauverBase(); ctx.sauverEtat(); ctx.toast(`${n} exemplaires « Crafté » dans Ventes ✓`); ctx.renderTout();
   };
   ctx.brancherCopier('#achats');
 }

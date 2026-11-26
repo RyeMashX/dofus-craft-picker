@@ -29,7 +29,7 @@ const CHAMPS = [['prix', 'Prix'], ['coutCraft', 'Craft'], ['frais', 'Mise en ven
 
 // Champ montant modifiable d'une ligne
 const aideFrais = (ctx, l) => l.fraisManuel ? 'Saisi à la main. Vide le champ pour revenir à 2 % du prix.'
-  : l.statut === 'draft' ? '2 % du prix, recalculé tant que la ligne est en draft.'
+  : l.statut === 'draft' ? '2 % du prix, recalculé tant que la ligne est « Crafté ».'
   : `2 % du prix initial${l.changements?.length ? ` + 1 % du nouveau prix à chaque changement (${l.changements.map(c => ctx.fmt(c.prix)).join(', ')})` : ''}. Figé : utilise « Prix modifié » pour un changement de prix à l'HDV.`;
 export const champ = (ctx, l, k, lib) => `<label class="vf"><span>${k === 'frais' && l.changements?.length ? `${lib} (+${l.changements.length})` : lib}</span><input class="num milliers${k === 'frais' && !l.fraisManuel && l.statut === 'draft' ? ' auto' : ''}" inputmode="numeric" data-uid="${l.uid}" data-champ="${k}" value="${ctx.fmtSaisie(l[k])}"${k === 'frais' ? ` title="${ctx.esc(aideFrais(ctx, l))}"` : k === 'prix' && l.statut === 'valide' ? ' title="Corrige le prix sans toucher aux frais. Pour un changement de prix à l\'HDV, utilise « Prix modifié »."' : ''}></label>`;
 export function brancherChamps(ctx, sel) {
@@ -75,7 +75,7 @@ function carteReleve(ctx) {
   const trancher = R.aTrancher.map((a, i) => {
     const ex = actives(S.base).filter(l => l.id === a.id);
     return `<div class="tr-l"><div class="cp-nom">${icone(items.get(a.id)?.iconId)} <span class="n">${esc(a.nom)}</span> <span class="muted small">lu à</span> <b>${fmt(a.prix)}</b></div>
-      <div class="tr-choix">${ex.map(l => `<button class="secondary small" data-fus="${i}" data-uid="${l.uid}" title="${l.statut === 'valide' ? 'Tu as changé le prix de cette annonce : nouveau prix et + 1 % de frais' : 'Ligne draft : nouveau prix, frais recalculés à 2 %'}">Fusionner avec la ligne du ${dateCourte(l.dateMiseEnVente)} (${l.prix == null ? 'sans prix' : fmtK(l.prix)})</button>`).join('')}
+      <div class="tr-choix">${ex.map(l => `<button class="secondary small" data-fus="${i}" data-uid="${l.uid}" title="${l.statut === 'valide' ? 'Tu as changé le prix de cette annonce : nouveau prix et + 1 % de frais' : 'Ligne « Crafté » : nouveau prix, frais recalculés à 2 %'}">Fusionner avec la ligne du ${dateCourte(l.dateMiseEnVente)} (${l.prix == null ? 'sans prix' : fmtK(l.prix)})</button>`).join('')}
         <button class="primary small" data-nouv="${i}">Nouvelle ligne</button><button class="link small" data-ign="${i}">ignorer</button></div></div>`;
   }).join('');
   return `<div class="lect"><div class="row"><h3>Relevé de mes ventes</h3><span class="muted small">${R.captures} capture${R.captures > 1 ? 's' : ''}</span><div class="spacer"></div><button id="rv-fin" class="link small">fermer</button></div>
@@ -120,22 +120,24 @@ export function renderVentes(ctx) {
   const ligne = l => {
     const it = items.get(l.id), m = marge(l);
     return `<div class="vt-l ${l.statut}">
-      <div class="cp-nom">${icone(it.iconId)} <span class="n" title="${esc(it.nom)}">${esc(it.nom)}</span>
-        <button class="statut st-${l.statut}" data-statut="${l.uid}" title="${l.statut === 'draft' ? 'Chiffres à vérifier. Clique quand ils sont bons.' : 'Vérifié. Clique pour repasser en draft.'}">${l.statut === 'draft' ? 'draft' : 'validé ✓'}</button></div>
+      <div class="cp-nom">${icone(it.iconId)} <span class="n" title="${esc(it.nom)}">${esc(it.nom)}</span></div>
+      <div class="seg small statut3">
+        <button data-st3="draft" data-uid="${l.uid}" class="${l.statut === 'draft' ? 'on' : ''}" title="Crafté, pas encore à l'HDV : chiffres à vérifier">Crafté</button>
+        <button data-st3="valide" data-uid="${l.uid}" class="${l.statut === 'valide' ? 'on' : ''}" title="Mis en vente à l'HDV : frais figés">En vente</button>
+        <button data-st3="vendu" data-uid="${l.uid}"${l.statut === 'draft' ? ' disabled title="Passe d\'abord par « En vente »"' : ' title="Vendu aujourd\'hui (date modifiable dans Bilan)"'}>Vendu</button></div>
       <div class="vt-meta"><label class="vf-date"><span>en vente le</span><input type="date" data-uid="${l.uid}" data-date="dateMiseEnVente" value="${jourIso(l.dateMiseEnVente)}"></label>
         <span class="spacer"></span><span class="muted small">marge</span> <b class="${m == null ? 'muted' : m >= 0 ? 'ok' : 'bad'}">${fmtK(m)}</b> <span class="muted small">${pct(rendement(l))}</span></div>
       ${histPrix(ctx, l)}
       <div class="vt-champs">${CHAMPS.map(([k, lib]) => champ(ctx, l, k, lib)).join('')}</div>
       ${S.chgPrix === l.uid ? `<div class="vt-chg"><label class="vf"><span>Nouveau prix à l'HDV</span><input id="chg-prix" class="num milliers" inputmode="numeric" value="${ctx.fmtSaisie(l.prix)}"></label>
         <button id="chg-ok" class="primary small">OK, + 1 % de frais</button><button id="chg-annuler" class="link small">annuler</button></div>` : ''}
-      <div class="vt-actions"><button class="secondary small vendu-btn" data-vendu="${l.uid}" title="Vendu aujourd'hui (date modifiable dans Bilan)">✓ Vendu</button>
-        ${l.statut === 'valide' && l.prix != null && S.chgPrix !== l.uid ? `<button class="secondary small" data-chg="${l.uid}" title="Tu as changé le prix à l'HDV : nouveau prix et + 1 % de ce prix dans les frais">Prix modifié</button>` : ''}<span class="spacer"></span><button class="retirer" data-suppr="${l.uid}" title="Supprimer la ligne (pas vendu, retiré de l'HDV)">✕</button></div>
+      <div class="vt-actions">${l.statut === 'valide' && l.prix != null && S.chgPrix !== l.uid ? `<button class="secondary small" data-chg="${l.uid}" title="Tu as changé le prix à l'HDV : nouveau prix et + 1 % de ce prix dans les frais">Prix modifié</button>` : ''}<span class="spacer"></span><button class="retirer" data-suppr="${l.uid}" title="Supprimer la ligne (pas vendu, retiré de l'HDV)">✕</button></div>
     </div>`;
   };
 
   $('#ventes').innerHTML = `
     <div class="kpis kpis4">
-      <div class="kpi"><div class="v">${lignes.length}${filtre ? `<span class="muted small"> / ${toutes.length}</span>` : ''}</div><div class="l">en vente${drafts ? `, ${drafts} draft` : ''}</div></div>
+      <div class="kpi"><div class="v">${lignes.length}${filtre ? `<span class="muted small"> / ${toutes.length}</span>` : ''}</div><div class="l">lignes${drafts ? `, dont ${drafts} craftée${drafts > 1 ? 's' : ''}` : ''}</div></div>
       <div class="kpi"><div class="v">${fmtK(somme(l => l.prix))}</div><div class="l">valeur affichée</div></div>
       <div class="kpi"><div class="v ok">${fmtK(somme(marge))} <span class="kpi-pct">${pct(rdtGlobal)}</span></div><div class="l" title="Marge rapportée au coût (craft + FM) des lignes qui ont un prix">marge attendue</div></div>
       <div class="kpi"><div class="v">${fmtK(somme(l => (l.coutCraft ?? 0) + (l.coutFm ?? 0)))}</div><div class="l">immobilisé</div></div>
@@ -145,18 +147,18 @@ export function renderVentes(ctx) {
       <button id="vt-scan" class="primary small"${cap.enCours() ? '' : ' disabled'} title="Lit l'écran « Vente » de l'HDV (liste de tes annonces)">Scanner mes ventes</button>
       <button id="vt-zone" class="link small"${cap.enCours() ? '' : ' disabled'}>zone</button>
       <span class="spacer"></span>
-      <button id="vt-plus" class="regen${S.vtAjout ? ' on' : ''}" title="Ajouter un exemplaire à la main (en draft)"><svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
+      <button id="vt-plus" class="regen${S.vtAjout ? ' on' : ''}" title="Ajouter un exemplaire à la main (statut « Crafté »)"><svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
     ${carteReleve(ctx)}
     ${S.vtAjout ? '<div class="ac vt-ajout"><input id="vt-nom" placeholder="Nom de l\'équipement à ajouter…" autocomplete="off" spellcheck="false"><div id="vt-ac" class="ac-liste hidden"></div></div>' : ''}
     ${toutes.length ? `<div class="vt-filtres">
       <input id="vt-q" type="search" placeholder="Filtrer par nom…" value="${esc(F.q ?? '')}" autocomplete="off" spellcheck="false">
-      <div id="vt-statut" class="seg small">${[['tous', 'tous'], ['draft', 'draft'], ['valide', 'validé']].map(([k, l]) => `<button data-st="${k}" class="${F.statut === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+      <div id="vt-statut" class="seg small">${[['tous', 'tous'], ['draft', 'craftés'], ['valide', 'en vente']].map(([k, l]) => `<button data-st="${k}" class="${F.statut === k ? 'on' : ''}">${l}</button>`).join('')}</div>
       <select id="vt-autre" title="Filtre">${[['tous', 'toutes les lignes'], ['sansPrix', 'sans prix'], ['negative', 'marge négative'], ['j7', 'en vente depuis + 7 j'], ['j14', 'en vente depuis + 14 j']].map(([k, l]) => `<option value="${k}"${F.autre === k ? ' selected' : ''}>${l}</option>`).join('')}</select>
       <select id="vt-tri" title="Tri">${[['nom', 'tri : nom'], ['ancien', 'tri : plus anciennes'], ['recent', 'tri : plus récentes'], ['prix', 'tri : prix ↓'], ['marge', 'tri : marge ↓'], ['rendement', 'tri : rendement ↓'], ['rendementAsc', 'tri : rendement ↑']].map(([k, l]) => `<option value="${k}"${F.tri === k ? ' selected' : ''}>${l}</option>`).join('')}</select>
       ${filtre ? '<button id="vt-raz" class="link small">tout afficher</button>' : ''}
     </div>` : ''}
     ${lignes.length ? `<div class="cp">${lignes.map(ligne).join('')}</div>` : toutes.length ? '<p class="muted small">Aucune ligne pour ces filtres.</p>' : '<p class="muted small">Rien en vente. Mets des crafts en vente depuis l\'onglet Craft, scanne ta liste à l\'HDV ou ajoute-les à la main avec « + ».</p>'}
-    <p class="muted small">Marge = prix − craft − mise en vente − FM. Mise en vente : 2 % du prix, recalculés tant que la ligne est en draft, figés une fois validée ; « Prix modifié » ajoute 1 % du nouveau prix. Les lignes venues du Craft sont en « draft » : vérifie leurs chiffres puis passe-les en « validé ». Un équipement en vente n'est pas proposé dans le plan de craft.</p>`;
+    <p class="muted small">Marge = prix − craft − mise en vente − FM. Statut : Crafté → En vente → Vendu. Mise en vente : 2 % du prix, recalculés tant que la ligne est « Crafté », figés une fois « En vente » ; « Prix modifié » ajoute 1 % du nouveau prix. Un équipement en vente n'est pas proposé dans le plan de craft.</p>`;
 
   const p = ctx.params(), coutDe = id => coutEstime(S.catalogue, S.base, p, id);
   const R = S.releveVentes;
@@ -166,11 +168,16 @@ export function renderVentes(ctx) {
   $$('#ventes [data-ign]').forEach(b => b.onclick = () => resolu(+b.dataset.ign));
   const fin = $('#rv-fin'); if (fin) fin.onclick = () => { S.releveVentes = null; ctx.renderTout(); };
 
-  $$('#ventes [data-statut]').forEach(b => b.onclick = () => { const l = trouverLigne(S.base, b.dataset.statut); majLigne(S.base, l.uid, 'statut', l.statut === 'draft' ? 'valide' : 'draft'); ctx.sauverBase(); ctx.renderTout(); });
+  // Crafté → En vente → Vendu (Vendu seulement depuis En vente)
+  $$('#ventes [data-st3]').forEach(b => b.onclick = () => {
+    const l = trouverLigne(S.base, b.dataset.uid), v = b.dataset.st3;
+    if (v === 'vendu') { if (l.statut !== 'valide') return; marquerVendu(S.base, l.uid); ctx.toast('Vendu ✓ (voir Bilan)'); }
+    else if (v !== l.statut) majLigne(S.base, l.uid, 'statut', v);
+    ctx.sauverBase(); ctx.renderTout();
+  });
   $$('#ventes [data-chg]').forEach(b => b.onclick = () => { S.chgPrix = b.dataset.chg; ctx.renderTout(); const i = $('#chg-prix'); i?.focus(); i?.select(); });
   const okChg = () => { const p = ctx.nombreSaisi($('#chg-prix').value), l = trouverLigne(S.base, S.chgPrix); S.chgPrix = null; if (p && l && p !== l.prix) { changerPrix(S.base, l.uid, p); ctx.sauverBase(); ctx.toast(`Nouveau prix ${ctx.fmt(p)} · frais + ${ctx.fmt(Math.round(p * 0.01))}`); } ctx.renderTout(); };
   if ($('#chg-ok')) { $('#chg-ok').onclick = okChg; $('#chg-prix').onkeydown = e => { if (e.key === 'Enter') okChg(); if (e.key === 'Escape') { S.chgPrix = null; ctx.renderTout(); } }; $('#chg-annuler').onclick = () => { S.chgPrix = null; ctx.renderTout(); }; }
-  $$('#ventes [data-vendu]').forEach(b => b.onclick = () => { marquerVendu(S.base, b.dataset.vendu); ctx.sauverBase(); ctx.toast('Vendu ✓ (voir Bilan)'); ctx.renderTout(); });
   $$('#ventes [data-suppr]').forEach(b => b.onclick = async () => { if (!(await ctx.confirmer('Supprimer cette ligne ? (pour un exemplaire vendu, utilise plutôt « Vendu »)', { ok: 'Supprimer' }))) return; supprimerLigne(S.base, b.dataset.suppr); ctx.sauverBase(); ctx.renderTout(); });
   brancherChamps(ctx, '#ventes');
 
@@ -196,7 +203,7 @@ export function renderVentes(ctx) {
       if (!it) return;
       nouvelleLigne(S.base, it.id, null, coutDe, Date.now(), 'draft');
       S.vtAjout = false;
-      ctx.sauverBase(); ctx.toast(`${it.nom} ajouté en draft : indique son prix`); ctx.renderTout();
+      ctx.sauverBase(); ctx.toast(`${it.nom} ajouté (« Crafté ») : indique son prix`); ctx.renderTout();
     });
   }
 }
