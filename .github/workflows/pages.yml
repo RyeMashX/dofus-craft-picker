@@ -30,8 +30,10 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
+      # Seulement le site (pas les captures de test, ~65 Mo) : un petit artefact se publie sans erreur
+      - run: mkdir _site && cp -r index.html style.css src data _site/
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: .
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4
