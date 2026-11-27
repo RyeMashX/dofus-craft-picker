@@ -423,7 +423,15 @@ export async function lireEcran(type, img, zone, reconnaitre, opts = {}) {
   if (zone?.nom && zone?.valeur) {
     const nom = await lireNom(pretraiter(img, zone.nom, opts), reconnaitre);
     if (type === 'courbe') {
-      const c = await lireCourbe(pretraiter(img, zone.valeur, { ...opts, masquerJaune: false }), reconnaitre, recadrer(img, zone.valeur), opts.echelle);
+      const preV = pretraiter(img, zone.valeur, { ...opts, masquerJaune: false });
+      const c = await lireCourbe(preV, reconnaitre, recadrer(img, zone.valeur), opts.echelle);
+      // zone valeur serrée sur le nombre seul (sans « articles vendus » ni les onglets) : on lit le nombre,
+      // et l'onglet 30 jours ne peut pas être vérifié (c'est à toi d'être dessus)
+      if (c.vendus == null) {
+        const lignes = rangees(await reconnaitre(marge(preV, 12), { chiffres: true }));
+        const m = lignes.map(l => l.texte.match(/\d{1,3}(?: \d{3})?/)).find(Boolean);
+        if (m) { c.vendus = nombre(m[0]).valeur; c.trenteJours = true; c.ongletNonVerifie = true; }
+      }
       return { ...c, titre: nom.titre ?? c.titre, niveau: nom.niveau ?? c.niveau };
     }
     const pre = pretraiter(img, zone.valeur, opts);

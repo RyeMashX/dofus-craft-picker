@@ -94,6 +94,12 @@ for (const [f, nom, val, attendu] of [
   const L = await lireEcran('courbe', img, { nom: { x: 200, y: 110, w: 500, h: 70 }, valeur: { x: 30, y: 280, w: 1510, h: 45 } }, reconnaitre, { echelle: 2 });
   verifier('deux zones : courbe', [L.titre, L.vendus, L.trenteJours], ['Jugement de Thanatena', 81, true]);
 }
+{
+  // zone valeur serrée sur le nombre seul (sans « articles vendus » ni les onglets)
+  const img = lire('courbe-item.png');
+  const L = await lireEcran('courbe', img, { nom: { x: 200, y: 110, w: 500, h: 70 }, valeur: { x: 1348, y: 286, w: 32, h: 28 } }, reconnaitre, { echelle: 2 });
+  verifier('deux zones : courbe, nombre seul', [L.titre, L.vendus, L.trenteJours, L.ongletNonVerifie], ['Jugement de Thanatena', 81, true, true]);
+}
 
 // 2 quinquies. Nom de deux lettres (« Or ») : panneau entier, puis zone nom seule
 {
